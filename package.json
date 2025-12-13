@@ -1,0 +1,20 @@
+{
+  "name": "shorta-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "web:dev": "npm run dev --workspace=apps/web",
+    "web:build": "npm run build --workspace=apps/web",
+    "web:preview": "npm run preview --workspace=apps/web"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
