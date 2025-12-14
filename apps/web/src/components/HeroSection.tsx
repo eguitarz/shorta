@@ -2,6 +2,8 @@ import { Badge } from "@/components/Badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/Card";
 import { FlowList } from "@/components/Lists";
+import { TrustBadges } from "@/components/TrustBadges";
+import { redirectToCheckout } from "@/lib/stripe";
 import { motion } from "framer-motion";
 
 const workflowSteps = [
@@ -32,7 +34,7 @@ export function HeroSection() {
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6 leading-tight">
-              Generate viral YouTube Shorts scripts — based on what already works.
+              Every script starts with a proven hook.
             </h1>
 
             <p className="text-lg md:text-xl text-foreground mb-4">
@@ -40,15 +42,20 @@ export function HeroSection() {
             </p>
 
             <p className="text-muted-foreground text-lg mb-8 max-w-xl">
-              Shorta learns from real viral Shorts and turns proven patterns into scripts you can confidently film.
+              Shorta analyzes recent viral Shorts and matches proven hooks to your specific content — not generic AI guesses.
             </p>
 
             <div className="bg-surface rounded-xl p-5 mb-8 border border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-700 dark:text-green-400">
+                  ✓ 14-Day Money-Back Guarantee
+                </span>
+              </div>
               <p className="text-2xl md:text-3xl text-foreground mb-1">
                 <strong>$199 / year</strong> — Founding Member (grandfathered)
               </p>
               <p className="text-sm text-muted-foreground mt-3">
-                Public launch price: <strong>$399+ / year</strong>
+                Public launch price: <strong>$399 / year</strong>
               </p>
             </div>
 
@@ -56,17 +63,32 @@ export function HeroSection() {
               <Button
                 variant="hero"
                 size="xl"
-                onClick={() => scrollToSection("cta")}
+                onClick={redirectToCheckout}
               >
                 Join as a Founding Member
               </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => window.location.href = 'mailto:support@shorta.ai?subject=Join Waitlist&body=Hi, I\'d like to join the Shorta waitlist.'}
+              >
+                Not ready? Join the waitlist
+              </Button>
+              <button
+                onClick={() => scrollToSection("example")}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+              >
+                View Example
+              </button>
             </div>
 
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>Limited seats</p>
+            <div className="text-sm text-muted-foreground space-y-1 mb-6">
+              <p>Only 50 Founding Member spots</p>
               <p>Development kicks off at <strong>5 members</strong></p>
               <p>Ships within <strong>60 days</strong> or full refund</p>
             </div>
+
+            <TrustBadges />
           </motion.div>
 
           {/* Right Column */}

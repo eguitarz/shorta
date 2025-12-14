@@ -4,8 +4,15 @@ import { motion } from "framer-motion";
 
 export function QuestionButton() {
   const handleClick = () => {
-    // Placeholder action - could open a chat widget, modal, or mailto link
-    window.location.href = "mailto:support@shorta.ai?subject=Question about Shorta";
+    const subject = "Question about Shorta Founding Membership";
+    const body = `Hi Dale,
+
+I have a question about Shorta:
+
+[Write your question here]
+
+Thanks!`;
+    window.location.href = `mailto:support@shorta.ai?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (

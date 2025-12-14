@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { TrustBadges } from "@/components/TrustBadges";
+import { redirectToCheckout } from "@/lib/stripe";
 
 export function CTAForm() {
   const handleCheckout = () => {
-    // TODO: Integrate with Stripe checkout
-    console.log("Redirecting to Stripe checkout...");
+    redirectToCheckout();
   };
 
   return (
@@ -16,6 +17,7 @@ export function CTAForm() {
       >
         Become a Founding Member — $199/year
       </Button>
+      <TrustBadges />
       <p className="text-xs text-muted-foreground text-center">
         You'll be charged today to support the development.<br />
         If we don't reach 5 founding members, you'll receive a full refund immediately.<br />

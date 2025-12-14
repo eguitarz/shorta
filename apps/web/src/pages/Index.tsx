@@ -6,7 +6,11 @@ import { Callout } from "@/components/Callout";
 import { Footer } from "@/components/Footer";
 import { CTAForm } from "@/components/CTAForm";
 import { QuestionButton } from "@/components/QuestionButton";
+import { ComparisonExample } from "@/components/ComparisonExample";
+import { TrustBadges } from "@/components/TrustBadges";
+import { redirectToCheckout } from "@/lib/stripe";
 import shortaLogo from "@/assets/shorta-logo.png";
+import daleHeadshot from "@/assets/dale-ma-headshot.jpg";
 
 const Index = () => {
   const scrollToCta = () => {
@@ -16,8 +20,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="pt-6 px-6">
-        <div className="container mx-auto max-w-[1080px]">
+      <header className="pt-6">
+        <div className="container mx-auto px-2">
           <img src={shortaLogo} alt="Shorta" className="h-36 md:h-40" />
         </div>
       </header>
@@ -33,10 +37,10 @@ const Index = () => {
         </p>
         <BulletList
           items={[
-            "You don't know which hook will work",
-            "AI scripts sound generic and flat",
-            "Competitors already went viral — you're guessing",
-            "Testing ideas costs time, focus, and momentum",
+            "Your hooks get skipped in the first 3 seconds — and you don't know why",
+            "ChatGPT scripts sound like every other AI creator",
+            "Competitors already went viral with YOUR idea — you're weeks behind",
+            "Every failed Short costs you time, money, and algorithmic momentum",
           ]}
         />
       </Section>
@@ -54,8 +58,8 @@ const Index = () => {
             </p>
             <BulletList
               items={[
-                "Pattern-driven, not vibes",
-                "Reference-informed outputs",
+                "Fresh pattern analysis from recent viral Shorts",
+                "Hook-to-content matching, not random viral hooks",
                 "Ranked options so you pick fast",
               ]}
             />
@@ -74,6 +78,20 @@ const Index = () => {
         </SectionGrid>
       </Section>
 
+      {/* Example */}
+      <Section id="example">
+        <div className="max-w-5xl mx-auto">
+          <SectionTitle className="text-center mb-3">ChatGPT vs Shorta</SectionTitle>
+          <p className="text-center text-muted-foreground mb-8">
+            Same prompt. Different results.
+          </p>
+          <ComparisonExample />
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            <em>Note: This is a realistic mockup. Actual Shorta output will analyze your specific niche and channel data.</em>
+          </p>
+        </div>
+      </Section>
+
       {/* What you get in V1 */}
       <Section id="v1">
         <SectionGrid columns={2}>
@@ -81,11 +99,11 @@ const Index = () => {
             <SectionTitle>What you get in V1</SectionTitle>
             <CheckList
               items={[
-                "Viral hook & structure analysis",
+                "Fresh viral hook analysis (recent data, not stale patterns)",
+                "Content-matched hook selection (hooks chosen for your topic)",
                 "Talking-head friendly short scripts",
                 "Multiple variations per idea",
                 "Automatic scoring & ranking",
-                "Reference-driven output (no generic AI tone)",
               ]}
             />
           </div>
@@ -118,10 +136,44 @@ const Index = () => {
 
       {/* FAQ Lite */}
       <Section id="faq-lite" maxWidth="narrow">
-        <SectionTitle>Can't I just use ChatGPT?</SectionTitle>
-        <p className="text-muted-foreground">
-          You can — but it doesn't study your niche's viral patterns, compare options, or score ideas. Shorta is built specifically for Shorts performance, not general writing.
-        </p>
+        <SectionTitle>Frequently asked questions</SectionTitle>
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-foreground font-semibold mb-3">Can't I just use ChatGPT?</h3>
+            <div className="space-y-3 text-muted-foreground">
+              <p>
+                You can — but ChatGPT is trained on old data and gives you generic hooks.
+              </p>
+              <p>
+                Shorta analyzes recent viral Shorts, extracts what's working now, and matches the best hook to your specific content — not just random viral patterns.
+              </p>
+              <p>
+                It's like having a researcher who watches trending Shorts daily and tells you exactly which hook will work for your topic.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-foreground font-semibold mb-3">How long does it take to generate scripts?</h3>
+            <p className="text-muted-foreground">
+              Less than 5 minutes. Paste your references, enter your topic, and get 10-20 ranked scripts instantly.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-foreground font-semibold mb-3">Can I use this for TikTok or Instagram Reels?</h3>
+            <p className="text-muted-foreground">
+              You can — the principles of viral short-form content apply across platforms. However, our current focus is on YouTube Shorts, so the analysis and patterns are optimized for that platform.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-foreground font-semibold mb-3">Do you store my channel data?</h3>
+            <p className="text-muted-foreground">
+              We store summarized channel data (not raw videos) so the AI can generate the best content specifically for your audience and style. Your data is never shared with third parties.
+            </p>
+          </div>
+        </div>
       </Section>
 
       {/* Audience */}
@@ -165,15 +217,23 @@ const Index = () => {
                 "Direct access to the founder",
               ]}
             />
+            <div className="mt-6 p-4 bg-surface rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground mb-2">Value breakdown:</p>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• $199/year = $16.58/month</li>
+                <li>• Less than one freelance script ($50-200 each)</li>
+                <li>• Replaces hours of manual research per video</li>
+              </ul>
+            </div>
           </div>
           <PricingCard
             title="Founding Member"
             price="$199"
             period="year"
-            badges={["Grandfathered", "Limited seats"]}
-            finePrint={<>Public launch price: <strong>$399+ / year</strong></>}
+            badges={["Grandfathered", "Only 50 spots"]}
+            finePrint={<>Public launch price: <strong>$399 / year</strong></>}
             ctaLabel="Join as a Founding Member"
-            onCtaClick={scrollToCta}
+            onCtaClick={redirectToCheckout}
           />
         </SectionGrid>
       </Section>
@@ -186,10 +246,16 @@ const Index = () => {
             Development starts immediately once <strong>5 Founding Members</strong> join.
           </p>
           <p>
+            If we don't reach 5 members by <strong>January 31, 2026</strong>, you'll receive a full refund.
+          </p>
+          <p>
             Target ship window: within <strong>60 days</strong> after kickoff.
           </p>
           <p>
             If we miss the ship window: <strong>full refund</strong>, no questions asked.
+          </p>
+          <p>
+            After launch: <strong>14-day money-back guarantee</strong> if you're not satisfied.
           </p>
         </div>
         <Callout
@@ -202,16 +268,46 @@ const Index = () => {
       {/* Founder */}
       <Section id="founder" maxWidth="narrow">
         <SectionTitle>About the founder</SectionTitle>
-        <div className="space-y-4 text-muted-foreground">
-          <p>
-            Hi, I'm Dale. I spent years building internal tools at Meta, where speed and clarity matter. The best results didn't come from better prompts — they came from having the right context.
-          </p>
-          <p>
-            Context switching — jumping between examples, references, and half-formed ideas — was always the real cost. Content creation turned out to be the same problem.
-          </p>
-          <p>
-            Shorta is my attempt to solve that by bringing the right examples together, extracting patterns automatically, and turning context into decisions you can act on before hitting record.
-          </p>
+        <div className="space-y-4">
+          <div className="flex items-start gap-4">
+            <img
+              src={daleHeadshot}
+              alt="Dale Ma"
+              className="w-20 h-20 rounded-full object-cover flex-shrink-0"
+            />
+            <div className="flex-1">
+              <h3 className="text-foreground font-semibold mb-1">Dale Ma</h3>
+              <div className="flex gap-3 text-sm">
+                <a
+                  href="https://x.com/eguitarz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Twitter
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/dalema/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  LinkedIn
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-4 text-muted-foreground">
+            <p>
+              Hi, I'm Dale Ma. I built productivity tools and infra for developers at Meta, where speed and clarity matter. The best results didn't come from better prompts — they came from having the right context.
+            </p>
+            <p>
+              Context switching — jumping between examples, references, and half-formed ideas — was always the real cost. Content creation turned out to be the same problem.
+            </p>
+            <p>
+              Shorta is my attempt to solve that by bringing the right examples together, extracting patterns automatically, and turning context into decisions you can act on before hitting record.
+            </p>
+          </div>
         </div>
       </Section>
 
@@ -223,14 +319,14 @@ const Index = () => {
               Join as a Founding Member
             </h2>
             <p className="text-muted-foreground mb-8">
-              Limited seats. Grandfathered price.
+              Only 50 Founding Member spots. Grandfathered price.
             </p>
             <div className="space-y-3 text-foreground">
               <p>
                 <strong>$199 / year</strong> (grandfathered)
               </p>
               <p>
-                Public launch: <strong>$399+ / year</strong>
+                Public launch: <strong>$399 / year</strong>
               </p>
               <p>
                 Ships within <strong>60 days</strong> after kickoff or <strong>full refund</strong>
