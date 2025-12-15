@@ -5,12 +5,6 @@ export function initPostHog() {
   const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
   const posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
 
-  console.log('[PostHog] Initializing...', {
-    hasKey: !!posthogKey,
-    keyPrefix: posthogKey?.substring(0, 8),
-    host: posthogHost
-  });
-
   if (posthogKey) {
     posthog.init(posthogKey, {
       api_host: posthogHost,
