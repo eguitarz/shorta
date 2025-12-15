@@ -134,6 +134,51 @@ const Index = () => {
         </p>
       </Section>
 
+      {/* Still skeptical */}
+      <Section id="skeptical" maxWidth="narrow">
+        <SectionTitle>Still skeptical? Here's why hooks matter.</SectionTitle>
+
+        <p className="text-foreground font-medium mb-4">
+          Short-form platforms don't guess what to promote — they measure it.
+        </p>
+
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-foreground font-semibold mb-3">What the data consistently shows:</h3>
+            <ul className="space-y-2 text-muted-foreground">
+              <li>• Platforms rank Shorts based on early retention and watch time</li>
+              <li>• Videos that keep viewers past the first 3–5 seconds get wider distribution</li>
+              <li>• Higher retention increases rewatches and loop cycles, compounding reach</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-foreground font-semibold mb-3">What platforms & creators agree on:</h3>
+            <ul className="space-y-2 text-muted-foreground">
+              <li>• YouTube explicitly teaches creators to optimize the first seconds to improve performance</li>
+              <li>• Short-form growth guides show that improving the opening line alone can lift retention — even when the rest of the video stays the same</li>
+              <li>• High-retention Shorts are more likely to be replayed, a strong signal for discovery</li>
+            </ul>
+          </div>
+
+          <div className="bg-primary/5 rounded-lg p-6 border border-primary/20">
+            <p className="text-foreground font-semibold text-lg">
+              In short:
+            </p>
+            <p className="text-foreground mt-2">
+              Better hooks → higher retention → more loops → more reach.
+            </p>
+            <p className="text-muted-foreground mt-4">
+              That's exactly the layer Shorta focuses on.
+            </p>
+          </div>
+
+          <p className="text-xs text-muted-foreground italic text-center">
+            Based on public platform guidance and creator analytics — not guesswork.
+          </p>
+        </div>
+      </Section>
+
       {/* FAQ Lite */}
       <Section id="faq-lite" maxWidth="narrow">
         <SectionTitle>Frequently asked questions</SectionTitle>
