@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/Card";
 import { FlowList } from "@/components/Lists";
 import { TrustBadges } from "@/components/TrustBadges";
+import { WaitlistForm } from "@/components/WaitlistForm";
 import { redirectToCheckout } from "@/lib/stripe";
 import { motion } from "framer-motion";
 
@@ -67,13 +68,12 @@ export function HeroSection() {
               >
                 Join as a Founding Member
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => window.location.href = 'mailto:support@shorta.ai?subject=Join Waitlist&body=Hi, I\'d like to join the Shorta waitlist.'}
-              >
-                Not ready? Join the waitlist
-              </Button>
+              <div className="border-t border-border pt-4">
+                <p className="text-sm text-muted-foreground mb-3 text-center">
+                  Not ready? Join the waitlist
+                </p>
+                <WaitlistForm />
+              </div>
               <button
                 onClick={() => scrollToSection("example")}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"

@@ -78,10 +78,58 @@ const Index = () => {
         </SectionGrid>
       </Section>
 
+      {/* Your Shorts Library */}
+      <Section id="library" maxWidth="narrow">
+        <SectionTitle>Your Shorts Library</SectionTitle>
+        <p className="text-muted-foreground text-lg mb-6">
+          Save what works. Reuse it anytime.
+        </p>
+        <p className="text-muted-foreground mb-6">
+          Shorta doesn't auto-dump everything you generate.
+        </p>
+        <p className="text-muted-foreground mb-8">
+          You save the hooks and scripts that matter — and those become your Shorts library.
+        </p>
+        
+        <div className="mb-8">
+          <p className="text-foreground font-medium text-lg mb-4">
+            Most tools generate text and forget.
+          </p>
+          <p className="text-foreground font-medium text-lg mb-6">
+            Shorta remembers.
+          </p>
+          <BulletList
+            items={[
+              "Save and organize winning hooks",
+              "Reuse scripts instead of rewriting",
+              "Compare and iterate, not guess",
+            ]}
+          />
+        </div>
+
+        <p className="text-muted-foreground mb-4">
+          Over time, your library turns into a curated collection of:
+        </p>
+        <BulletList
+          items={[
+            "Proven hooks you want to reuse",
+            "Ready-to-record scripts tied to those hooks",
+            "Variants you can compare and build on",
+          ]}
+          className="mb-6"
+        />
+        <p className="text-foreground font-medium">
+          No clutter. No starting from scratch.
+        </p>
+        <p className="text-foreground font-medium">
+          Just a system that compounds every good decision you make.
+        </p>
+      </Section>
+
       {/* Example */}
       <Section id="example">
         <div className="max-w-5xl mx-auto">
-          <SectionTitle className="text-center mb-3">ChatGPT vs Shorta</SectionTitle>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3 text-center tracking-tight">ChatGPT vs Shorta</h2>
           <p className="text-center text-muted-foreground mb-8">
             Same prompt. Different results.
           </p>

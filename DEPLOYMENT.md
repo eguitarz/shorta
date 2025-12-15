@@ -30,6 +30,10 @@ Root directory: apps/web
 
 **Environment Variables:**
 - `VITE_STRIPE_PAYMENT_LINK` = `https://buy.stripe.com/28E5kk73g8lhc7f9P90kE00`
+- `VITE_SUPABASE_URL` = `https://dylimplqplexlbyqvhhk.supabase.co`
+- `VITE_SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_1Q0JmK2vk09_azKYuV6Xvg_Bl10k3u_`
+
+> **Note**: You can also add these later in **Settings** → **Environment variables** if you forget during initial setup.
 
 Click **"Save and Deploy"**
 
@@ -100,6 +104,7 @@ lydia.ns.cloudflare.com
    - ✓ SSL (🔒 in browser)
    - ✓ All images load
    - ✓ Stripe checkout works
+   - ✓ Waitlist form works (test email submission)
    - ✓ Privacy/Terms pages work
 
 ---
@@ -131,9 +136,13 @@ Check build logs in Cloudflare Pages dashboard.
 - Clear browser cache
 
 ### Environment variables not working?
-- Go to Pages project → Settings → Environment variables
-- Add `VITE_STRIPE_PAYMENT_LINK`
-- Redeploy
+- Go to Pages project → **Settings** → **Environment variables**
+- Add all required variables:
+  - `VITE_STRIPE_PAYMENT_LINK`
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_PUBLISHABLE_KEY`
+- Make sure to add them for **Production** environment (or both Production and Preview)
+- Click **"Save"** and **redeploy** the site
 
 ---
 
