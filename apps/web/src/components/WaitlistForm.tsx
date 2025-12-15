@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Form,
 	FormControl,
@@ -14,16 +13,26 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { supabase } from "@/lib/supabase";
+import { validateEmail, isDisposableEmail } from "@/lib/email_validation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+// Custom email validation with disposable email check
+const emailValidation = z
+	.string()
+	.min(1, "Email is required")
+	.email("Please enter a valid email address")
+	.toLowerCase()
+	.trim()
+	.refine(
+		(email) => !isDisposableEmail(email),
+		{
+			message: "Temporary email addresses are not allowed. Please use your primary email address.",
+		}
+	);
+
 const waitlistSchema = z.object({
-	email: z
-		.string()
-		.min(1, "Email is required")
-		.email("Please enter a valid email address")
-		.toLowerCase()
-		.trim(),
+	email: emailValidation,
 });
 
 type WaitlistFormValues = z.infer<typeof waitlistSchema>;
@@ -89,6 +98,14 @@ export function WaitlistForm() {
 		setIsSubmitting(true);
 
 		try {
+			// Additional email validation (domain check)
+			const emailValidation = await validateEmail(values.email);
+			if (!emailValidation.valid) {
+				toast.error(emailValidation.error || "Invalid email address");
+				setIsSubmitting(false);
+				return;
+			}
+
 			// Get IP and user agent for security tracking
 			const ipAddress = await fetch("https://api.ipify.org?format=json")
 				.then((res) => res.json())
