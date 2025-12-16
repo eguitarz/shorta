@@ -16,6 +16,8 @@ const queryClient = new QueryClient();
 const App = () => {
   useEffect(() => {
     initPostHog();
+    // Dispatch event for prerendering after React has rendered
+    document.dispatchEvent(new Event("render-event"));
   }, []);
 
   return (
