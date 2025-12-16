@@ -19,6 +19,16 @@ export function redirectToCheckout() {
     currency: 'USD',
   });
 
-  // Redirect to Stripe Payment Link
-  window.location.href = stripePaymentLink;
+  // Build success URL - redirect to success page after checkout
+  // Stripe Payment Links support success_url as a query parameter
+  const successUrl = `${window.location.origin}/success`;
+  
+  // Append success_url parameter to Stripe Payment Link
+  // Note: This works with Payment Links. Alternatively, you can configure
+  // the success URL directly in Stripe Dashboard → Payment Links → Settings
+  const separator = stripePaymentLink.includes('?') ? '&' : '?';
+  const checkoutUrl = `${stripePaymentLink}${separator}success_url=${encodeURIComponent(successUrl)}`;
+
+  // Redirect to Stripe Payment Link with success URL
+  window.location.href = checkoutUrl;
 }

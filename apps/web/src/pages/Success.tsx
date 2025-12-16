@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Section, SectionTitle } from "@/components/Section";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { CheckCircle } from "lucide-react";
 import { trackEvent } from "@/lib/posthog";
@@ -8,15 +8,20 @@ import shortaLogo from "@/assets/shorta-logo.png";
 
 export default function Success() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    // Extract Stripe session information if available
+    const sessionId = searchParams.get('session_id');
+    
     // Track successful purchase
     trackEvent('purchase_completed', {
       product: 'founding_member',
       price: 199,
       currency: 'USD',
+      ...(sessionId && { session_id: sessionId }),
     });
-  }, []);
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-background">
