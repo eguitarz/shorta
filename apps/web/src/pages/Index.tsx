@@ -54,7 +54,7 @@ const Index = () => {
               Shorta doesn't guess. It learns from real viral Shorts.
             </p>
             <p className="text-muted-foreground mb-6">
-              Instead of asking you to write better prompts, Shorta studies what already works — hooks, structure, pacing — and generates scripts before you film.
+              Instead of asking you to write better prompts, Shorta studies what already works — hooks, structure, pacing, delivery — and generates storyboards with performance direction before you film.
             </p>
             <BulletList
               items={[
@@ -70,8 +70,8 @@ const Index = () => {
                 "Paste your channel or reference Shorts",
                 "Shorta analyzes viral hooks and structure",
                 "Enter a topic or angle",
-                "Get 10–20 scripts generated",
-                "Scripts are auto-scored and ranked",
+                "Get 10–20 storyboards with performance notes",
+                "Storyboards are auto-scored and ranked",
               ]}
             />
           </Card>
@@ -88,7 +88,7 @@ const Index = () => {
           Shorta doesn't auto-dump everything you generate.
         </p>
         <p className="text-muted-foreground mb-8">
-          You save the hooks and scripts that matter — and those become your Shorts library.
+          You save the hooks and storyboards that matter — and those become your Shorts library.
         </p>
         
         <div className="mb-8">
@@ -113,7 +113,7 @@ const Index = () => {
         <BulletList
           items={[
             "Proven hooks you want to reuse",
-            "Ready-to-record scripts tied to those hooks",
+            "Ready-to-record storyboards with performance notes",
             "Variants you can compare and build on",
           ]}
           className="mb-6"
@@ -144,12 +144,13 @@ const Index = () => {
       <Section id="v1">
         <SectionGrid columns={2}>
           <div>
-            <SectionTitle>What you get in V1</SectionTitle>
+            <SectionTitle>What Your AI Director Delivers</SectionTitle>
             <CheckList
               items={[
-                "Fresh viral hook analysis (recent data, not stale patterns)",
+                "Storyboards with script + performance notes + visual direction",
+                "Fresh viral hook analysis (trained on 10,000+ Shorts)",
                 "Content-matched hook selection (hooks chosen for your topic)",
-                "Talking-head friendly short scripts",
+                "Delivery guidance (tone, pacing, emphasis, shot composition)",
                 "Multiple variations per idea",
                 "Automatic scoring & ranking",
               ]}

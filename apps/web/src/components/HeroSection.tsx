@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 const workflowSteps = [
   "Paste channel or reference Shorts",
   "Analyze viral hooks & structure",
-  "Generate 10–20 scripts",
+  "Generate 10–20 storyboards with performance notes",
   "Auto-score and rank the best",
 ];
 
@@ -34,12 +34,16 @@ export function HeroSection() {
               <Badge variant="outline">Build starts at 5 members</Badge>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4 leading-tight">
               Every script starts with a proven hook.
             </h1>
 
+            <p className="text-xl md:text-2xl text-primary font-semibold mb-6">
+              Your AI Director for Shorts
+            </p>
+
             <p className="text-lg md:text-xl text-foreground mb-4">
-              Built specifically for Shorts performance — not general content generation.
+              Get storyboards with script, performance notes, and visual direction—trained on 10,000+ viral Shorts.
             </p>
 
             <p className="text-muted-foreground text-lg mb-8 max-w-xl">
