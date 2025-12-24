@@ -3,20 +3,20 @@
 import { Button } from "@/components/ui/button";
 import { Section, SectionTitle } from "@/components/Section";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { CheckCircle } from "lucide-react";
 import { trackEvent } from "@/lib/posthog";
 
 const shortaLogo = "/shorta-logo.png";
 
-export default function Success() {
+function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     // Extract Stripe session information if available
     const sessionId = searchParams.get('session_id');
-    
+
     // Track successful purchase
     trackEvent('purchase_completed', {
       product: 'founding_member',
@@ -78,5 +78,13 @@ export default function Success() {
         </div>
       </Section>
     </div>
+  );
+}
+
+export default function Success() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <SuccessContent />
+    </Suspense>
   );
 }
