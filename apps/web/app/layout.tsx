@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 export const metadata: Metadata = {
   title: "Shorta — Founding Member Pre-Sale",
   description: "Generate viral YouTube Shorts scripts based on what already works. Founding Member $199/year (grandfathered). Build starts at 5 members.",
