@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
-
 import { HeroSection } from "@/components/HeroSection";
 import { Section, SectionTitle, SectionGrid } from "@/components/Section";
 import { Card, PricingCard } from "@/components/Card";

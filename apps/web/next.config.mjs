@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
+  trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -7,14 +9,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    unoptimized: true,
     remotePatterns: [],
-  },
-  experimental: {
-    optimizePackageImports: ['@radix-ui/react-icons'],
-  },
-  // Skip generating static 404/500 pages
-  generateBuildId: async () => {
-    return 'build-' + Date.now()
   },
 };
 
