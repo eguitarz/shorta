@@ -124,16 +124,35 @@ export function WaitlistForm() {
 			});
 
 			if (error) {
-				// Handle unique constraint violation
-				if (error.code === "23505" || error.message.includes("duplicate")) {
+				// Debug: log full error structure to diagnose the issue
+				console.log("Waitlist submission error details:", {
+					code: error.code,
+					message: error.message,
+					details: error.details,
+					hint: error.hint,
+					fullError: error
+				});
+
+				// Handle unique constraint violation (duplicate email)
+				// Check multiple possible error indicators
+				if (
+					error.code === "23505" || // PostgreSQL unique constraint
+					error.code === "409" || // HTTP conflict
+					(error.message && error.message.toLowerCase().includes("duplicate")) ||
+					(error.message && error.message.toLowerCase().includes("unique")) ||
+					(error.details && error.details.toLowerCase().includes("already exists")) ||
+					(error.details && error.details.toLowerCase().includes("duplicate"))
+				) {
 					toast.info("You're already on the waitlist!");
 					form.reset();
+					setIsSubmitting(false);
 					return;
 				}
 
 				// Handle other errors
 				console.error("Waitlist submission error:", error);
 				toast.error("Something went wrong. Please try again.");
+				setIsSubmitting(false);
 				return;
 			}
 
@@ -189,4 +208,3 @@ export function WaitlistForm() {
 		</Form>
 	);
 }
-
