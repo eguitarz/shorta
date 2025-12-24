@@ -22,16 +22,19 @@
 ```
 Project name: shorta
 Production branch: main
-Framework preset: Vite
+Framework preset: Next.js (App Router)
 Build command: npm run build
-Build output directory: apps/web/dist
+Build output directory: apps/web/.next
 Root directory: apps/web
+Node version: 18
 ```
 
 **Environment Variables:**
-- `VITE_STRIPE_PAYMENT_LINK` = `https://buy.stripe.com/28E5kk73g8lhc7f9P90kE00`
-- `VITE_SUPABASE_URL` = `https://dylimplqplexlbyqvhhk.supabase.co`
-- `VITE_SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_1Q0JmK2vk09_azKYuV6Xvg_Bl10k3u_`
+- `NEXT_PUBLIC_STRIPE_PAYMENT_LINK` = `https://buy.stripe.com/28E5kk73g8lhc7f9P90kE00`
+- `NEXT_PUBLIC_SUPABASE_URL` = `https://dylimplqplexlbyqvhhk.supabase.co`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_1Q0JmK2vk09_azKYuV6Xvg_Bl10k3u_`
+- `NEXT_PUBLIC_POSTHOG_KEY` = (optional - add if you have PostHog)
+- `NEXT_PUBLIC_POSTHOG_HOST` = `https://us.i.posthog.com`
 
 > **Note**: You can also add these later in **Settings** → **Environment variables** if you forget during initial setup.
 
@@ -138,9 +141,11 @@ Check build logs in Cloudflare Pages dashboard.
 ### Environment variables not working?
 - Go to Pages project → **Settings** → **Environment variables**
 - Add all required variables:
-  - `VITE_STRIPE_PAYMENT_LINK`
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_PUBLISHABLE_KEY`
+  - `NEXT_PUBLIC_STRIPE_PAYMENT_LINK`
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+  - `NEXT_PUBLIC_POSTHOG_KEY` (optional)
+  - `NEXT_PUBLIC_POSTHOG_HOST` (optional)
 - Make sure to add them for **Production** environment (or both Production and Preview)
 - Click **"Save"** and **redeploy** the site
 

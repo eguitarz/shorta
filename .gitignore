@@ -9,6 +9,8 @@ coverage/
 # Production
 dist/
 build/
+.next/
+out/
 
 # Misc
 .DS_Store
@@ -22,6 +24,11 @@ yarn-error.log*
 # Local env files
 .env
 .env*.local
+
+# Next.js
+.next/
+next-env.d.ts
+*.tsbuildinfo
 
 # IDEs
 .vscode/
