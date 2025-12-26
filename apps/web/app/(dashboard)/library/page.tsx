@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-import DashboardContent from "./dashboard-content";
+import LibraryContent from "./library-content";
 
 export const runtime = 'edge';
 
-export default async function HomePage() {
+const ALLOWED_EMAIL = "dalema22@gmail.com";
+
+export default async function LibraryPage() {
   const supabase = await createClient();
 
   const {
@@ -16,5 +18,10 @@ export default async function HomePage() {
     redirect("/login");
   }
 
-  return <DashboardContent user={user} />;
+  // Check if user email is allowed
+  if (user.email !== ALLOWED_EMAIL) {
+    redirect("/launching-soon");
+  }
+
+  return <LibraryContent />;
 }
