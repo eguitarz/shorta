@@ -32,6 +32,8 @@ next-env.d.ts
 
 # Vercel/Cloudflare build output
 .vercel/
+.open-next/
+.wrangler/
 
 # IDEs
 .vscode/

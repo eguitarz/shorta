@@ -1,0 +1,7 @@
+name = "shorta-web"
+main = ".open-next/worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment variables (for production)
+# Add your environment variables here or in the Cloudflare dashboard

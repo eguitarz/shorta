@@ -2,8 +2,6 @@ import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/AppSidebar";
 
-export const runtime = 'edge';
-
 const ALLOWED_EMAIL = "dalema22@gmail.com";
 
 export default async function DashboardLayout({
