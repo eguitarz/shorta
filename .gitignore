@@ -30,6 +30,9 @@ yarn-error.log*
 next-env.d.ts
 *.tsbuildinfo
 
+# Vercel/Cloudflare build output
+.vercel/
+
 # IDEs
 .vscode/
 .idea/

@@ -1,5 +1,9 @@
 # Deploy Next.js to Cloudflare Pages
 
+## Important: Authentication Changes
+
+This app now uses **dynamic rendering** for authentication. The build output directory has changed from `out` to `.vercel/output/static` (when using `@cloudflare/next-on-pages`).
+
 ## Quick Setup
 
 ### 1. Update Cloudflare Pages Settings
@@ -8,9 +12,9 @@ Go to: **Cloudflare Dashboard** → **Workers & Pages** → **shorta** → **Set
 
 **Build configuration:**
 ```
-Framework preset: Next.js
-Build command: npm run build
-Build output directory: .next
+Framework preset: Next.js (Experimental)
+Build command: npm run pages:build
+Build output directory: .vercel/output/static
 Root directory: apps/web
 Node version: 18.x or later
 ```
