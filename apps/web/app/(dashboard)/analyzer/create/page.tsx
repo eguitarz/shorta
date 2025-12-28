@@ -70,7 +70,7 @@ export default function CreateAnalysisPage() {
       setClassification(classifyData.classification);
       setLoadingStage('analyzing');
 
-      // Step 2 & 3: Run lint and analyze in parallel (using cache)
+      // Step 2 & 3: Run lint and analyze in parallel
       const [lintResponse, analyzeResponse] = await Promise.all([
         fetch("/api/lint-video", {
           method: "POST",
@@ -80,7 +80,6 @@ export default function CreateAnalysisPage() {
           body: JSON.stringify({
             url: url.trim(),
             format: classifyData.classification.format,
-            cacheId: classifyData.cacheId,
           }),
         }),
         fetch("/api/analyze-video", {
@@ -90,7 +89,6 @@ export default function CreateAnalysisPage() {
           },
           body: JSON.stringify({
             url: url.trim(),
-            cacheId: classifyData.cacheId,
           }),
         }),
       ]);

@@ -124,48 +124,9 @@ export class GeminiClient implements LLMClient {
     }
   }
 
-  async createVideoCache(videoUrl: string, config?: LLMConfig): Promise<CachedContent> {
-    // Must use versioned model for caching
-    const model = config?.model || 'gemini-2.0-flash-exp-001';
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/cachedContents?key=${this.apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: `models/${model}`,
-          contents: [{
-            parts: [{
-              file_data: {
-                file_uri: videoUrl
-              }
-            }]
-          }],
-          ttl: '3600s', // 1 hour cache
-          displayName: `video-cache-${Date.now()}`
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Failed to create cache (${response.status}): ${error}`);
-    }
-
-    const data = await response.json();
-    return {
-      name: data.name,
-      model: data.model,
-      createTime: data.createTime,
-      updateTime: data.updateTime,
-      expireTime: data.expireTime,
-    };
-  }
-
-  async classifyVideo(videoUrl: string, config?: LLMConfig, cachedContentName?: string): Promise<VideoClassification> {
-    // Use versioned model for caching compatibility
-    const model = config?.model || 'gemini-2.0-flash-exp-001';
+  async classifyVideo(videoUrl: string, config?: LLMConfig): Promise<VideoClassification> {
+    const model = config?.model || 'gemini-2.5-flash-lite';
 
     const systemPrompt = `You are a short-form video FORMAT CLASSIFIER.
 
@@ -200,23 +161,11 @@ Return JSON in this exact format:
   }
 }`;
 
-    // Build request body with or without cache
-    const requestBody: any = {
-      generationConfig: {
-        temperature: 0.1, // Low temperature for consistent classification
-        maxOutputTokens: 500,
-      },
-    };
+    console.log('Classifying video with:', { model, url: videoUrl });
 
-    if (cachedContentName) {
-      // Use cached content
-      requestBody.cachedContent = cachedContentName;
-      requestBody.contents = [{
-        parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
-      }];
-    } else {
-      // No cache - include video directly
-      requestBody.contents = [{
+    // Build request body - implicit caching will handle repeated content
+    const requestBody = {
+      contents: [{
         parts: [
           { text: `${systemPrompt}\n\n${userPrompt}` },
           {
@@ -225,8 +174,12 @@ Return JSON in this exact format:
             }
           }
         ]
-      }];
-    }
+      }],
+      generationConfig: {
+        temperature: 0.1, // Low temperature for consistent classification
+        maxOutputTokens: 500,
+      },
+    };
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`,
@@ -239,6 +192,12 @@ Return JSON in this exact format:
 
     if (!response.ok) {
       const error = await response.text();
+      console.error('Classification failed:', {
+        status: response.status,
+        error,
+        model,
+        requestBody
+      });
       throw new Error(`Gemini classification error (${response.status}): ${error}`);
     }
 
@@ -266,26 +225,14 @@ Return JSON in this exact format:
     }
   }
 
-  async analyzeVideo(videoUrl: string, prompt: string, config?: LLMConfig, cachedContentName?: string): Promise<LLMResponse> {
-    const model = config?.model || 'gemini-2.0-flash-exp-001';
+  async analyzeVideo(videoUrl: string, prompt: string, config?: LLMConfig): Promise<LLMResponse> {
+    const model = config?.model || 'gemini-2.5-flash';
 
-    // Build request body with or without cache
-    const requestBody: any = {
-      generationConfig: {
-        temperature: config?.temperature ?? 0.7,
-        maxOutputTokens: config?.maxTokens ?? 2048,
-      },
-    };
+    console.log('Analyzing video with:', { model, url: videoUrl });
 
-    if (cachedContentName) {
-      // Use cached content
-      requestBody.cachedContent = cachedContentName;
-      requestBody.contents = [{
-        parts: [{ text: prompt }]
-      }];
-    } else {
-      // No cache - include video directly
-      requestBody.contents = [{
+    // Build request body - implicit caching will handle repeated content
+    const requestBody = {
+      contents: [{
         parts: [
           { text: prompt },
           {
@@ -294,8 +241,12 @@ Return JSON in this exact format:
             }
           }
         ]
-      }];
-    }
+      }],
+      generationConfig: {
+        temperature: config?.temperature ?? 0.7,
+        maxOutputTokens: config?.maxTokens ?? 2048,
+      },
+    };
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`,
@@ -308,6 +259,12 @@ Return JSON in this exact format:
 
     if (!response.ok) {
       const error = await response.text();
+      console.error('Video analysis failed:', {
+        status: response.status,
+        error,
+        model,
+        requestBody
+      });
       throw new Error(`Gemini video analysis error (${response.status}): ${error}`);
     }
 

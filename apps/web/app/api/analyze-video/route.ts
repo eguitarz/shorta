@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { url, cacheId } = await request.json();
+    const { url } = await request.json();
 
     if (!url) {
       return NextResponse.json(
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     let response;
 
     if (isYouTube && client.analyzeVideo) {
-      // Use native Gemini YouTube video analysis
+      // Use native Gemini YouTube video analysis (uses gemini-2.5-flash)
       const prompt = `Please analyze this short-form video content and provide:
 
 1. **Summary**: A brief 2-3 sentence overview of what the video is about
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
 Be specific and reference actual moments in the video using timestamps when relevant.`;
 
-      response = await client.analyzeVideo(url, prompt, undefined, cacheId);
+      response = await client.analyzeVideo(url, prompt);
     } else {
       // For non-YouTube URLs, try to fetch and analyze content
       let pageContent = '';

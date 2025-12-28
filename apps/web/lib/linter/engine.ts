@@ -6,11 +6,9 @@ import type { LLMClient } from '../llm';
 
 export class VideoLinter {
   private client: LLMClient;
-  private cachedContentName?: string;
 
-  constructor(client: LLMClient, cachedContentName?: string) {
+  constructor(client: LLMClient) {
     this.client = client;
-    this.cachedContentName = cachedContentName;
   }
 
   /**
@@ -55,15 +53,14 @@ export class VideoLinter {
       throw new Error('Client does not support video analysis');
     }
 
-    // Call Gemini with the linting prompt
+    // Call Gemini with the linting prompt (uses gemini-2.5-flash by default)
     const response = await this.client.analyzeVideo(
       videoUrl,
       prompt,
       {
         temperature: 0.2, // Low temperature for consistent linting
         maxTokens: 3000,
-      },
-      this.cachedContentName
+      }
     );
 
     // Parse JSON response
