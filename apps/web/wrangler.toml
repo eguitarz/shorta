@@ -2,6 +2,16 @@ name = "shorta-web"
 main = ".open-next/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+# Custom domains (managed via Cloudflare dashboard)
+# - shorta.ai
+# - www.shorta.ai
+
+# Static assets configuration
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
 
 # Environment variables
 [vars]
@@ -10,3 +20,9 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_1Q0JmK2vk09_azKYuV6Xvg_Bl
 NEXT_PUBLIC_STRIPE_PAYMENT_LINK = "https://buy.stripe.com/28E5kk73g8lhc7f9P90kE00"
 NEXT_PUBLIC_POSTHOG_KEY = "phc_f07AXjLIJZeWKaCuCLeAdZiIcIPhJk4Rzm9RcsRx81L"
 NEXT_PUBLIC_POSTHOG_HOST = "https://us.i.posthog.com"
+
+# LLM Configuration
+LLM_MODEL = "gemini-2.5-flash"
+
+# Secrets (use: wrangler secret put GEMINI_API_KEY)
+# GEMINI_API_KEY = "your-api-key-here" (deploy with: wrangler secret put GEMINI_API_KEY)

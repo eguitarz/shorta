@@ -1,0 +1,30 @@
+export interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export interface LLMResponse {
+  content: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+export interface LLMConfig {
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+// Edge-compatible: env passed as parameter
+export interface LLMEnv {
+  GEMINI_API_KEY?: string;
+  LLM_MODEL?: string;
+}
+
+export interface LLMClient {
+  chat(messages: Message[], config?: LLMConfig): Promise<LLMResponse>;
+  stream(messages: Message[], config?: LLMConfig): AsyncIterable<string>;
+}
