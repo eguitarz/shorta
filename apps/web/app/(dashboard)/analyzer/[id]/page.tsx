@@ -233,6 +233,14 @@ export default function AnalyzerResultsPage() {
     if (playerRef.current && playerRef.current.seekTo) {
       playerRef.current.seekTo(seconds, true);
       playerRef.current.playVideo();
+
+      // Scroll to video player
+      if (playerContainerRef.current) {
+        playerContainerRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
     }
   };
 
