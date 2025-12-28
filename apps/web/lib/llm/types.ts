@@ -24,8 +24,28 @@ export interface LLMEnv {
   LLM_MODEL?: string;
 }
 
+export interface VideoClassification {
+  format: 'talking_head' | 'gameplay' | 'other';
+  confidence: number;
+  evidence: string[];
+  fallback: {
+    format: 'talking_head' | 'gameplay' | 'other';
+    confidence: number;
+  };
+}
+
+export interface CachedContent {
+  name: string;
+  model: string;
+  createTime: string;
+  updateTime: string;
+  expireTime: string;
+}
+
 export interface LLMClient {
   chat(messages: Message[], config?: LLMConfig): Promise<LLMResponse>;
   stream(messages: Message[], config?: LLMConfig): AsyncIterable<string>;
-  analyzeVideo?(videoUrl: string, prompt: string, config?: LLMConfig): Promise<LLMResponse>;
+  analyzeVideo?(videoUrl: string, prompt: string, config?: LLMConfig, cachedContentName?: string): Promise<LLMResponse>;
+  classifyVideo?(videoUrl: string, config?: LLMConfig, cachedContentName?: string): Promise<VideoClassification>;
+  createVideoCache?(videoUrl: string, config?: LLMConfig): Promise<CachedContent>;
 }

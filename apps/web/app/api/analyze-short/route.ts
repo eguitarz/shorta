@@ -35,7 +35,33 @@ export async function POST(request: NextRequest) {
     const youtubeRegex = /(?:youtube\.com\/(?:shorts\/|watch\?v=)|youtu\.be\/)/;
     const isYouTube = youtubeRegex.test(url);
 
+    let cachedContent;
+    let classification;
     let response;
+
+    if (isYouTube && client.createVideoCache) {
+      // Step 0: Create cache for the video (saves tokens for multiple calls)
+      try {
+        cachedContent = await client.createVideoCache(url);
+        console.log('Cache created:', cachedContent.name);
+      } catch (error) {
+        console.error('Cache creation error:', error);
+        // Continue without cache if it fails
+      }
+    }
+
+    if (isYouTube && client.classifyVideo) {
+      // Step 1: Classify the video format using cached content
+      try {
+        classification = await client.classifyVideo(url, undefined, cachedContent?.name);
+      } catch (error) {
+        console.error('Classification error:', error);
+        return NextResponse.json(
+          { error: 'Failed to classify video format' },
+          { status: 500 }
+        );
+      }
+    }
 
     if (isYouTube && client.analyzeVideo) {
       // Use native Gemini YouTube video analysis
@@ -52,7 +78,8 @@ export async function POST(request: NextRequest) {
 
 Be specific and reference actual moments in the video using timestamps when relevant.`;
 
-      response = await client.analyzeVideo(url, prompt);
+      // Step 2: Analyze using cached content
+      response = await client.analyzeVideo(url, prompt, undefined, cachedContent?.name);
     } else {
       // For non-YouTube URLs, try to fetch and analyze content
       let pageContent = '';
@@ -91,6 +118,7 @@ Provide a structured analysis with actionable recommendations.`,
 
     return NextResponse.json({
       url,
+      classification,
       summary: response.content,
       usage: response.usage,
     });
