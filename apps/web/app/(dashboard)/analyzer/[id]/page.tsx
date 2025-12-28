@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle, CheckCircle, Film } from "lucide-react";
+import {
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Play,
+  Zap,
+  ChevronDown,
+  ChevronUp
+} from "lucide-react";
 
 interface Beat {
   beatNumber: number;
@@ -71,13 +79,15 @@ export default function AnalyzerResultsPage() {
   const router = useRouter();
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hookExpanded, setHookExpanded] = useState(false);
+  const [structureExpanded, setStructureExpanded] = useState(false);
+  const [contentExpanded, setContentExpanded] = useState(false);
 
   useEffect(() => {
     const id = params.id as string;
     const data = sessionStorage.getItem(`analysis_${id}`);
 
     if (!data) {
-      // Redirect to create page if no data found
       router.push("/analyzer/create");
       return;
     }
@@ -110,29 +120,18 @@ export default function AnalyzerResultsPage() {
     0
   );
 
-  const getBeatTypeIcon = (type: string) => {
-    return "⚡"; // Default icon, can expand later
-  };
-
-  const getRetentionColor = (level: string) => {
-    switch (level.toLowerCase()) {
-      case "minimal_drop":
-        return "text-green-500";
-      case "moderate_drop":
-        return "text-yellow-500";
-      case "high_drop":
-        return "text-orange-500";
-      case "critical_drop":
-        return "text-red-500";
-      default:
-        return "text-gray-500";
-    }
-  };
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const getRetentionIcon = (issues: any[]) => {
+    const hasError = issues.some(i => i.severity === 'error');
+    const hasWarning = issues.some(i => i.severity === 'warning');
+    if (hasError) return <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />;
+    if (hasWarning) return <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />;
+    return <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />;
   };
 
   return (
@@ -144,161 +143,301 @@ export default function AnalyzerResultsPage() {
             onClick={() => router.push("/analyzer/create")}
             className="text-sm text-gray-400 hover:text-white transition-colors"
           >
-            ← New Analysis
+            Projects
           </button>
-          <div className="text-sm text-gray-400">
-            {analysisData.storyboard.overview.title || "Analysis"}
+          <button className="text-sm text-gray-400 hover:text-white transition-colors">
+            {analysisData.storyboard.overview.title || "My New Short"}
+          </button>
+          <button className="text-sm text-white font-medium border-b-2 border-orange-500 pb-[22px] -mb-[17px]">
+            Analysis
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-lg">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-sm text-green-500 font-medium">Analysis Complete</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-black">
-        <div className="max-w-6xl mx-auto p-8">
-          {/* Beat-by-Beat Breakdown Header */}
-          <div className="mb-8 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Film className="w-8 h-8 text-orange-500" />
-              <h1 className="text-3xl font-bold">Beat-by-Beat Breakdown</h1>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="grid grid-cols-[1fr_380px] h-full">
+          {/* Left Column - Analysis */}
+          <div className="p-8 overflow-y-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-3xl font-bold">Video Analysis</h1>
+              </div>
+              <p className="text-sm text-gray-400">
+                Based on retention data from similar viral shorts.
+              </p>
             </div>
-            <div className="text-sm text-gray-400">
-              {analysisData.storyboard.beats.length} beats •{" "}
-              {totalIssues} {totalIssues === 1 ? "issue" : "issues"} found
+
+            {/* Video and Cards Grid */}
+            <div className="grid grid-cols-[240px_1fr] gap-6 mb-8">
+              {/* Video Container */}
+              <div className="relative rounded-2xl aspect-[9/16] overflow-hidden">
+                <img
+                  src="/video-placeholder.png"
+                  alt="Video preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-all">
+                    <Play className="w-8 h-8 ml-1" fill="white" />
+                  </button>
+                </div>
+                <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-xs">
+                  0:00 / {formatTime(analysisData.storyboard.overview.length)}
+                </div>
+              </div>
+
+              {/* Right Side */}
+              <div className="flex flex-col gap-4">
+                {/* Overall Score */}
+                <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
+                  <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Overall Score</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold">{Math.round(analysisData.lintSummary.score)}</span>
+                    <span className="text-lg text-gray-500">/100</span>
+                  </div>
+                </div>
+
+                {/* Analysis Cards Grid */}
+                <div className="grid grid-cols-3 gap-3 items-start">
+                  {/* Hook Card */}
+                  <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Hook</span>
+                      <button
+                        onClick={() => setHookExpanded(!hookExpanded)}
+                        className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
+                      >
+                        {hookExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
+                      </button>
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-2xl font-bold">{Math.round(analysisData.storyboard.performance.hookStrength * 25)}</span>
+                      <span className="text-sm text-gray-500">/100</span>
+                      <span className="ml-auto px-1.5 py-0.5 bg-orange-500/10 text-orange-500 rounded text-[9px] font-semibold uppercase">
+                        {analysisData.storyboard.performance.hookStrength > 3 ? 'Strong' : 'Good'}
+                      </span>
+                    </div>
+                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-2">
+                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${analysisData.storyboard.performance.hookStrength * 25}%` }}></div>
+                    </div>
+
+                    {hookExpanded && (
+                      <div className="mt-3 pt-3 border-t border-gray-800">
+                        <p className="text-xs text-gray-400 leading-relaxed">
+                          Hook pattern: {analysisData.storyboard.overview.hookPattern}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Structure Card */}
+                  <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                      </svg>
+                      <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Structure</span>
+                      <button
+                        onClick={() => setStructureExpanded(!structureExpanded)}
+                        className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
+                      >
+                        {structureExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
+                      </button>
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-2xl font-bold">{Math.round(analysisData.storyboard.performance.structurePacing * 33.33)}</span>
+                      <span className="text-sm text-gray-500">/100</span>
+                      <span className="ml-auto px-1.5 py-0.5 bg-blue-500/10 text-blue-500 rounded text-[9px] font-semibold uppercase">Well-Paced</span>
+                    </div>
+                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-2">
+                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${analysisData.storyboard.performance.structurePacing * 33.33}%` }}></div>
+                    </div>
+
+                    {structureExpanded && (
+                      <div className="mt-3 pt-3 border-t border-gray-800">
+                        <p className="text-xs text-gray-400 leading-relaxed">
+                          {analysisData.storyboard.performance.pacingStrategy}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content Card */}
+                  <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Content</span>
+                      <button
+                        onClick={() => setContentExpanded(!contentExpanded)}
+                        className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
+                      >
+                        {contentExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
+                      </button>
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-2xl font-bold">{Math.round(analysisData.storyboard.performance.deliveryPerformance * 33.33)}</span>
+                      <span className="text-sm text-gray-500">/100</span>
+                      <span className="ml-auto px-1.5 py-0.5 bg-green-500/10 text-green-500 rounded text-[9px] font-semibold uppercase">High Value</span>
+                    </div>
+                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-2">
+                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${analysisData.storyboard.performance.deliveryPerformance * 33.33}%` }}></div>
+                    </div>
+
+                    {contentExpanded && (
+                      <div className="mt-3 pt-3 border-t border-gray-800">
+                        <p className="text-xs text-gray-400 leading-relaxed">
+                          {analysisData.storyboard.overview.contentType}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Beats */}
-          <div className="space-y-6">
-            {analysisData.storyboard.beats.map((beat) => (
-              <div
-                key={beat.beatNumber}
-                className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6"
-              >
-                {/* Beat Header */}
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-gray-500 text-sm">
-                      Beat {beat.beatNumber}
-                    </span>
-                    <span className="text-gray-600">•</span>
-                    <span className="text-sm text-gray-400">
-                      {formatTime(beat.startTime)} - {formatTime(beat.endTime)}s
-                    </span>
-                    <span className="text-xs px-2 py-1 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded font-semibold uppercase">
-                      {getBeatTypeIcon(beat.type)} {beat.type}
-                    </span>
-                  </div>
-                </div>
+            {/* Beat-by-Beat Breakdown */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">🎬 Beat-by-Beat Breakdown</h3>
+                <span className="text-sm text-gray-500">{analysisData.storyboard.beats.length} beats • {totalIssues} {totalIssues === 1 ? 'issue' : 'issues'} found</span>
+              </div>
 
-                {/* Beat Title */}
-                <h2 className="text-2xl font-bold mb-6">{beat.title}</h2>
-
-                {/* Transcript */}
-                <div className="mb-6">
-                  <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-                    Transcript
-                  </div>
-                  <p className="text-gray-300 italic">"{beat.transcript}"</p>
-                </div>
-
-                {/* Visual */}
-                <div className="mb-6">
-                  <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-                    Visual
-                  </div>
-                  <p className="text-gray-300">{beat.visual}</p>
-                </div>
-
-                {/* Audio */}
-                <div className="mb-6">
-                  <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-                    Audio
-                  </div>
-                  <p className="text-gray-300">{beat.audio}</p>
-                </div>
-
-                {/* Retention */}
-                <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-                    Retention
-                  </div>
-                  <div
-                    className={`font-semibold mb-2 ${getRetentionColor(
-                      beat.retention.level
-                    )}`}
-                  >
-                    {beat.retention.level.replace("_", " ")}
-                  </div>
-
-                  {/* Issues */}
-                  {beat.retention.issues.length > 0 && (
-                    <div className="space-y-2">
-                      {beat.retention.issues.map((issue, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-start gap-2 text-sm"
-                        >
-                          {issue.severity === "error" ? (
-                            <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                          ) : issue.severity === "warning" ? (
-                            <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                          ) : (
-                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <div className="space-y-4">
+                {analysisData.storyboard.beats.map((beat) => (
+                  <div key={beat.beatNumber} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs text-gray-500 font-semibold">Beat {beat.beatNumber}</span>
+                          <span className="text-xs font-mono text-gray-500">{formatTime(beat.startTime)} - {formatTime(beat.endTime)}s</span>
+                          <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs font-semibold">
+                            {beat.type}
+                          </span>
+                          {beat.retention.issues.some(i => i.severity === 'error') && (
+                            <span className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-xs font-semibold">
+                              CRITICAL
+                            </span>
                           )}
-                          <div className="flex-1">
-                            <p className="text-gray-300">{issue.message}</p>
-                            {issue.suggestion && (
-                              <button className="text-xs text-gray-500 hover:text-gray-400 mt-1">
-                                Approve suggestion
-                              </button>
-                            )}
+                        </div>
+                        <h4 className="font-medium text-white mb-3">{beat.title}</h4>
+
+                        <div className="space-y-2 mb-3">
+                          <div>
+                            <div className="text-xs text-gray-500 mb-1">Transcript</div>
+                            <p className="text-sm text-gray-300">"{beat.transcript}"</p>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500 mb-1">Visual</div>
+                            <p className="text-sm text-gray-300">{beat.visual}</p>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500 mb-1">Audio</div>
+                            <p className="text-sm text-gray-300">{beat.audio}</p>
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  )}
-
-                  {beat.retention.issues.length === 0 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <p className="text-gray-300">{beat.retention.analysis}</p>
+                    <div className="mb-3">
+                      <div className="text-xs text-gray-500 mb-1">Retention</div>
+                      <div className="text-sm font-semibold text-white">
+                        {beat.retention.level.replace('_', ' ')}
+                      </div>
                     </div>
-                  )}
-                </div>
+                    {beat.retention.issues.length > 0 ? (
+                      <div className="space-y-2">
+                        {beat.retention.issues.map((issue, idx) => (
+                          <div key={idx} className="flex items-start gap-3">
+                            {getRetentionIcon([issue])}
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-400 mb-2">{issue.message}</p>
+                              {issue.suggestion && (
+                                <button className="px-3 py-1.5 text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 rounded transition-colors">
+                                  Approve
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-gray-400">{beat.retention.analysis}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Re-hook Variants */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <h3 className="text-xl font-semibold">Re-hook Variants</h3>
+                <span className="px-2 py-1 bg-orange-500/10 text-orange-500 rounded text-xs font-semibold uppercase">
+                  AI Suggested
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {analysisData.storyboard.replicationBlueprint.patternVariations.slice(0, 2).map((variant, idx) => (
+                  <div key={idx} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xs text-gray-500 uppercase tracking-wider">Variant {String.fromCharCode(65 + idx)}</span>
+                    </div>
+                    <p className="text-sm text-gray-400 mb-4">{variant}</p>
+                    <button className="w-full px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 rounded-lg transition-colors flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Approve Variant {String.fromCharCode(65 + idx)}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Performance Summary */}
-          <div className="mt-8 bg-[#1a1a1a] border border-gray-800 rounded-xl p-6">
-            <h2 className="text-xl font-semibold mb-4">Performance Summary</h2>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <div className="text-sm text-gray-400 mb-2">Overall Score</div>
-                <div className="text-4xl font-bold text-orange-500">
-                  {analysisData.storyboard.performance.score.toFixed(1)}/10
-                </div>
+          {/* Right Column - Approved Changes */}
+          <div className="border-l border-gray-800 p-6 flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold">Approved Changes</h3>
+              <span className="w-7 h-7 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-sm font-bold">
+                0
+              </span>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-8 h-8 text-gray-600" />
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Hook Strength</span>
-                  <span className="text-white">
-                    {analysisData.storyboard.performance.hookStrength.toFixed(1)}/4
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Structure & Pacing</span>
-                  <span className="text-white">
-                    {analysisData.storyboard.performance.structurePacing.toFixed(1)}/3
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Delivery & Performance</span>
-                  <span className="text-white">
-                    {analysisData.storyboard.performance.deliveryPerformance.toFixed(1)}/3
-                  </span>
-                </div>
+              <p className="text-sm text-gray-400 mb-2">No changes approved yet</p>
+              <p className="text-xs text-gray-600 max-w-[240px]">
+                Review suggestions in the Analysis panel and approve actions to add them here.
+              </p>
+            </div>
+
+            {/* Generate Button */}
+            <div className="mt-auto">
+              <div className="mb-3 text-xs text-gray-500 text-center">
+                Est. Processing Time: <span className="text-white">~45s</span>
               </div>
+              <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
+                <Zap className="w-4 h-4" fill="currentColor" />
+                Generate using approved changes
+              </button>
             </div>
           </div>
         </div>
