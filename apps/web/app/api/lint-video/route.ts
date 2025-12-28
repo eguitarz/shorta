@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { url, format, cacheId } = await request.json();
+    const { url, format } = await request.json();
 
     if (!url) {
       return NextResponse.json(
@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
 
     const client = createDefaultLLMClient(env);
 
-    // Create linter with optional cache
-    const linter = new VideoLinter(client, cacheId);
+    // Create linter (uses gemini-2.5-flash for analysis)
+    const linter = new VideoLinter(client);
 
     // Lint the video based on format
     let lintResult;

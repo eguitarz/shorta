@@ -42,30 +42,17 @@ export async function POST(request: NextRequest) {
 
     const client = createDefaultLLMClient(env);
 
-    if (!client.createVideoCache || !client.classifyVideo) {
+    if (!client.classifyVideo) {
       return NextResponse.json(
-        { error: 'Client does not support video caching or classification' },
+        { error: 'Client does not support video classification' },
         { status: 500 }
       );
     }
 
-    // Step 1: Create cache for the video (saves tokens for subsequent calls)
-    let cachedContent;
-    try {
-      cachedContent = await client.createVideoCache(url);
-      console.log('Cache created:', cachedContent.name);
-    } catch (error) {
-      console.error('Cache creation error:', error);
-      return NextResponse.json(
-        { error: 'Failed to create video cache' },
-        { status: 500 }
-      );
-    }
-
-    // Step 2: Classify the video format using cached content
+    // Classify the video format (uses gemini-2.5-flash-lite)
     let classification;
     try {
-      classification = await client.classifyVideo(url, undefined, cachedContent.name);
+      classification = await client.classifyVideo(url);
     } catch (error) {
       console.error('Classification error:', error);
       return NextResponse.json(
@@ -77,8 +64,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       url,
       classification,
-      cacheId: cachedContent.name,
-      cacheExpires: cachedContent.expireTime,
     });
   } catch (error) {
     console.error('Classify video API error:', error);

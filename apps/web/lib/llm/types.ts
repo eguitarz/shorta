@@ -45,7 +45,6 @@ export interface CachedContent {
 export interface LLMClient {
   chat(messages: Message[], config?: LLMConfig): Promise<LLMResponse>;
   stream(messages: Message[], config?: LLMConfig): AsyncIterable<string>;
-  analyzeVideo?(videoUrl: string, prompt: string, config?: LLMConfig, cachedContentName?: string): Promise<LLMResponse>;
-  classifyVideo?(videoUrl: string, config?: LLMConfig, cachedContentName?: string): Promise<VideoClassification>;
-  createVideoCache?(videoUrl: string, config?: LLMConfig): Promise<CachedContent>;
+  analyzeVideo?(videoUrl: string, prompt: string, config?: LLMConfig): Promise<LLMResponse>;
+  classifyVideo?(videoUrl: string, config?: LLMConfig): Promise<VideoClassification>;
 }
