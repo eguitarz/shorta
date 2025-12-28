@@ -54,7 +54,6 @@ export default function CreateAnalysisPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
-      setLoadingStage(null);
     }
   };
 
