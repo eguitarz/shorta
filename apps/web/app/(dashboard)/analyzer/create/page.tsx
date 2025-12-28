@@ -7,6 +7,15 @@ export default function CreateAnalysisPage() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
+    classification?: {
+      format: string;
+      confidence: number;
+      evidence: string[];
+      fallback: {
+        format: string;
+        confidence: number;
+      };
+    };
     summary: string;
     usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
   } | null>(null);
@@ -124,29 +133,90 @@ export default function CreateAnalysisPage() {
 
           {/* Results Display */}
           {result && (
-            <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-orange-500" />
-                <h2 className="text-xl font-semibold">Analysis Results</h2>
-              </div>
+            <div className="space-y-6">
+              {/* Classification Results */}
+              {result.classification && (
+                <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="w-5 h-5 text-orange-500" />
+                    <h2 className="text-xl font-semibold">Video Classification</h2>
+                  </div>
 
-              <div className="prose prose-invert max-w-none">
-                <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                  {result.summary}
-                </div>
-              </div>
+                  <div className="space-y-4">
+                    {/* Format Badge */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-400">Format:</span>
+                      <span className="px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-lg font-semibold uppercase text-sm">
+                        {result.classification.format.replace('_', ' ')}
+                      </span>
+                      <span className="text-sm text-gray-400">
+                        {Math.round(result.classification.confidence * 100)}% confidence
+                      </span>
+                    </div>
 
-              {result.usage && (
-                <div className="mt-6 pt-4 border-t border-gray-800">
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <span>Tokens used: {result.usage.totalTokens}</span>
-                    <span>•</span>
-                    <span>Prompt: {result.usage.promptTokens}</span>
-                    <span>•</span>
-                    <span>Response: {result.usage.completionTokens}</span>
+                    {/* Confidence Bar */}
+                    <div>
+                      <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-orange-500 rounded-full transition-all"
+                          style={{ width: `${result.classification.confidence * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Evidence */}
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                        Evidence
+                      </div>
+                      <ul className="space-y-1">
+                        {result.classification.evidence.map((item, idx) => (
+                          <li key={idx} className="text-sm text-gray-300 flex items-start gap-2">
+                            <span className="text-orange-500 mt-1">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Fallback */}
+                    {result.classification.fallback.confidence > 0 && (
+                      <div className="pt-3 border-t border-gray-800">
+                        <div className="text-xs text-gray-500">
+                          Fallback: {result.classification.fallback.format.replace('_', ' ')} (
+                          {Math.round(result.classification.fallback.confidence * 100)}%)
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
+
+              {/* Analysis Results */}
+              <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-orange-500" />
+                  <h2 className="text-xl font-semibold">Analysis Results</h2>
+                </div>
+
+                <div className="prose prose-invert max-w-none">
+                  <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                    {result.summary}
+                  </div>
+                </div>
+
+                {result.usage && (
+                  <div className="mt-6 pt-4 border-t border-gray-800">
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span>Tokens used: {result.usage.totalTokens}</span>
+                      <span>•</span>
+                      <span>Prompt: {result.usage.promptTokens}</span>
+                      <span>•</span>
+                      <span>Response: {result.usage.completionTokens}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
