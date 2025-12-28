@@ -23,37 +23,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch the content from the URL
-    let pageContent: string;
-    try {
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; Shorta/1.0; +https://shorta.ai)',
-        },
-      });
+    // Extract video ID if it's a YouTube URL
+    let videoInfo = '';
+    const youtubeRegex = /(?:youtube\.com\/(?:shorts\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]+)/;
+    const match = url.match(youtubeRegex);
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch URL: ${response.statusText}`);
+    if (match && match[1]) {
+      const videoId = match[1];
+      videoInfo = `This is a YouTube Short/video with ID: ${videoId}. Since I cannot access the actual video content, please provide a general framework for analyzing short-form video content.`;
+    } else {
+      // For non-YouTube URLs, try to fetch content
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; Shorta/1.0; +https://shorta.ai)',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch URL: ${response.statusText}`);
+        }
+
+        const html = await response.text();
+
+        // Basic HTML to text conversion (strip tags)
+        videoInfo = html
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 5000); // Limit to 5000 chars to avoid token limits
+
+      } catch (error) {
+        console.error('Error fetching URL:', error);
+        videoInfo = 'Unable to fetch content from URL. Please provide a general analysis framework.';
       }
-
-      const html = await response.text();
-
-      // Basic HTML to text conversion (strip tags)
-      // For a more robust solution, consider using a library or extracting specific meta tags
-      pageContent = html
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 5000); // Limit to 5000 chars to avoid token limits
-
-    } catch (error) {
-      console.error('Error fetching URL:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch content from URL' },
-        { status: 500 }
-      );
     }
 
     // Create LLM client
@@ -64,24 +69,23 @@ export async function POST(request: NextRequest) {
 
     const client = createDefaultLLMClient(env);
 
-    // Ask Gemini to summarize
+    // Ask Gemini to analyze
     const response = await client.chat([
       {
         role: 'user',
-        content: `Please analyze and summarize this short-form video or content from the following URL content. Provide:
+        content: `You are a short-form video content analyst. I'm providing you information about a video that needs analysis.
 
-1. **Summary**: A brief 2-3 sentence overview of what the content is about
-2. **Key Points**: Main takeaways or messages (3-5 bullet points)
-3. **Hook Analysis**: What makes this content engaging or viral-worthy
-4. **Target Audience**: Who this content is aimed at
-5. **Improvements**: 2-3 suggestions to make it more engaging
+${videoInfo}
 
-URL: ${url}
+Please provide a comprehensive analysis framework for short-form video content with the following sections:
 
-Content:
-${pageContent}
+1. **Content Analysis Framework**: What elements make a short-form video successful
+2. **Hook Strategies**: 5 proven hook techniques for the first 3 seconds
+3. **Retention Tactics**: Key strategies to keep viewers watching
+4. **Viral Elements**: What makes content shareable and engaging
+5. **Optimization Tips**: Specific recommendations for maximizing engagement
 
-Keep your response structured and concise.`,
+Format your response in a clear, structured way with specific actionable advice.`,
       },
     ]);
 
