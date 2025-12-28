@@ -74,46 +74,185 @@ interface AnalysisData {
   analyzedAt: string;
 }
 
+// Extract YouTube video ID from URL
+const extractYouTubeId = (url: string): string | null => {
+  const patterns = [
+    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+};
+
 export default function AnalyzerResultsPage() {
   const params = useParams();
   const router = useRouter();
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingStage, setLoadingStage] = useState<string>("Initializing...");
   const [hookExpanded, setHookExpanded] = useState(false);
   const [structureExpanded, setStructureExpanded] = useState(false);
   const [contentExpanded, setContentExpanded] = useState(false);
 
   useEffect(() => {
-    const id = params.id as string;
-    const data = sessionStorage.getItem(`analysis_${id}`);
+    const analyzeVideo = async () => {
+      const id = params.id as string;
+      const stored = sessionStorage.getItem(`analysis_${id}`);
 
-    if (!data) {
-      router.push("/analyzer/create");
-      return;
-    }
+      if (!stored) {
+        router.push("/analyzer/create");
+        return;
+      }
 
-    try {
-      const parsed = JSON.parse(data);
-      setAnalysisData(parsed);
-    } catch (error) {
-      console.error("Failed to parse analysis data:", error);
-      router.push("/analyzer/create");
-    } finally {
-      setLoading(false);
-    }
+      try {
+        const parsed = JSON.parse(stored);
+
+        // If analysis is already complete, just display it
+        if (parsed.status === "complete" && parsed.storyboard) {
+          setAnalysisData(parsed);
+          setLoading(false);
+          return;
+        }
+
+        // Otherwise, we need to analyze
+        const url = parsed.url;
+        if (!url) {
+          router.push("/analyzer/create");
+          return;
+        }
+
+        // Start analysis
+        setLoadingStage("Classifying video format...");
+
+        const response = await fetch("/api/analyze-storyboard", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to analyze storyboard");
+        }
+
+        setLoadingStage("Analyzing storyboard...");
+
+        // Store complete analysis data
+        const completeData = {
+          url: data.url,
+          classification: data.classification,
+          lintSummary: data.lintSummary,
+          storyboard: data.storyboard,
+          analyzedAt: new Date().toISOString(),
+          status: "complete",
+        };
+
+        sessionStorage.setItem(`analysis_${id}`, JSON.stringify(completeData));
+        setAnalysisData(completeData);
+        setLoading(false);
+      } catch (err) {
+        console.error("Analysis error:", err);
+        setError(err instanceof Error ? err.message : "An error occurred");
+        setLoading(false);
+      }
+    };
+
+    analyzeVideo();
   }, [params.id, router]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-      </div>
+      <>
+        {/* Top Bar */}
+        <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
+          <div className="flex items-center gap-6">
+            <button className="text-sm text-gray-400 hover:text-white transition-colors">
+              Projects
+            </button>
+            <button className="text-sm text-white font-medium border-b-2 border-orange-500 pb-[22px] -mb-[17px]">
+              Analyzing...
+            </button>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 rounded-lg">
+            <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
+            <span className="text-sm text-orange-500 font-medium">Analyzing</span>
+          </div>
+        </header>
+
+        {/* Loading Content */}
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Loader2 className="w-10 h-10 animate-spin text-orange-500" />
+            </div>
+            <h2 className="text-2xl font-bold mb-3">Analyzing Your Short</h2>
+            <p className="text-gray-400 mb-4">{loadingStage}</p>
+            <div className="flex flex-col gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2 justify-center">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                <span>Classifying video format</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+                <span>Running retention analysis</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <div className="w-1.5 h-1.5 bg-gray-600 rounded-full"></div>
+                <span>Generating storyboard breakdown</span>
+              </div>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => router.push("/analyzer/create")}
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              ← Back
+            </button>
+          </div>
+        </header>
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-bold mb-3">Analysis Failed</h2>
+            <p className="text-gray-400 mb-6">{error}</p>
+            <button
+              onClick={() => router.push("/analyzer/create")}
+              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </main>
+      </>
     );
   }
 
   if (!analysisData) {
     return null;
   }
+
+  const videoId = extractYouTubeId(analysisData.url);
 
   const totalIssues = analysisData.storyboard.beats.reduce(
     (acc, beat) => acc + beat.retention.issues.length,
@@ -179,20 +318,19 @@ export default function AnalyzerResultsPage() {
             {/* Video and Cards Grid */}
             <div className="grid grid-cols-[240px_1fr] gap-6 mb-8">
               {/* Video Container */}
-              <div className="relative rounded-2xl aspect-[9/16] overflow-hidden">
-                <img
-                  src="/video-placeholder.png"
-                  alt="Video preview"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <button className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-all">
-                    <Play className="w-8 h-8 ml-1" fill="white" />
-                  </button>
-                </div>
-                <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-xs">
-                  0:00 / {formatTime(analysisData.storyboard.overview.length)}
-                </div>
+              <div className="relative rounded-2xl aspect-[9/16] overflow-hidden bg-black">
+                {videoId ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0`}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500">
+                    <p className="text-sm">Video unavailable</p>
+                  </div>
+                )}
               </div>
 
               {/* Right Side */}
