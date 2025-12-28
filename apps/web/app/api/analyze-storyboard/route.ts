@@ -125,6 +125,10 @@ export async function POST(request: NextRequest) {
         format: classification?.format || 'unknown',
         confidence: classification?.confidence || 0,
         evidence: classification?.evidence || [],
+        fallback: classification?.fallback || {
+          format: 'other',
+          confidence: 0,
+        },
       },
       lintSummary: {
         totalRules: lintResult?.totalRules || 0,
