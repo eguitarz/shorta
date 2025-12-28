@@ -18,43 +18,32 @@ export default function CreateAnalysisPage() {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
+    // Validate URL format
     try {
-      // Call unified storyboard endpoint
-      const response = await fetch("/api/analyze-storyboard", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url: url.trim() }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to analyze storyboard");
-      }
-
-      // Generate unique analysis ID
-      const analysisId = crypto.randomUUID();
-
-      // Store analysis data in sessionStorage
-      sessionStorage.setItem(`analysis_${analysisId}`, JSON.stringify({
-        url: data.url,
-        classification: data.classification,
-        lintSummary: data.lintSummary,
-        storyboard: data.storyboard,
-        analyzedAt: new Date().toISOString(),
-      }));
-
-      // Navigate to results page
-      router.push(`/analyzer/${analysisId}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-      setLoading(false);
+      new URL(url.trim());
+    } catch {
+      setError("Please enter a valid URL");
+      return;
     }
+
+    // Check if it's a YouTube URL
+    const youtubeRegex = /(?:youtube\.com\/(?:shorts\/|watch\?v=)|youtu\.be\/)/;
+    if (!youtubeRegex.test(url.trim())) {
+      setError("Only YouTube URLs are supported");
+      return;
+    }
+
+    // Generate unique analysis ID
+    const analysisId = crypto.randomUUID();
+
+    // Store URL in sessionStorage
+    sessionStorage.setItem(`analysis_${analysisId}`, JSON.stringify({
+      url: url.trim(),
+      status: "pending"
+    }));
+
+    // Navigate to results page where analysis will happen
+    router.push(`/analyzer/${analysisId}`);
   };
 
   return (
