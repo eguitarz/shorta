@@ -137,8 +137,8 @@ export async function POST(request: NextRequest) {
         totalRules: lintResult?.totalRules || 0,
         score: lintResult?.score || 0,
         passed: lintResult?.passed || 0,
-        warnings: lintResult?.warnings || 0,
-        errors: lintResult?.errors || 0,
+        moderate: lintResult?.moderate || 0,
+        critical: lintResult?.critical || 0,
       },
       storyboard,
     };
@@ -203,7 +203,7 @@ Return ONLY valid JSON in this exact format:
         "analysis": "string - why this retention level, what keeps viewers or causes them to leave",
         "issues": [
           {
-            "severity": "string - 'error', 'warning', or 'info'",
+            "severity": "string - 'critical', 'moderate', or 'minor'",
             "message": "string - what the issue is",
             "suggestion": "string - specific actionable fix"
           }

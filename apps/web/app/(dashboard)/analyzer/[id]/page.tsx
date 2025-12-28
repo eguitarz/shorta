@@ -57,8 +57,8 @@ interface AnalysisData {
     totalRules: number;
     score: number;
     passed: number;
-    warnings: number;
-    errors: number;
+    moderate: number;
+    critical: number;
   };
   storyboard: {
     overview: {
@@ -370,17 +370,17 @@ export default function AnalyzerResultsPage() {
       timestamp: `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`
     }))
   );
-  const errorCount = allIssues.filter(i => i.severity === 'error').length;
-  const warningCount = allIssues.filter(i => i.severity === 'warning').length;
-  const infoCount = allIssues.filter(i => i.severity === 'info').length;
+  const criticalCount = allIssues.filter(i => i.severity === 'critical').length;
+  const moderateCount = allIssues.filter(i => i.severity === 'moderate').length;
+  const minorCount = allIssues.filter(i => i.severity === 'minor').length;
 
   const getSeverityIcon = (severity: string, className: string = "w-4 h-4") => {
     switch (severity) {
-      case 'error':
+      case 'critical':
         return <XCircle className={`${className} text-red-500`} />;
-      case 'warning':
+      case 'moderate':
         return <AlertTriangle className={`${className} text-orange-500`} />;
-      case 'info':
+      case 'minor':
         return <InfoIcon className={`${className} text-blue-500`} />;
       default:
         return <CheckCircle2 className={`${className} text-green-500`} />;
@@ -565,16 +565,16 @@ export default function AnalyzerResultsPage() {
                 <h3 className="text-xl font-semibold">🎬 Beat-by-Beat Breakdown</h3>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-500">{analysisData.storyboard.beats.length} beats</span>
-                  {errorCount > 0 && (
+                  {criticalCount > 0 && (
                     <div className="group relative">
                       <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 rounded-lg cursor-help">
                         <XCircle className="w-3.5 h-3.5 text-red-500" />
-                        <span className="text-sm font-semibold text-red-500">{errorCount}</span>
+                        <span className="text-sm font-semibold text-red-500">{criticalCount}</span>
                       </div>
                       <div className="absolute right-0 top-full mt-2 w-72 bg-gray-900 border border-gray-800 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
-                        <div className="text-xs font-semibold text-red-500 mb-2">ERRORS ({errorCount})</div>
+                        <div className="text-xs font-semibold text-red-500 mb-2">CRITICAL ({criticalCount})</div>
                         <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                          {allIssues.filter(i => i.severity === 'error').map((issue, idx) => (
+                          {allIssues.filter(i => i.severity === 'critical').map((issue, idx) => (
                             <div key={idx} className="text-xs text-gray-400">
                               <span className="text-gray-500">Beat {issue.beatNumber}:</span> {issue.message}
                             </div>
@@ -583,16 +583,16 @@ export default function AnalyzerResultsPage() {
                       </div>
                     </div>
                   )}
-                  {warningCount > 0 && (
+                  {moderateCount > 0 && (
                     <div className="group relative">
                       <div className="flex items-center gap-1.5 px-2.5 py-1 bg-orange-500/10 rounded-lg cursor-help">
                         <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />
-                        <span className="text-sm font-semibold text-orange-500">{warningCount}</span>
+                        <span className="text-sm font-semibold text-orange-500">{moderateCount}</span>
                       </div>
                       <div className="absolute right-0 top-full mt-2 w-72 bg-gray-900 border border-gray-800 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
-                        <div className="text-xs font-semibold text-orange-500 mb-2">WARNINGS ({warningCount})</div>
+                        <div className="text-xs font-semibold text-orange-500 mb-2">MODERATE ({moderateCount})</div>
                         <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                          {allIssues.filter(i => i.severity === 'warning').map((issue, idx) => (
+                          {allIssues.filter(i => i.severity === 'moderate').map((issue, idx) => (
                             <div key={idx} className="text-xs text-gray-400">
                               <span className="text-gray-500">Beat {issue.beatNumber}:</span> {issue.message}
                             </div>
@@ -601,16 +601,16 @@ export default function AnalyzerResultsPage() {
                       </div>
                     </div>
                   )}
-                  {infoCount > 0 && (
+                  {minorCount > 0 && (
                     <div className="group relative">
                       <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-500/10 rounded-lg cursor-help">
                         <InfoIcon className="w-3.5 h-3.5 text-blue-500" />
-                        <span className="text-sm font-semibold text-blue-500">{infoCount}</span>
+                        <span className="text-sm font-semibold text-blue-500">{minorCount}</span>
                       </div>
                       <div className="absolute right-0 top-full mt-2 w-72 bg-gray-900 border border-gray-800 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
-                        <div className="text-xs font-semibold text-blue-500 mb-2">INFO ({infoCount})</div>
+                        <div className="text-xs font-semibold text-blue-500 mb-2">MINOR ({minorCount})</div>
                         <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                          {allIssues.filter(i => i.severity === 'info').map((issue, idx) => (
+                          {allIssues.filter(i => i.severity === 'minor').map((issue, idx) => (
                             <div key={idx} className="text-xs text-gray-400">
                               <span className="text-gray-500">Beat {issue.beatNumber}:</span> {issue.message}
                             </div>
@@ -619,7 +619,7 @@ export default function AnalyzerResultsPage() {
                       </div>
                     </div>
                   )}
-                  {errorCount === 0 && warningCount === 0 && infoCount === 0 && (
+                  {criticalCount === 0 && moderateCount === 0 && minorCount === 0 && (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 rounded-lg">
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
                       <span className="text-sm font-semibold text-green-500">No issues</span>
@@ -645,7 +645,7 @@ export default function AnalyzerResultsPage() {
                           <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs font-semibold">
                             {beat.type}
                           </span>
-                          {beat.retention.issues.some(i => i.severity === 'error') && (
+                          {beat.retention.issues.some(i => i.severity === 'critical') && (
                             <span className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-xs font-semibold">
                               CRITICAL
                             </span>
@@ -697,8 +697,8 @@ export default function AnalyzerResultsPage() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-0.5">
                                     <span className={`text-[10px] font-bold uppercase ${
-                                      issue.severity === 'error' ? 'text-red-500' :
-                                      issue.severity === 'warning' ? 'text-orange-500' :
+                                      issue.severity === 'critical' ? 'text-red-500' :
+                                      issue.severity === 'moderate' ? 'text-orange-500' :
                                       'text-blue-500'
                                     }`}>
                                       {issue.severity}
