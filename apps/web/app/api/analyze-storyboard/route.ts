@@ -62,8 +62,9 @@ export async function POST(request: NextRequest) {
       }
     } catch (error) {
       console.error('Classification error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to classify video format';
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : 'Failed to classify video format' },
+        { error: `Classification failed: ${errorMessage}` },
         { status: 500 }
       );
     }
@@ -75,8 +76,9 @@ export async function POST(request: NextRequest) {
       lintResult = await linter.lint(url, classification.format as VideoFormat);
     } catch (error) {
       console.error('Linting error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to lint video';
       return NextResponse.json(
-        { error: 'Failed to lint video' },
+        { error: `Linting failed: ${errorMessage}` },
         { status: 500 }
       );
     }
@@ -92,8 +94,9 @@ export async function POST(request: NextRequest) {
       });
     } catch (error) {
       console.error('Storyboard analysis error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate storyboard analysis';
       return NextResponse.json(
-        { error: 'Failed to generate storyboard analysis' },
+        { error: `Storyboard generation failed: ${errorMessage}` },
         { status: 500 }
       );
     }
