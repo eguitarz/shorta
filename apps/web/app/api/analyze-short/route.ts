@@ -2,8 +2,6 @@ import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge';
-
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();

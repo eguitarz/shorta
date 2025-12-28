@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "SKIP_NEXT_LOCKFILE_PATCHING=1 next dev",
     "build": "next build",
     "pages:build": "opennextjs-cloudflare build",
     "cf:build": "opennextjs-cloudflare build",
