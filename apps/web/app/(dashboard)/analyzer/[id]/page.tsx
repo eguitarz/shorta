@@ -41,7 +41,7 @@ interface Beat {
       severity: string;
       message: string;
       suggestion: string;
-      timestamp?: number; // Timestamp in seconds where the issue occurs
+      timestamp?: string; // Timestamp like "0:03" or "0:00-0:04" where the issue occurs
     }>;
   };
 }
@@ -351,6 +351,14 @@ export default function AnalyzerResultsPage() {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Parse timestamp string like "0:03" or "0:00-0:04" to seconds
+  const parseTimestamp = (timestamp: string): number => {
+    // If it's a range, take the start time
+    const timeStr = timestamp.includes('-') ? timestamp.split('-')[0] : timestamp;
+    const [mins, secs] = timeStr.split(':').map(Number);
+    return mins * 60 + secs;
   };
 
   // Calculate issue counts by severity
@@ -698,14 +706,14 @@ export default function AnalyzerResultsPage() {
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        seekToTimestamp(issue.timestamp || beat.startTime);
+                                        seekToTimestamp(issue.timestamp ? parseTimestamp(issue.timestamp) : beat.startTime);
                                       }}
                                       className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-orange-500 transition-colors group"
                                       title="Click to jump to this moment in the video"
                                     >
                                       <Clock className="w-2.5 h-2.5 group-hover:text-orange-500" />
                                       <span className="group-hover:underline font-mono">
-                                        {issue.timestamp ? formatTime(issue.timestamp) : formatTime(beat.startTime)}
+                                        {issue.timestamp || `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`}
                                       </span>
                                     </button>
                                   </div>
