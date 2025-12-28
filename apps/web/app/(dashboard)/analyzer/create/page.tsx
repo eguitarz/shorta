@@ -51,8 +51,8 @@ export default function CreateAnalysisPage() {
     setLoadingStage('classifying');
 
     try {
-      // Step 1: Classify video (creates cache)
-      const classifyResponse = await fetch("/api/classify-video", {
+      // Call unified storyboard endpoint
+      const response = await fetch("/api/analyze-storyboard", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,56 +60,26 @@ export default function CreateAnalysisPage() {
         body: JSON.stringify({ url: url.trim() }),
       });
 
-      const classifyData = await classifyResponse.json();
+      const data = await response.json();
 
-      if (!classifyResponse.ok) {
-        throw new Error(classifyData.error || "Failed to classify video");
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to analyze storyboard");
       }
 
-      // Show classification results immediately
-      setClassification(classifyData.classification);
-      setLoadingStage('analyzing');
-
-      // Step 2 & 3: Run lint and analyze in parallel
-      const [lintResponse, analyzeResponse] = await Promise.all([
-        fetch("/api/lint-video", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            url: url.trim(),
-            format: classifyData.classification.format,
-          }),
-        }),
-        fetch("/api/analyze-video", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            url: url.trim(),
-          }),
-        }),
-      ]);
-
-      const [lintData, analyzeData] = await Promise.all([
-        lintResponse.json(),
-        analyzeResponse.json(),
-      ]);
-
-      if (!lintResponse.ok) {
-        throw new Error(lintData.error || "Failed to lint video");
-      }
-
-      if (!analyzeResponse.ok) {
-        throw new Error(analyzeData.error || "Failed to analyze video");
-      }
-
-      setLintResult(lintData.lintResult);
+      // Set results
+      setClassification(data.classification);
+      setLintResult({
+        format: data.classification.format,
+        totalRules: data.lintSummary.totalRules,
+        violations: [], // Violations are now mapped to beats
+        passed: data.lintSummary.passed,
+        warnings: data.lintSummary.warnings,
+        errors: data.lintSummary.errors,
+        score: data.lintSummary.score,
+        summary: `Analysis complete with ${data.storyboard.beats.length} beats identified`,
+      });
       setAnalysis({
-        content: analyzeData.analysis,
-        usage: analyzeData.usage,
+        content: JSON.stringify(data.storyboard, null, 2),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -175,7 +145,7 @@ export default function CreateAnalysisPage() {
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    {loadingStage === 'classifying' ? 'Classifying format...' : 'Analyzing video...'}
+                    Generating storyboard...
                   </>
                 ) : (
                   <>
