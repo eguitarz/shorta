@@ -87,16 +87,16 @@ export class VideoLinter {
 
     // Calculate stats
     const totalRules = ruleSet.rules.length;
-    const errors = violations.filter(v => v.severity === 'error').length;
-    const warnings = violations.filter(v => v.severity === 'warning').length;
+    const critical = violations.filter(v => v.severity === 'critical').length;
+    const moderate = violations.filter(v => v.severity === 'moderate').length;
     const passed = totalRules - violations.length;
 
     // Calculate score (0-100)
-    // Errors: -10 points each, Warnings: -5 points each, Info: -2 points each
+    // Critical: -10 points each, Moderate: -5 points each, Minor: -2 points each
     let score = 100;
     violations.forEach(v => {
-      if (v.severity === 'error') score -= 10;
-      else if (v.severity === 'warning') score -= 5;
+      if (v.severity === 'critical') score -= 10;
+      else if (v.severity === 'moderate') score -= 5;
       else score -= 2;
     });
     score = Math.max(0, Math.min(100, score));
@@ -106,8 +106,8 @@ export class VideoLinter {
       totalRules,
       violations,
       passed,
-      warnings,
-      errors,
+      moderate,
+      critical,
       score,
       summary: parsedResult.summary || 'Analysis complete',
     };

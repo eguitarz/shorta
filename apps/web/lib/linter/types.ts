@@ -1,4 +1,4 @@
-export type RuleSeverity = 'error' | 'warning' | 'info';
+export type RuleSeverity = 'critical' | 'moderate' | 'minor';
 export type RuleCategory = 'hook' | 'retention' | 'audio' | 'visual' | 'pacing' | 'structure' | 'cta';
 export type VideoFormat = 'talking_head' | 'gameplay' | 'other';
 
@@ -29,8 +29,8 @@ export interface LintResult {
   totalRules: number;
   violations: RuleViolation[];
   passed: number;
-  warnings: number;
-  errors: number;
+  moderate: number;
+  critical: number;
   score: number; // 0-100
   summary: string;
 }
