@@ -244,7 +244,7 @@ Return JSON in this exact format:
       }],
       generationConfig: {
         temperature: config?.temperature ?? 0.7,
-        maxOutputTokens: config?.maxTokens ?? 2048,
+        maxOutputTokens: config?.maxTokens ?? 8192,
       },
     };
 
