@@ -1,7 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+
+// YouTube IFrame API types
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
 import {
   Loader2,
   AlertCircle,
@@ -33,6 +41,7 @@ interface Beat {
       severity: string;
       message: string;
       suggestion: string;
+      timestamp?: number; // Timestamp in seconds where the issue occurs
     }>;
   };
 }
@@ -105,6 +114,9 @@ export default function AnalyzerResultsPage() {
   const [structureExpanded, setStructureExpanded] = useState(false);
   const [contentExpanded, setContentExpanded] = useState(false);
 
+  const playerRef = useRef<any>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const analyzeVideo = async () => {
       const id = params.id as string;
@@ -173,6 +185,56 @@ export default function AnalyzerResultsPage() {
 
     analyzeVideo();
   }, [params.id, router]);
+
+  // Initialize YouTube IFrame API
+  useEffect(() => {
+    if (!analysisData) return;
+
+    const videoId = extractYouTubeId(analysisData.url);
+    if (!videoId) return;
+
+    // Load YouTube IFrame API script
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+
+    // Initialize player when API is ready
+    const initPlayer = () => {
+      if (playerContainerRef.current && !playerRef.current) {
+        playerRef.current = new window.YT.Player(playerContainerRef.current, {
+          videoId: videoId,
+          playerVars: {
+            modestbranding: 1,
+            rel: 0,
+          },
+        });
+      }
+    };
+
+    if (window.YT && window.YT.Player) {
+      initPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer;
+    }
+
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+    };
+  }, [analysisData]);
+
+  // Function to seek video to specific timestamp
+  const seekToTimestamp = (seconds: number) => {
+    if (playerRef.current && playerRef.current.seekTo) {
+      playerRef.current.seekTo(seconds, true);
+      playerRef.current.playVideo();
+    }
+  };
 
   if (loading) {
     return (
@@ -338,11 +400,9 @@ export default function AnalyzerResultsPage() {
               {/* Video Container */}
               <div className="relative rounded-2xl aspect-[9/16] overflow-hidden bg-black">
                 {videoId ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0`}
+                  <div
+                    ref={playerContainerRef}
                     className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -541,7 +601,13 @@ export default function AnalyzerResultsPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs text-gray-500 font-semibold">Beat {beat.beatNumber}</span>
-                          <span className="text-xs font-mono text-gray-500">{formatTime(beat.startTime)} - {formatTime(beat.endTime)}s</span>
+                          <button
+                            onClick={() => seekToTimestamp(beat.startTime)}
+                            className="text-xs font-mono text-gray-500 hover:text-orange-500 transition-colors hover:underline cursor-pointer"
+                            title="Click to jump to this beat"
+                          >
+                            {formatTime(beat.startTime)} - {formatTime(beat.endTime)}
+                          </button>
                           <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs font-semibold">
                             {beat.type}
                           </span>
@@ -595,10 +661,16 @@ export default function AnalyzerResultsPage() {
                                       }`}>
                                         {issue.severity}
                                       </span>
-                                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                                        <Clock className="w-3 h-3" />
-                                        <span>{formatTime(beat.startTime)}-{formatTime(beat.endTime)}</span>
-                                      </div>
+                                      <button
+                                        onClick={() => seekToTimestamp(issue.timestamp || beat.startTime)}
+                                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-orange-500 transition-colors cursor-pointer group"
+                                        title="Click to jump to this moment in the video"
+                                      >
+                                        <Clock className="w-3 h-3 group-hover:text-orange-500" />
+                                        <span className="group-hover:underline">
+                                          {issue.timestamp ? formatTime(issue.timestamp) : `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`}
+                                        </span>
+                                      </button>
                                     </div>
                                     <p className="text-sm text-gray-300 leading-relaxed">{issue.message}</p>
                                   </div>
