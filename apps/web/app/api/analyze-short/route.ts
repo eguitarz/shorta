@@ -23,44 +23,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract video ID if it's a YouTube URL
-    let videoInfo = '';
-    const youtubeRegex = /(?:youtube\.com\/(?:shorts\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]+)/;
-    const match = url.match(youtubeRegex);
-
-    if (match && match[1]) {
-      const videoId = match[1];
-      videoInfo = `This is a YouTube Short/video with ID: ${videoId}. Since I cannot access the actual video content, please provide a general framework for analyzing short-form video content.`;
-    } else {
-      // For non-YouTube URLs, try to fetch content
-      try {
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; Shorta/1.0; +https://shorta.ai)',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch URL: ${response.statusText}`);
-        }
-
-        const html = await response.text();
-
-        // Basic HTML to text conversion (strip tags)
-        videoInfo = html
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-          .replace(/<[^>]+>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .slice(0, 5000); // Limit to 5000 chars to avoid token limits
-
-      } catch (error) {
-        console.error('Error fetching URL:', error);
-        videoInfo = 'Unable to fetch content from URL. Please provide a general analysis framework.';
-      }
-    }
-
     // Create LLM client
     const env: LLMEnv = {
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
@@ -69,25 +31,63 @@ export async function POST(request: NextRequest) {
 
     const client = createDefaultLLMClient(env);
 
-    // Ask Gemini to analyze
-    const response = await client.chat([
-      {
-        role: 'user',
-        content: `You are a short-form video content analyst. I'm providing you information about a video that needs analysis.
+    // Check if it's a YouTube URL
+    const youtubeRegex = /(?:youtube\.com\/(?:shorts\/|watch\?v=)|youtu\.be\/)/;
+    const isYouTube = youtubeRegex.test(url);
 
-${videoInfo}
+    let response;
 
-Please provide a comprehensive analysis framework for short-form video content with the following sections:
+    if (isYouTube && client.analyzeVideo) {
+      // Use native Gemini YouTube video analysis
+      const prompt = `Please analyze this short-form video content and provide:
 
-1. **Content Analysis Framework**: What elements make a short-form video successful
-2. **Hook Strategies**: 5 proven hook techniques for the first 3 seconds
-3. **Retention Tactics**: Key strategies to keep viewers watching
-4. **Viral Elements**: What makes content shareable and engaging
-5. **Optimization Tips**: Specific recommendations for maximizing engagement
+1. **Summary**: A brief 2-3 sentence overview of what the video is about
+2. **Key Points**: Main takeaways or messages (3-5 bullet points)
+3. **Hook Analysis**: What makes the opening engaging? How does it grab attention in the first 3 seconds?
+4. **Content Structure**: How is the video structured? What's the flow from hook to payoff?
+5. **Retention Elements**: What keeps viewers watching? Any pattern interrupts or engagement tactics?
+6. **Target Audience**: Who is this content aimed at?
+7. **Viral Potential**: What elements make this shareable or viral-worthy?
+8. **Improvements**: 3-5 specific, actionable suggestions to make it more engaging
 
-Format your response in a clear, structured way with specific actionable advice.`,
-      },
-    ]);
+Be specific and reference actual moments in the video using timestamps when relevant.`;
+
+      response = await client.analyzeVideo(url, prompt);
+    } else {
+      // For non-YouTube URLs, try to fetch and analyze content
+      let pageContent = '';
+      try {
+        const fetchResponse = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; Shorta/1.0; +https://shorta.ai)',
+          },
+        });
+
+        if (fetchResponse.ok) {
+          const html = await fetchResponse.text();
+          pageContent = html
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+            .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 5000);
+        }
+      } catch (error) {
+        console.error('Error fetching URL:', error);
+      }
+
+      response = await client.chat([
+        {
+          role: 'user',
+          content: `Analyze this content and provide a summary with key insights:
+
+${pageContent || 'No content could be fetched from the URL.'}
+
+Provide a structured analysis with actionable recommendations.`,
+        },
+      ]);
+    }
 
     return NextResponse.json({
       url,

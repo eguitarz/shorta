@@ -27,4 +27,5 @@ export interface LLMEnv {
 export interface LLMClient {
   chat(messages: Message[], config?: LLMConfig): Promise<LLMResponse>;
   stream(messages: Message[], config?: LLMConfig): AsyncIterable<string>;
+  analyzeVideo?(videoUrl: string, prompt: string, config?: LLMConfig): Promise<LLMResponse>;
 }
