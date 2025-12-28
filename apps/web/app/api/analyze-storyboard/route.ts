@@ -55,10 +55,15 @@ export async function POST(request: NextRequest) {
     let classification;
     try {
       classification = await client.classifyVideo(url);
+      console.log('Classification result:', JSON.stringify(classification, null, 2));
+
+      if (!classification || !classification.format) {
+        throw new Error('Invalid classification result');
+      }
     } catch (error) {
       console.error('Classification error:', error);
       return NextResponse.json(
-        { error: 'Failed to classify video format' },
+        { error: error instanceof Error ? error.message : 'Failed to classify video format' },
         { status: 500 }
       );
     }
@@ -114,22 +119,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    const response = {
       url,
       classification: {
-        format: classification.format,
-        confidence: classification.confidence,
-        evidence: classification.evidence,
+        format: classification?.format || 'unknown',
+        confidence: classification?.confidence || 0,
+        evidence: classification?.evidence || [],
       },
       lintSummary: {
-        totalRules: lintResult.totalRules,
-        score: lintResult.score,
-        passed: lintResult.passed,
-        warnings: lintResult.warnings,
-        errors: lintResult.errors,
+        totalRules: lintResult?.totalRules || 0,
+        score: lintResult?.score || 0,
+        passed: lintResult?.passed || 0,
+        warnings: lintResult?.warnings || 0,
+        errors: lintResult?.errors || 0,
       },
       storyboard,
-    });
+    };
+
+    console.log('Final response:', JSON.stringify(response, null, 2));
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Analyze storyboard API error:', error);
 
