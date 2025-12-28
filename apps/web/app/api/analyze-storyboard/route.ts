@@ -196,8 +196,8 @@ Return ONLY valid JSON in this exact format:
       "type": "string - e.g., 'HOOK', 'CONTEXT', 'BUILDUP', 'PAYOFF', 'CTA'",
       "title": "string - descriptive beat name",
       "transcript": "string - exact words spoken",
-      "visual": "string - detailed shot description: camera angle, framing, movement, lighting",
-      "audio": "string - vocal delivery, tone, pacing, background audio, sound effects",
+      "visual": "string - what makes this shot work (or what's missing). Focus on key techniques: cuts, zooms, text overlays, B-roll. Keep it simple.",
+      "audio": "string - what makes the delivery engaging (or what's off). Focus on: energy level, pacing changes, music/SFX impact. Keep it simple.",
       "retention": {
         "level": "string - 'minimal_drop', 'moderate_drop', 'high_drop', or 'critical_drop'",
         "analysis": "string - why this retention level, what keeps viewers or causes them to leave",
@@ -235,6 +235,15 @@ CRITICAL INSTRUCTIONS:
 4. Be specific with timestamps - use actual seconds from the video
 5. Return ONLY the JSON object, no additional text or explanation
 6. Ensure all JSON is properly formatted and escaped
+
+VISUAL & AUDIO ANALYSIS - Director's Perspective:
+- Don't just describe what you see/hear - explain what WORKS or what's MISSING
+- Focus on techniques that drive engagement: quick cuts, zooms, text overlays, energy shifts, music drops
+- Keep it simple and actionable - what would you tell the creator to replicate or fix?
+- Example GOOD visual: "Fast cuts every 2-3s + punch-in zoom on key words keeps eyes moving"
+- Example BAD visual: "Medium close-up shot with the subject centered in frame under soft lighting"
+- Example GOOD audio: "High energy delivery with strategic pauses before big reveals"
+- Example BAD audio: "The speaker uses a conversational tone with moderate pacing and background music"
 
 Now analyze the video and generate the complete storyboard JSON.`;
 }
