@@ -599,6 +599,19 @@ export default function AnalyzerResultsPage() {
                           <p className="pt-2 border-t border-gray-800 text-[11px] text-gray-400">
                             <span className="font-medium text-gray-300">Note:</span> Each rule type only counts once for scoring, even if it appears in multiple beats.
                           </p>
+                          <div className="pt-2 border-t border-gray-800">
+                            <p className="text-[11px] font-medium text-green-400 mb-1">Bonus Points (can exceed 100):</p>
+                            <ul className="space-y-1 pl-3 text-[11px]">
+                              <li className="flex items-start gap-1.5">
+                                <span className="text-green-400 mt-0.5">+</span>
+                                <span className="text-gray-400">Perfect beat (no issues): <span className="text-green-400">+2 points</span></span>
+                              </li>
+                              <li className="flex items-start gap-1.5">
+                                <span className="text-green-400 mt-0.5">+</span>
+                                <span className="text-gray-400">Strong hook (≥80%): <span className="text-green-400">+5 points</span></span>
+                              </li>
+                            </ul>
+                          </div>
                           <p className="pt-2 border-t border-gray-800 text-[11px]">
                             The 4 performance cards below (<span className="text-orange-400">Hook</span>, <span className="text-green-400">Structure</span>, <span className="text-purple-400">Content</span>, <span className="text-blue-400">Delivery</span>) are separate AI-evaluated metrics based on video analysis.
                           </p>
@@ -609,7 +622,20 @@ export default function AnalyzerResultsPage() {
                   <div className="flex items-baseline gap-2 mb-3">
                     <span className="text-3xl font-bold">{Math.round(analysisData.lintSummary.score)}</span>
                     <span className="text-lg text-gray-500">/100</span>
+                    {analysisData.lintSummary.bonusPoints > 0 && (
+                      <span className="text-sm text-green-400 font-medium">+{analysisData.lintSummary.bonusPoints}</span>
+                    )}
                   </div>
+                  {analysisData.lintSummary.bonusPoints > 0 && analysisData.lintSummary.bonusDetails && (
+                    <div className="mb-3 p-2 bg-green-500/5 border border-green-500/20 rounded-lg">
+                      <div className="text-[10px] text-green-500 uppercase tracking-wider font-semibold mb-1">Bonus Points</div>
+                      <div className="space-y-0.5">
+                        {analysisData.lintSummary.bonusDetails.map((detail: string, idx: number) => (
+                          <div key={idx} className="text-xs text-green-400">+{detail}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="pt-3 border-t border-gray-800">
                     <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Director's Take</div>
                     <div className="text-xs text-gray-400 leading-relaxed">

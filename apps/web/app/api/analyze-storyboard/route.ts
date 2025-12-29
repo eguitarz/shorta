@@ -122,6 +122,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calculate bonus points
+    let bonusPoints = 0;
+    const bonusDetails: string[] = [];
+
+    // Bonus 1: Perfect beats (no issues) - +2 points each
+    if (storyboard.beats && Array.isArray(storyboard.beats)) {
+      const perfectBeats = storyboard.beats.filter((beat: any) =>
+        !beat.retention?.issues || beat.retention.issues.length === 0
+      ).length;
+
+      if (perfectBeats > 0) {
+        const perfectBeatBonus = perfectBeats * 2;
+        bonusPoints += perfectBeatBonus;
+        bonusDetails.push(`${perfectBeats} perfect beat${perfectBeats > 1 ? 's' : ''}: +${perfectBeatBonus}`);
+      }
+    }
+
+    // Bonus 2: Strong hook (>= 80% of max 4 = 3.2) - +5 points
+    if (storyboard.performance?.hookStrength >= 3.2) {
+      bonusPoints += 5;
+      bonusDetails.push(`Strong hook (${storyboard.performance.hookStrength}/4): +5`);
+    }
+
+    // Apply bonuses to score (can exceed 100)
+    const baseScore = lintResult?.score || 0;
+    const finalScore = baseScore + bonusPoints;
+
+    console.log('=== BONUS CALCULATION ===');
+    console.log('Base score:', baseScore);
+    console.log('Bonus points:', bonusPoints);
+    console.log('Bonus details:', bonusDetails);
+    console.log('Final score:', finalScore);
+    console.log('========================');
+
     const response = {
       url,
       classification: {
@@ -135,7 +169,10 @@ export async function POST(request: NextRequest) {
       },
       lintSummary: {
         totalRules: lintResult?.totalRules || 0,
-        score: lintResult?.score || 0,
+        score: finalScore,
+        baseScore: baseScore,
+        bonusPoints: bonusPoints,
+        bonusDetails: bonusDetails,
         passed: lintResult?.passed || 0,
         moderate: lintResult?.moderate || 0,
         critical: lintResult?.critical || 0,
