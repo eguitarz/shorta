@@ -223,25 +223,25 @@ Return ONLY valid JSON in this exact format:
       "duration": number - seconds of hook (0-5),
       "viralPattern": number - 0-100 how well it matches viral patterns,
       "loopStrength": number - 0-100 re-watch potential,
-      "analysis": "string - what works + actionable insight with estimated impact"
+      "analysis": "string - 2-3 bullet points with actionable insights. Each bullet should highlight key findings with bold keywords (e.g., 'Strong hook at 0:02s', 'Increase energy by 15%')"
     },
     "structure": {
       "videoLength": number - total seconds,
       "pacingConsistency": number - 0-100 how consistent the pacing is,
       "payoffTiming": number - 0-100 how well-timed the payoff is,
-      "analysis": "string - what works + actionable insight with estimated impact"
+      "analysis": "string - 2-3 bullet points with actionable insights. Each bullet should highlight key findings with bold keywords (e.g., 'Well-paced throughout', 'Add payoff at 0:35s')"
     },
     "content": {
       "contentType": "string - Educational/Entertainment/Tutorial/Story/etc",
       "valueClarity": number - 0-100 how clear the value proposition is,
       "uniqueness": number - 0-100 how unique the angle/perspective is,
-      "analysis": "string - what works + actionable insight with estimated impact"
+      "analysis": "string - 2-3 bullet points with actionable insights. Each bullet should highlight key findings with bold keywords (e.g., 'High value clarity', 'Improve uniqueness with X')"
     },
     "delivery": {
       "energyLevel": number - 0-100 vocal energy and enthusiasm,
       "vocalClarity": number - 0-100 how clear and understandable speech is,
       "presence": number - 0-100 camera presence and charisma,
-      "analysis": "string - what works + actionable insight with estimated impact"
+      "analysis": "string - 2-3 bullet points with actionable insights. Each bullet should highlight key findings with bold keywords (e.g., 'Excellent energy at 85%', 'Increase vocal clarity')"
     }
   },
   "replicationBlueprint": {
@@ -259,6 +259,7 @@ CRITICAL INSTRUCTIONS:
 4. Be specific with timestamps - use actual seconds from the video
 5. Return ONLY the JSON object, no additional text or explanation
 6. Ensure all JSON is properly formatted and escaped
+7. FORMAT ANALYSIS AS BULLET POINTS: In the hook, structure, content, and delivery analysis fields, use newlines (\\n) to separate each bullet point. Start each line with the content directly (no bullet character needed). Example: "Strong hook opens at 0:02s\\nViral pattern matches proven format\\nIncrease loop potential by adding callback"
 
 VISUAL & AUDIO ANALYSIS - Director's Perspective:
 - Don't just describe what you see/hear - explain what WORKS or what's MISSING

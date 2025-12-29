@@ -412,6 +412,59 @@ export default function AnalyzerResultsPage() {
     }
   };
 
+  // Badge helpers for dynamic labels based on scores
+  const getHookBadge = (score: number) => {
+    if (score <= 25) return { label: 'Weak', color: 'red' };
+    if (score <= 50) return { label: 'Moderate', color: 'yellow' };
+    if (score <= 75) return { label: 'Good', color: 'orange' };
+    return { label: 'Strong', color: 'green' };
+  };
+
+  const getStructureBadge = (score: number) => {
+    if (score <= 25) return { label: 'Choppy', color: 'red' };
+    if (score <= 50) return { label: 'Uneven', color: 'yellow' };
+    if (score <= 75) return { label: 'Well-Paced', color: 'blue' };
+    return { label: 'Excellent', color: 'green' };
+  };
+
+  const getContentBadge = (score: number) => {
+    if (score <= 25) return { label: 'Low Value', color: 'red' };
+    if (score <= 50) return { label: 'Some Value', color: 'yellow' };
+    if (score <= 75) return { label: 'High Value', color: 'green' };
+    return { label: 'Exceptional', color: 'emerald' };
+  };
+
+  const getDeliveryBadge = (score: number) => {
+    if (score <= 25) return { label: 'Flat', color: 'red' };
+    if (score <= 50) return { label: 'Adequate', color: 'yellow' };
+    if (score <= 75) return { label: 'Engaging', color: 'purple' };
+    return { label: 'Captivating', color: 'pink' };
+  };
+
+  // Render analysis text with bullet points and bold keywords
+  const renderAnalysis = (text: string) => {
+    // Split by bullet points or newlines
+    const lines = text.split(/\n|•/).filter(line => line.trim());
+
+    return (
+      <ul className="space-y-1.5 text-xs text-gray-400">
+        {lines.map((line, idx) => {
+          // Bold keywords: numbers followed by %, specific terms
+          const formatted = line
+            .replace(/(\d+%)/g, '<strong class="text-white font-semibold">$1</strong>')
+            .replace(/\b(strong|weak|good|excellent|critical|high|low|increase|decrease|improve|fix|add|remove|very|extremely)\b/gi, '<strong class="text-white font-semibold">$1</strong>');
+
+          return (
+            <li key={idx} className="flex gap-2">
+              <span className="text-gray-600 mt-0.5">•</span>
+              <span dangerouslySetInnerHTML={{ __html: formatted }} />
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   return (
     <>
       {/* Top Bar */}
@@ -497,38 +550,47 @@ export default function AnalyzerResultsPage() {
                         {hookExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                       </button>
                     </div>
-                    <div className="flex items-baseline gap-1 mb-2">
-                      <span className="text-2xl font-bold">{Math.round(analysisData.storyboard.performance.hookStrength * 25)}</span>
-                      <span className="text-sm text-gray-500">/100</span>
-                      <span className="ml-auto px-1.5 py-0.5 bg-orange-500/10 text-orange-500 rounded text-[9px] font-semibold uppercase">
-                        {analysisData.storyboard.performance.hookStrength > 3 ? 'Strong' : 'Good'}
-                      </span>
-                    </div>
-                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-2">
-                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${analysisData.storyboard.performance.hookStrength * 25}%` }}></div>
-                    </div>
+                    {(() => {
+                      const hookScore = Math.round(analysisData.storyboard.performance.hookStrength * 25);
+                      const badge = getHookBadge(hookScore);
+                      return (
+                        <>
+                          <div className="flex items-baseline gap-1 mb-2">
+                            <span className="text-2xl font-bold">{hookScore}</span>
+                            <span className="text-sm text-gray-500">/100</span>
+                            <span className={`ml-auto px-1.5 py-0.5 bg-${badge.color}-500/10 text-${badge.color}-500 rounded text-[9px] font-semibold uppercase`}>
+                              {badge.label}
+                            </span>
+                          </div>
+                          <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
+                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${hookScore}%` }}></div>
+                          </div>
 
-                    {hookExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-800 space-y-3">
-                        <div className="space-y-2 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Hook Duration</span>
-                            <span className="text-white font-semibold">{analysisData.storyboard.performance.hook.duration}s</span>
+                          {/* Always show metrics */}
+                          <div className="space-y-2 text-xs mb-3">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Hook Duration</span>
+                              <span className="text-white font-semibold">{analysisData.storyboard.performance.hook.duration}s</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Viral Pattern</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.viralPattern}/100</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Loop Strength</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.loopStrength}/100</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Viral Pattern</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.viralPattern}/100</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Loop Strength</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.loopStrength}/100</span>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-400 leading-relaxed">
-                          {analysisData.storyboard.performance.hook.analysis}
-                        </p>
-                      </div>
-                    )}
+
+                          {/* Only analysis is collapsible */}
+                          {hookExpanded && (
+                            <div className="pt-3 border-t border-gray-800">
+                              {renderAnalysis(analysisData.storyboard.performance.hook.analysis)}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Structure Card */}
@@ -545,36 +607,47 @@ export default function AnalyzerResultsPage() {
                         {structureExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                       </button>
                     </div>
-                    <div className="flex items-baseline gap-1 mb-2">
-                      <span className="text-2xl font-bold">{Math.round(analysisData.storyboard.performance.structurePacing * 33.33)}</span>
-                      <span className="text-sm text-gray-500">/100</span>
-                      <span className="ml-auto px-1.5 py-0.5 bg-blue-500/10 text-blue-500 rounded text-[9px] font-semibold uppercase">Well-Paced</span>
-                    </div>
-                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-2">
-                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${analysisData.storyboard.performance.structurePacing * 33.33}%` }}></div>
-                    </div>
+                    {(() => {
+                      const structureScore = Math.round(analysisData.storyboard.performance.structurePacing * 33.33);
+                      const badge = getStructureBadge(structureScore);
+                      return (
+                        <>
+                          <div className="flex items-baseline gap-1 mb-2">
+                            <span className="text-2xl font-bold">{structureScore}</span>
+                            <span className="text-sm text-gray-500">/100</span>
+                            <span className={`ml-auto px-1.5 py-0.5 bg-${badge.color}-500/10 text-${badge.color}-500 rounded text-[9px] font-semibold uppercase`}>
+                              {badge.label}
+                            </span>
+                          </div>
+                          <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
+                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${structureScore}%` }}></div>
+                          </div>
 
-                    {structureExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-800 space-y-3">
-                        <div className="space-y-2 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Video Length</span>
-                            <span className="text-white font-semibold">{analysisData.storyboard.performance.structure.videoLength}s</span>
+                          {/* Always show metrics */}
+                          <div className="space-y-2 text-xs mb-3">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Video Length</span>
+                              <span className="text-white font-semibold">{analysisData.storyboard.performance.structure.videoLength}s</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Pacing Consistency</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.structure.pacingConsistency}/100</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Payoff Timing</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.structure.payoffTiming}/100</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Pacing Consistency</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.structure.pacingConsistency}/100</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Payoff Timing</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.structure.payoffTiming}/100</span>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-400 leading-relaxed">
-                          {analysisData.storyboard.performance.structure.analysis}
-                        </p>
-                      </div>
-                    )}
+
+                          {/* Only analysis is collapsible */}
+                          {structureExpanded && (
+                            <div className="pt-3 border-t border-gray-800">
+                              {renderAnalysis(analysisData.storyboard.performance.structure.analysis)}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Content Card */}
@@ -591,36 +664,48 @@ export default function AnalyzerResultsPage() {
                         {contentExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                       </button>
                     </div>
-                    <div className="flex items-baseline gap-1 mb-2">
-                      <span className="text-2xl font-bold">{Math.round(analysisData.storyboard.performance.deliveryPerformance * 33.33)}</span>
-                      <span className="text-sm text-gray-500">/100</span>
-                      <span className="ml-auto px-1.5 py-0.5 bg-green-500/10 text-green-500 rounded text-[9px] font-semibold uppercase">High Value</span>
-                    </div>
-                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-2">
-                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${analysisData.storyboard.performance.deliveryPerformance * 33.33}%` }}></div>
-                    </div>
+                    {(() => {
+                      // Calculate content score from average of valueClarity and uniqueness
+                      const contentScore = Math.round((analysisData.storyboard.performance.content.valueClarity + analysisData.storyboard.performance.content.uniqueness) / 2);
+                      const badge = getContentBadge(contentScore);
+                      return (
+                        <>
+                          <div className="flex items-baseline gap-1 mb-2">
+                            <span className="text-2xl font-bold">{contentScore}</span>
+                            <span className="text-sm text-gray-500">/100</span>
+                            <span className={`ml-auto px-1.5 py-0.5 bg-${badge.color}-500/10 text-${badge.color}-500 rounded text-[9px] font-semibold uppercase`}>
+                              {badge.label}
+                            </span>
+                          </div>
+                          <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
+                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${contentScore}%` }}></div>
+                          </div>
 
-                    {contentExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-800 space-y-3">
-                        <div className="space-y-2 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Content Type</span>
-                            <span className="text-white font-semibold">{analysisData.storyboard.performance.content.contentType}</span>
+                          {/* Always show metrics */}
+                          <div className="space-y-2 text-xs mb-3">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Content Type</span>
+                              <span className="text-white font-semibold">{analysisData.storyboard.performance.content.contentType}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Value Clarity</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.content.valueClarity}/100</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Uniqueness</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.content.uniqueness}/100</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Value Clarity</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.content.valueClarity}/100</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Uniqueness</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.content.uniqueness}/100</span>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-400 leading-relaxed">
-                          {analysisData.storyboard.performance.content.analysis}
-                        </p>
-                      </div>
-                    )}
+
+                          {/* Only analysis is collapsible */}
+                          {contentExpanded && (
+                            <div className="pt-3 border-t border-gray-800">
+                              {renderAnalysis(analysisData.storyboard.performance.content.analysis)}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Delivery Card */}
@@ -637,36 +722,47 @@ export default function AnalyzerResultsPage() {
                         {deliveryExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                       </button>
                     </div>
-                    <div className="flex items-baseline gap-1 mb-2">
-                      <span className="text-2xl font-bold">{Math.round(analysisData.storyboard.performance.deliveryPerformance * 33.33)}</span>
-                      <span className="text-sm text-gray-500">/100</span>
-                      <span className="ml-auto px-1.5 py-0.5 bg-purple-500/10 text-purple-500 rounded text-[9px] font-semibold uppercase">Engaging</span>
-                    </div>
-                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-2">
-                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${analysisData.storyboard.performance.deliveryPerformance * 33.33}%` }}></div>
-                    </div>
+                    {(() => {
+                      const deliveryScore = Math.round(analysisData.storyboard.performance.deliveryPerformance * 33.33);
+                      const badge = getDeliveryBadge(deliveryScore);
+                      return (
+                        <>
+                          <div className="flex items-baseline gap-1 mb-2">
+                            <span className="text-2xl font-bold">{deliveryScore}</span>
+                            <span className="text-sm text-gray-500">/100</span>
+                            <span className={`ml-auto px-1.5 py-0.5 bg-${badge.color}-500/10 text-${badge.color}-500 rounded text-[9px] font-semibold uppercase`}>
+                              {badge.label}
+                            </span>
+                          </div>
+                          <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
+                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${deliveryScore}%` }}></div>
+                          </div>
 
-                    {deliveryExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-800 space-y-3">
-                        <div className="space-y-2 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Energy Level</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.energyLevel}/100</span>
+                          {/* Always show metrics */}
+                          <div className="space-y-2 text-xs mb-3">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Energy Level</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.energyLevel}/100</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Vocal Clarity</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.vocalClarity}/100</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Presence</span>
+                              <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.presence}/100</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Vocal Clarity</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.vocalClarity}/100</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Presence</span>
-                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.presence}/100</span>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-400 leading-relaxed">
-                          {analysisData.storyboard.performance.delivery.analysis}
-                        </p>
-                      </div>
-                    )}
+
+                          {/* Only analysis is collapsible */}
+                          {deliveryExpanded && (
+                            <div className="pt-3 border-t border-gray-800">
+                              {renderAnalysis(analysisData.storyboard.performance.delivery.analysis)}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
