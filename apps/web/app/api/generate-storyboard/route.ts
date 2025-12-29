@@ -210,6 +210,7 @@ IMPORTANT GUIDELINES:
 - Keep the same beat structure (number, timing, type)
 - Maintain the original script/visual/audio unless a fix specifically changes them
 - No analysis or issues - only actionable shooting instructions
+- FORMAT DIRECTOR NOTES AS BULLET POINTS (3-5 actionable points per beat)
 
 Return a JSON object with this structure:
 {
@@ -220,7 +221,7 @@ Return a JSON object with this structure:
       "endTime": 3,
       "type": "hook",
       "title": "Beat title",
-      "directorNotes": "Detailed instructions for shooting this beat...",
+      "directorNotes": "• First actionable instruction\n• Second instruction\n• Third instruction",
       "script": "What to say (same as original unless fix changes it)",
       "visual": "What to show (same as original unless fix changes it)",
       "audio": "Audio elements (same as original unless fix changes it)"

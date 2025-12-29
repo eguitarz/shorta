@@ -233,13 +233,18 @@ export default function GenerateResultsPage() {
               <div className="p-6 space-y-4">
                 {/* Director Notes - Prominent */}
                 <div className="bg-purple-900/20 border border-purple-800/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-purple-300 mb-2 flex items-center gap-2">
+                  <h4 className="font-semibold text-purple-300 mb-3 flex items-center gap-2">
                     <Lightbulb className="w-4 h-4" />
                     Director&apos;s Notes
                   </h4>
-                  <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {beat.directorNotes}
-                  </p>
+                  <ul className="text-gray-300 leading-relaxed space-y-2 list-none">
+                    {beat.directorNotes.split('\n').filter(line => line.trim()).map((note, idx) => (
+                      <li key={idx} className="flex gap-2">
+                        <span className="text-purple-400 mt-1">•</span>
+                        <span className="flex-1">{note.replace(/^[•\-\*]\s*/, '')}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
                 {/* Script, Visual, Audio */}
