@@ -122,6 +122,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Extract all beat issues and calculate score from them
+    const beatIssues: any[] = [];
+    if (storyboard.beats && Array.isArray(storyboard.beats)) {
+      storyboard.beats.forEach((beat: any, beatIdx: number) => {
+        if (beat.retention?.issues && Array.isArray(beat.retention.issues)) {
+          beat.retention.issues.forEach((issue: any) => {
+            beatIssues.push({
+              ...issue,
+              beatNumber: beat.beatNumber || beatIdx + 1,
+              timestamp: `${beat.startTime}s-${beat.endTime}s`,
+            });
+          });
+        }
+      });
+    }
+
+    // Deduplicate beat issues by message (same issue shouldn't count multiple times)
+    const uniqueBeatIssues = Array.from(
+      beatIssues.reduce((map, issue) => {
+        const key = issue.message?.toLowerCase().trim() || Math.random().toString();
+        if (!map.has(key)) {
+          map.set(key, issue);
+        }
+        return map;
+      }, new Map()).values()
+    );
+
+    // Calculate score from beat issues
+    const criticalCount = uniqueBeatIssues.filter(i => i.severity === 'critical').length;
+    const moderateCount = uniqueBeatIssues.filter(i => i.severity === 'moderate').length;
+    const minorCount = uniqueBeatIssues.filter(i => i.severity === 'minor').length;
+
+    let beatScore = 100;
+    beatScore -= criticalCount * 10;
+    beatScore -= moderateCount * 5;
+    beatScore -= minorCount * 2;
+    beatScore = Math.max(0, beatScore);
+
+    console.log('=== BEAT ISSUES SCORING ===');
+    console.log('Total beat issues:', beatIssues.length);
+    console.log('Unique beat issues:', uniqueBeatIssues.length);
+    console.log('Critical:', criticalCount, 'x -10 =', criticalCount * -10);
+    console.log('Moderate:', moderateCount, 'x -5 =', moderateCount * -5);
+    console.log('Minor:', minorCount, 'x -2 =', minorCount * -2);
+    console.log('Beat score:', beatScore);
+    console.log('========================');
+
     // Calculate bonus points
     let bonusPoints = 0;
     const bonusDetails: string[] = [];
@@ -146,7 +193,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Apply bonuses to score (can exceed 100)
-    const baseScore = lintResult?.score || 0;
+    // Use beat score instead of linter score since beat analysis includes all issues
+    const baseScore = beatScore;
     const finalScore = baseScore + bonusPoints;
 
     console.log('=== BONUS CALCULATION ===');
@@ -173,9 +221,11 @@ export async function POST(request: NextRequest) {
         baseScore: baseScore,
         bonusPoints: bonusPoints,
         bonusDetails: bonusDetails,
-        passed: lintResult?.passed || 0,
-        moderate: lintResult?.moderate || 0,
-        critical: lintResult?.critical || 0,
+        passed: (lintResult?.totalRules || 0) - uniqueBeatIssues.length,
+        moderate: moderateCount,
+        critical: criticalCount,
+        minor: minorCount,
+        totalIssues: uniqueBeatIssues.length,
       },
       storyboard,
     };
