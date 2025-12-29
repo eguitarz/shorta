@@ -366,7 +366,7 @@ export default function AnalyzerResultsPage() {
 
   // Calculate issue counts by severity (only if analysis is complete)
   const allIssues = analysisData ? analysisData.storyboard.beats.flatMap(beat =>
-    beat.retention.issues.map(issue => ({
+    (beat.retention?.issues || []).map(issue => ({
       ...issue,
       beatNumber: beat.beatNumber,
       beatTitle: beat.title,
