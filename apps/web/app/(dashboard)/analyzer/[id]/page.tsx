@@ -441,7 +441,7 @@ export default function AnalyzerResultsPage() {
     return { label: 'Captivating', color: 'pink' };
   };
 
-  // Render analysis text with bullet points and bold keywords
+  // Render analysis text with bullet points and AI-emphasized text
   const renderAnalysis = (text: string) => {
     // Split by bullet points or newlines
     const lines = text.split(/\n|•/).filter(line => line.trim());
@@ -449,29 +449,33 @@ export default function AnalyzerResultsPage() {
     return (
       <ul className="space-y-1.5 text-xs text-gray-400">
         {lines.map((line, idx) => {
-          // Parse line into segments with bold keywords
+          // Parse line into segments, looking for **text** markers from AI
           const segments: Array<{ text: string; bold: boolean }> = [];
           const trimmedLine = line.trim();
 
-          // Keywords to bold
-          const keywords = /\b(\d+%|strong|weak|good|excellent|critical|high|low|increase|decrease|improve|fix|add|remove|very|extremely|at \d+:\d+s?)\b/gi;
-
+          // Match **text** patterns for emphasis
+          const emphasisPattern = /\*\*([^*]+)\*\*/g;
           let lastIndex = 0;
           let match;
 
-          while ((match = keywords.exec(trimmedLine)) !== null) {
+          while ((match = emphasisPattern.exec(trimmedLine)) !== null) {
             // Add text before match
             if (match.index > lastIndex) {
               segments.push({ text: trimmedLine.substring(lastIndex, match.index), bold: false });
             }
-            // Add matched keyword
-            segments.push({ text: match[0], bold: true });
+            // Add emphasized text (without the ** markers)
+            segments.push({ text: match[1], bold: true });
             lastIndex = match.index + match[0].length;
           }
 
           // Add remaining text
           if (lastIndex < trimmedLine.length) {
             segments.push({ text: trimmedLine.substring(lastIndex), bold: false });
+          }
+
+          // If no segments were found (no ** markers), just add the whole line
+          if (segments.length === 0) {
+            segments.push({ text: trimmedLine, bold: false });
           }
 
           return (
@@ -608,6 +612,13 @@ export default function AnalyzerResultsPage() {
                               <span className="text-gray-500">Loop Strength</span>
                               <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.loopStrength}/100</span>
                             </div>
+                          </div>
+
+                          {/* Hook Pattern Badge */}
+                          <div className="mb-3">
+                            <span className="inline-block px-2 py-1 bg-orange-500/10 text-orange-400 rounded text-[10px] font-semibold">
+                              {analysisData.storyboard.overview.hookPattern}
+                            </span>
                           </div>
 
                           {/* Only analysis is collapsible */}
