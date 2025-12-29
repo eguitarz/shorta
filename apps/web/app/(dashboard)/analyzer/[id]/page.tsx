@@ -611,17 +611,21 @@ export default function AnalyzerResultsPage() {
                   </div>
 
                   {/* Niche Category */}
-                  <div className="mt-3 pt-3 border-t border-gray-800">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Niche</div>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="inline-block px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-[10px] font-semibold uppercase tracking-wide w-fit">
-                        {analysisData.storyboard.overview.nicheCategory}
-                      </span>
-                      <p className="text-xs text-gray-400">
-                        {analysisData.storyboard.overview.nicheDescription}
-                      </p>
+                  {analysisData.storyboard.overview.nicheCategory && (
+                    <div className="mt-3 pt-3 border-t border-gray-800">
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Niche</div>
+                      <div className="flex flex-col gap-1.5">
+                        <span className="inline-block px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-[10px] font-semibold uppercase tracking-wide w-fit">
+                          {analysisData.storyboard.overview.nicheCategory}
+                        </span>
+                        {analysisData.storyboard.overview.nicheDescription && (
+                          <p className="text-xs text-gray-400">
+                            {analysisData.storyboard.overview.nicheDescription}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Analysis Cards Grid */}
@@ -673,14 +677,18 @@ export default function AnalyzerResultsPage() {
                           </div>
 
                           {/* Hook Category Badge + Pattern */}
-                          <div className="space-y-1.5 mb-3">
-                            <span className="inline-block px-2 py-1 bg-orange-500/10 text-orange-400 rounded text-[10px] font-semibold uppercase tracking-wide">
-                              {analysisData.storyboard.overview.hookCategory}
-                            </span>
-                            <p className="text-[10px] text-gray-500">
-                              {analysisData.storyboard.overview.hookPattern}
-                            </p>
-                          </div>
+                          {analysisData.storyboard.overview.hookCategory && (
+                            <div className="space-y-1.5 mb-3">
+                              <span className="inline-block px-2 py-1 bg-orange-500/10 text-orange-400 rounded text-[10px] font-semibold uppercase tracking-wide">
+                                {analysisData.storyboard.overview.hookCategory}
+                              </span>
+                              {analysisData.storyboard.overview.hookPattern && (
+                                <p className="text-[10px] text-gray-500">
+                                  {analysisData.storyboard.overview.hookPattern}
+                                </p>
+                              )}
+                            </div>
+                          )}
 
                           {/* Only analysis is collapsible */}
                           {hookExpanded && (
