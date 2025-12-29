@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
     const generationPrompt = createGenerationPrompt(updatedBeats, storyboard.overview);
 
     console.log('Generating director storyboard...');
+    console.log('Number of beats:', updatedBeats.length);
     let generatedStoryboard;
 
     try {
@@ -84,9 +85,24 @@ export async function POST(request: NextRequest) {
         maxTokens: 16384,
       });
 
-      generatedStoryboard = JSON.parse(response.content);
+      console.log('Received response from LLM');
+      console.log('Response content length:', response.content.length);
+      console.log('First 200 chars:', response.content.substring(0, 200));
+
+      // Try to extract JSON if it's wrapped in markdown code blocks
+      let jsonContent = response.content.trim();
+      if (jsonContent.startsWith('```')) {
+        const match = jsonContent.match(/```(?:json)?\s*\n([\s\S]*?)\n```/);
+        if (match) {
+          jsonContent = match[1];
+        }
+      }
+
+      generatedStoryboard = JSON.parse(jsonContent);
+      console.log('Successfully parsed JSON, beats count:', generatedStoryboard.beats?.length);
     } catch (error) {
       console.error('Generation error:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       return NextResponse.json(
         { error: 'Failed to generate storyboard', details: error instanceof Error ? error.message : 'Unknown error' },
         { status: 500 }
