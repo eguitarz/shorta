@@ -541,7 +541,7 @@ export default function AnalyzerResultsPage() {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto">
-        <div className={`grid h-full transition-all duration-300 ${approvedChangesCollapsed ? 'grid-cols-[1fr_48px]' : 'grid-cols-[1fr_380px]'}`}>
+        <div className={`grid h-full transition-all duration-100 ${approvedChangesCollapsed ? 'grid-cols-[1fr_48px]' : 'grid-cols-[1fr_380px]'}`}>
           {/* Left Column - Analysis */}
           <div className="p-8 overflow-y-auto">
             {/* Header */}
@@ -584,16 +584,16 @@ export default function AnalyzerResultsPage() {
                           <p>The <span className="text-orange-400 font-medium">Overall Score</span> (0-100) is based on automated linting rules that check for common retention issues:</p>
                           <ul className="space-y-1 pl-3">
                             <li className="flex items-start gap-1.5">
-                              <span className="text-red-400 mt-0.5">•</span>
-                              <span><span className="text-red-400 font-medium">Critical</span> violations: -10 points each</span>
+                              <span className="text-red-500 mt-0.5">•</span>
+                              <span><span className="text-red-500 font-medium">Critical</span> violations: -10 points each</span>
                             </li>
                             <li className="flex items-start gap-1.5">
-                              <span className="text-yellow-400 mt-0.5">•</span>
-                              <span><span className="text-yellow-400 font-medium">Moderate</span> violations: -5 points each</span>
+                              <span className="text-orange-500 mt-0.5">•</span>
+                              <span><span className="text-orange-500 font-medium">Moderate</span> violations: -5 points each</span>
                             </li>
                             <li className="flex items-start gap-1.5">
-                              <span className="text-blue-400 mt-0.5">•</span>
-                              <span><span className="text-blue-400 font-medium">Minor</span> violations: -2 points each</span>
+                              <span className="text-blue-500 mt-0.5">•</span>
+                              <span><span className="text-blue-500 font-medium">Minor</span> violations: -2 points each</span>
                             </li>
                           </ul>
                           <p className="pt-2 border-t border-gray-800 text-[11px]">
@@ -1157,7 +1157,7 @@ export default function AnalyzerResultsPage() {
           </div>
 
           {/* Right Column - Approved Changes */}
-          <div className={`border-l border-gray-800 flex flex-col transition-all duration-300 ${approvedChangesCollapsed ? '' : 'p-6'}`}>
+          <div className={`border-l border-gray-800 flex flex-col transition-all duration-100 ${approvedChangesCollapsed ? '' : 'p-6'}`}>
             {approvedChangesCollapsed ? (
               <div className="flex flex-col items-center pt-6 gap-3">
                 <button
