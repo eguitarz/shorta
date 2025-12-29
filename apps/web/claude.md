@@ -16,6 +16,34 @@
    npx wrangler deploy
    ```
 
+### Troubleshooting - Seeing Old Version
+
+If Cloudflare shows old code but local is updated:
+
+1. **Hard refresh browser:**
+   - Mac: `Cmd + Shift + R`
+   - Windows/Linux: `Ctrl + Shift + F5`
+
+2. **Clear browser cache completely**
+
+3. **Test in incognito/private window** to bypass cache
+
+4. **Rebuild and redeploy:**
+   ```bash
+   npm run build && npx wrangler deploy
+   ```
+
+5. **Check deployment version:**
+   ```bash
+   npx wrangler deployments list --name shorta-web
+   ```
+
+**Common causes:**
+- Browser aggressively caching JavaScript bundles
+- Service worker caching (if enabled)
+- Cloudflare edge cache not updated
+- Need to wait 1-2 minutes for global edge propagation
+
 ### Configuration
 
 - Project configuration is in `wrangler.toml`
