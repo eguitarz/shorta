@@ -197,6 +197,7 @@ export default function AnalyzerResultsPage() {
   const [approvedChanges, setApprovedChanges] = useState<ApprovedChange[]>([]);
   const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number; publishedAt: string } | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const approvedChangesCount = approvedChanges.length;
 
@@ -250,6 +251,43 @@ export default function AnalyzerResultsPage() {
 
   const removeApprovedChange = (id: string) => {
     setApprovedChanges(prev => prev.filter(change => change.id !== id));
+  };
+
+  const handleGenerate = async () => {
+    if (!analysisData || approvedChanges.length === 0) return;
+
+    try {
+      setGenerating(true);
+
+      const response = await fetch('/api/generate-storyboard', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          storyboard: analysisData.storyboard,
+          approvedChanges,
+          url: videoUrl,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate storyboard');
+      }
+
+      // Store generated data in sessionStorage
+      const generatedId = `gen_${Date.now()}`;
+      sessionStorage.setItem(`generated_${generatedId}`, JSON.stringify(data));
+
+      // Navigate to generated results page
+      router.push(`/analyzer/generate/${generatedId}`);
+    } catch (err) {
+      console.error('Generation error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate storyboard');
+      setGenerating(false);
+    }
   };
 
   // Load URL immediately and show video player
@@ -1525,11 +1563,21 @@ export default function AnalyzerResultsPage() {
                     Est. Processing Time: <span className="text-white">~45s</span>
                   </div>
                   <button
-                    disabled={approvedChanges.length === 0}
+                    onClick={handleGenerate}
+                    disabled={approvedChanges.length === 0 || generating}
                     className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
                   >
-                    <Zap className="w-4 h-4" fill="currentColor" />
-                    Generate using approved changes
+                    {generating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4" fill="currentColor" />
+                        Generate using approved changes
+                      </>
+                    )}
                   </button>
                 </div>
               </>
