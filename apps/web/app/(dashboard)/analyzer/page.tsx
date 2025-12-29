@@ -1,5 +1,5 @@
-import AnalyzerContent from "./analyzer-content";
+import { redirect } from "next/navigation";
 
-export default async function AnalyzerPage() {
-  return <AnalyzerContent />;
+export default function AnalyzerPage() {
+  redirect("/analyzer/create");
 }
