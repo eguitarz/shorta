@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     try {
       storyboardResponse = await client.analyzeVideo(url, storyboardPrompt, {
         temperature: 0.3, // Lower temperature for more consistent JSON
-        maxTokens: 8192,
+        maxTokens: 16384, // Very high limit to prevent incomplete JSON responses
       });
     } catch (error) {
       console.error('Storyboard analysis error:', error);
