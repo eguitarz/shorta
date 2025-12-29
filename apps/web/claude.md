@@ -216,3 +216,25 @@ npx wrangler deploy
 # One-liner: Build and deploy
 npm run cf:build && npx wrangler deploy
 ```
+
+## Known Limitations
+
+### Error 524: Timeout on Long Videos
+
+**Problem:** Gemini video analysis can timeout on longer videos (>60 seconds) with error 524.
+
+**Cause:**
+- Cloudflare has a 100-second gateway timeout (Free/Pro plans)
+- Gemini video analysis can take 2-3 minutes
+- Worker gets killed before Gemini finishes
+
+**Current Impact:**
+- Videos under ~60 seconds: Usually work fine
+- Longer videos: May fail with "524: timeout" error
+
+**Solutions:**
+1. **Retry shorter videos** - Works best for videos under 60 seconds
+2. **Async processing (future)** - Implement background job queue with polling
+3. **Cloudflare Enterprise** - Has higher timeout limits (not recommended for cost)
+
+**Workaround for now:** Analyze shorter videos or retry if the video is close to the timeout threshold.
