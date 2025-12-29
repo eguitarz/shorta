@@ -485,7 +485,7 @@ export default function AnalyzerResultsPage() {
               <span>
                 {segments.map((seg, segIdx) =>
                   seg.bold ? (
-                    <strong key={segIdx} className="text-white font-semibold">{seg.text}</strong>
+                    <strong key={segIdx} className="text-gray-200 font-medium">{seg.text}</strong>
                   ) : (
                     <span key={segIdx}>{seg.text}</span>
                   )
@@ -596,7 +596,7 @@ export default function AnalyzerResultsPage() {
                           <>
                             {segments.map((seg, idx) =>
                               seg.bold ? (
-                                <strong key={idx} className="text-white font-semibold">{seg.text}</strong>
+                                <strong key={idx} className="text-gray-200 font-medium">{seg.text}</strong>
                               ) : (
                                 <span key={idx}>{seg.text}</span>
                               )
