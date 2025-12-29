@@ -219,19 +219,6 @@ export default function AnalyzerResultsPage() {
   };
 
   const approveFix = (beatNumber: number, beatTitle: string, issue: any) => {
-    // Check if this exact fix from the same beat already exists
-    const isDuplicate = approvedChanges.some(
-      change =>
-        change.type === 'fix' &&
-        change.beatNumber === beatNumber &&
-        change.issue?.suggestion === issue.suggestion
-    );
-
-    if (isDuplicate) {
-      alert('This fix has already been approved for this beat.');
-      return;
-    }
-
     const id = `fix-${beatNumber}-${Date.now()}`;
     const newChange: ApprovedChange = {
       id,
@@ -1405,12 +1392,27 @@ export default function AnalyzerResultsPage() {
                                         <div className="flex-1">
                                           <div className="text-[10px] font-semibold text-green-500 uppercase mb-1">Solution</div>
                                           <p className="text-xs text-gray-300 leading-relaxed mb-2">{issue.suggestion}</p>
-                                          <button
-                                            onClick={() => approveFix(beat.beatNumber, beat.title, issue)}
-                                            className="px-2.5 py-1 text-[10px] font-medium text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500 rounded transition-colors"
-                                          >
-                                            Apply Fix
-                                          </button>
+                                          {(() => {
+                                            const isAlreadyApproved = approvedChanges.some(
+                                              change =>
+                                                change.type === 'fix' &&
+                                                change.beatNumber === beat.beatNumber &&
+                                                change.issue?.suggestion === issue.suggestion
+                                            );
+                                            return (
+                                              <button
+                                                onClick={() => !isAlreadyApproved && approveFix(beat.beatNumber, beat.title, issue)}
+                                                disabled={isAlreadyApproved}
+                                                className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${
+                                                  isAlreadyApproved
+                                                    ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed'
+                                                    : 'text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500'
+                                                }`}
+                                              >
+                                                {isAlreadyApproved ? 'Applied' : 'Apply Fix'}
+                                              </button>
+                                            );
+                                          })()}
                                         </div>
                                       </div>
                                     </div>
@@ -1474,13 +1476,25 @@ export default function AnalyzerResultsPage() {
                       <span className="text-xs text-gray-500 uppercase tracking-wider">Variant {String.fromCharCode(65 + idx)}</span>
                     </div>
                     <p className="text-sm text-gray-400 mb-4">{variant}</p>
-                    <button
-                      onClick={() => approveVariant(idx, variant)}
-                      className="w-full px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Approve Variant {String.fromCharCode(65 + idx)}
-                    </button>
+                    {(() => {
+                      const approvedVariant = approvedChanges.find(change => change.type === 'variant');
+                      const isThisVariantApproved = approvedVariant?.variant?.index === idx;
+                      const label = String.fromCharCode(65 + idx);
+
+                      return (
+                        <button
+                          onClick={() => approveVariant(idx, variant)}
+                          className={`w-full px-4 py-2 text-sm rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                            isThisVariantApproved
+                              ? 'text-green-500 bg-green-500/10 border border-green-500/30 cursor-default'
+                              : 'text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600'
+                          }`}
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          {isThisVariantApproved ? `Variant ${label} Applied` : `Approve Variant ${label}`}
+                        </button>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
