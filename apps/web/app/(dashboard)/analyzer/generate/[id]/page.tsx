@@ -91,7 +91,8 @@ export default function GenerateResultsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20">
+    <div className="h-full overflow-y-auto bg-black text-white">
+      <div className="min-h-full pb-20">
       {/* Header */}
       <div className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -227,6 +228,7 @@ export default function GenerateResultsPage() {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );
