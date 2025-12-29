@@ -121,6 +121,7 @@ If Cloudflare shows old code but local is updated:
 
 - `/app/(dashboard)/analyzer/[id]/page.tsx` - Main analyzer UI
 - `/app/api/analyze-storyboard/route.ts` - Analysis API endpoint
+- `/app/api/youtube-stats/route.ts` - YouTube stats API endpoint (fetched on every page load)
 - `/lib/linter/engine.ts` - Linter scoring logic
 - `/lib/linter/rules/talking_head.ts` - Linter rules
 - `wrangler.toml` - Cloudflare Workers configuration
@@ -129,9 +130,11 @@ If Cloudflare shows old code but local is updated:
 
 ### Video Stats
 - Views and likes displayed under embedded video
-- Data expected in: `analysisData.storyboard.performance.videoStats.{views,likes}`
-- Shows loading skeleton while analyzing
-- Shows "—" if data unavailable
+- **Fetched fresh on every page load** via `/api/youtube-stats` endpoint
+- Data stored in component state: `videoStats.{views,likes}`
+- Shows loading skeleton while fetching (separate from analysis loading)
+- Shows "—" if data unavailable or API key not set
+- **Always up-to-date** - reflects current YouTube metrics, not cached from analysis time
 
 ### Approved Changes & Generation
 - **Right sidebar panel** for collecting approved changes before generation
