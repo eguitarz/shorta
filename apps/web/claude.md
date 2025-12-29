@@ -53,6 +53,29 @@ If Cloudflare shows old code but local is updated:
 - Service worker caching (if enabled)
 - Cloudflare edge cache not updated
 - Need to wait 1-2 minutes for global edge propagation
+- **Using wrong build command** (see below)
+
+### ⚠️ CRITICAL: Wrong Build Command Issue
+
+**Problem:** Using `npm run build` instead of `npm run cf:build` causes deployments to use stale code!
+
+**What happens:**
+- `npm run build` only runs `next build` → Creates `.next` directory
+- Does NOT create `.open-next/worker.js` needed by Cloudflare Workers
+- `wrangler deploy` uses old `.open-next` directory if it exists
+- Result: Deployments appear successful but use OLD code
+
+**Solution:**
+1. Always use `npm run cf:build` before deploying
+2. If stuck on old version, delete `.open-next` and rebuild:
+   ```bash
+   rm -rf .open-next && npm run cf:build && npx wrangler deploy
+   ```
+
+**How to verify you're using correct build:**
+- Check `.open-next/worker.js` timestamp: `ls -la .open-next/worker.js`
+- Should be recent (within last few minutes)
+- If old timestamp, you used wrong build command
 
 ### Configuration
 
