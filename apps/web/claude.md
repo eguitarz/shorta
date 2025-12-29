@@ -119,8 +119,10 @@ If Cloudflare shows old code but local is updated:
 
 ## Key Files
 
-- `/app/(dashboard)/analyzer/[id]/page.tsx` - Main analyzer UI
+- `/app/(dashboard)/analyzer/[id]/page.tsx` - Main analyzer UI with approved changes panel
+- `/app/(dashboard)/analyzer/generate/[id]/page.tsx` - Generated storyboard results page
 - `/app/api/analyze-storyboard/route.ts` - Analysis API endpoint
+- `/app/api/generate-storyboard/route.ts` - Generate director storyboard API endpoint
 - `/app/api/youtube-stats/route.ts` - YouTube stats API endpoint (fetched on every page load)
 - `/lib/linter/engine.ts` - Linter scoring logic
 - `/lib/linter/rules/talking_head.ts` - Linter rules
@@ -151,6 +153,20 @@ If Cloudflare shows old code but local is updated:
 - **Dynamic count badge**: Updates automatically with number of approved changes
 - **Generate button**: Disabled until at least one change is approved
 - **State management**: Uses `ApprovedChange[]` interface with unique IDs
+
+### Generate Feature (Director's Storyboard)
+- **Generate button** creates a new storyboard applying approved changes
+- **Navigates to**: `/analyzer/generate/[id]` route
+- **API Endpoint**: `/api/generate-storyboard` - Applies changes and generates director notes
+- **Director Notes**: AI writes each beat as shooting instructions (not analysis)
+  - Focus on HOW to shoot the beat for maximum engagement
+  - Specific guidance on camera angles, pacing, energy, delivery
+  - Incorporates approved fixes naturally into instructions
+  - No issues/problems listed - purely prescriptive
+- **Preserves original**: Script, visual, audio unchanged unless fix specifically modifies them
+- **Re-hook variants**: Applied to Beat 1 if approved
+- **Storage**: Results stored in sessionStorage (no database yet)
+- **Processing time**: ~45 seconds (uses Gemini text generation)
 
 ### Collapsible Panel
 - Approved changes panel collapses to the right
