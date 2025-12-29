@@ -1094,7 +1094,7 @@ export default function AnalyzerResultsPage() {
                           <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs font-semibold">
                             {beat.type}
                           </span>
-                          {beat.retention.issues.some(i => i.severity === 'critical') && (
+                          {beat.retention?.issues?.some(i => i.severity === 'critical') && (
                             <span className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-xs font-semibold">
                               CRITICAL
                             </span>
@@ -1121,12 +1121,12 @@ export default function AnalyzerResultsPage() {
                     <div className="mb-3">
                       <div className="text-xs text-gray-500 mb-1">Retention</div>
                       <div className="text-sm font-semibold text-white">
-                        {beat.retention.level.replace('_', ' ')}
+                        {beat.retention?.level?.replace('_', ' ') || 'N/A'}
                       </div>
                     </div>
-                    {beat.retention.issues.length > 0 ? (
+                    {(beat.retention?.issues?.length ?? 0) > 0 ? (
                       <div className="space-y-2">
-                        {beat.retention.issues.map((issue, idx) => {
+                        {beat.retention?.issues?.map((issue, idx) => {
                           const isExpanded = isIssueExpanded(beat.beatNumber, idx);
                           return (
                             <div
@@ -1235,7 +1235,7 @@ export default function AnalyzerResultsPage() {
                         <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
                           <div className="text-xs font-semibold text-green-500 uppercase mb-1">No Issues</div>
-                          <p className="text-sm text-gray-400 leading-relaxed">{beat.retention.analysis}</p>
+                          <p className="text-sm text-gray-400 leading-relaxed">{beat.retention?.analysis || 'No analysis available'}</p>
                         </div>
                       </div>
                     )}
