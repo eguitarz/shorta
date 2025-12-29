@@ -650,30 +650,32 @@ export default function AnalyzerResultsPage() {
                 </div>
 
                 {/* Video Stats */}
-                <div className="flex items-center gap-4 px-2">
-                  <div className="flex items-center gap-1.5">
-                    <Eye className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-400 font-medium">
-                      {statsLoading ? (
-                        <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
-                      ) : videoStats?.views ? (
-                        new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(videoStats.views)
-                      ) : (
-                        '—'
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Heart className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-400 font-medium">
-                      {statsLoading ? (
-                        <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
-                      ) : videoStats?.likes ? (
-                        new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(videoStats.likes)
-                      ) : (
-                        '—'
-                      )}
-                    </span>
+                <div className="flex flex-col gap-2 px-2">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5">
+                      <Eye className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-400 font-medium">
+                        {statsLoading ? (
+                          <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
+                        ) : videoStats?.views ? (
+                          new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(videoStats.views)
+                        ) : (
+                          '—'
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Heart className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-400 font-medium">
+                        {statsLoading ? (
+                          <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
+                        ) : videoStats?.likes ? (
+                          new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(videoStats.likes)
+                        ) : (
+                          '—'
+                        )}
+                      </span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-gray-500" />
