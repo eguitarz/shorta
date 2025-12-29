@@ -72,10 +72,25 @@
 - Shows loading skeleton while analyzing
 - Shows "—" if data unavailable
 
+### Approved Changes & Generation
+- **Right sidebar panel** for collecting approved changes before generation
+- **Auto-expands** when first change is approved
+- **Two types of changes**:
+  1. **Fix**: Approved from beat issue suggestions
+     - Shows beat number, issue message, and suggestion
+     - Click "Apply Fix" button on any beat issue
+  2. **Re-hook Variant**: Approved hook rewrite suggestions
+     - Shows variant label (A, B, etc.) and full text
+     - Click "Approve Variant" button on re-hook suggestions
+- **Remove changes**: Click X button on any approved item
+- **Dynamic count badge**: Updates automatically with number of approved changes
+- **Generate button**: Disabled until at least one change is approved
+- **State management**: Uses `ApprovedChange[]` interface with unique IDs
+
 ### Collapsible Panel
 - Approved changes panel collapses to the right
 - Fast animation (100ms) for better performance
-- Auto-expands when changes are approved
+- Auto-expands when changes are approved (via useEffect watching `approvedChangesCount`)
 
 ### Score Transparency
 - Info icon with hover tooltip explaining calculation
