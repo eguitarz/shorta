@@ -24,7 +24,8 @@ import {
   Clock,
   Lightbulb,
   Eye,
-  Heart
+  Heart,
+  X
 } from "lucide-react";
 
 interface Beat {
@@ -45,6 +46,23 @@ interface Beat {
       suggestion: string;
       timestamp?: string; // Timestamp like "0:03" or "0:00-0:04" where the issue occurs
     }>;
+  };
+}
+
+interface ApprovedChange {
+  id: string;
+  type: 'fix' | 'variant';
+  beatNumber?: number;
+  beatTitle?: string;
+  issue?: {
+    severity: string;
+    message: string;
+    suggestion: string;
+  };
+  variant?: {
+    index: number;
+    label: string;
+    text: string;
   };
 }
 
@@ -149,9 +167,9 @@ export default function AnalyzerResultsPage() {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set());
   const [approvedChangesCollapsed, setApprovedChangesCollapsed] = useState(true);
+  const [approvedChanges, setApprovedChanges] = useState<ApprovedChange[]>([]);
 
-  // Track approved changes count (currently hardcoded to 0, will be dynamic later)
-  const approvedChangesCount = 0;
+  const approvedChangesCount = approvedChanges.length;
 
   const toggleIssue = (beatNumber: number, issueIndex: number) => {
     const key = `${beatNumber}-${issueIndex}`;
@@ -168,6 +186,41 @@ export default function AnalyzerResultsPage() {
 
   const isIssueExpanded = (beatNumber: number, issueIndex: number) => {
     return expandedIssues.has(`${beatNumber}-${issueIndex}`);
+  };
+
+  const approveFix = (beatNumber: number, beatTitle: string, issue: any) => {
+    const id = `fix-${beatNumber}-${Date.now()}`;
+    const newChange: ApprovedChange = {
+      id,
+      type: 'fix',
+      beatNumber,
+      beatTitle,
+      issue: {
+        severity: issue.severity,
+        message: issue.message,
+        suggestion: issue.suggestion,
+      },
+    };
+    setApprovedChanges(prev => [...prev, newChange]);
+  };
+
+  const approveVariant = (index: number, variantText: string) => {
+    const id = `variant-${index}-${Date.now()}`;
+    const label = String.fromCharCode(65 + index); // A, B, C...
+    const newChange: ApprovedChange = {
+      id,
+      type: 'variant',
+      variant: {
+        index,
+        label,
+        text: variantText,
+      },
+    };
+    setApprovedChanges(prev => [...prev, newChange]);
+  };
+
+  const removeApprovedChange = (id: string) => {
+    setApprovedChanges(prev => prev.filter(change => change.id !== id));
   };
 
   // Load URL immediately and show video player
@@ -1217,7 +1270,10 @@ export default function AnalyzerResultsPage() {
                                         <div className="flex-1">
                                           <div className="text-[10px] font-semibold text-green-500 uppercase mb-1">Solution</div>
                                           <p className="text-xs text-gray-300 leading-relaxed mb-2">{issue.suggestion}</p>
-                                          <button className="px-2.5 py-1 text-[10px] font-medium text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500 rounded transition-colors">
+                                          <button
+                                            onClick={() => approveFix(beat.beatNumber, beat.title, issue)}
+                                            className="px-2.5 py-1 text-[10px] font-medium text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500 rounded transition-colors"
+                                          >
                                             Apply Fix
                                           </button>
                                         </div>
@@ -1283,7 +1339,10 @@ export default function AnalyzerResultsPage() {
                       <span className="text-xs text-gray-500 uppercase tracking-wider">Variant {String.fromCharCode(65 + idx)}</span>
                     </div>
                     <p className="text-sm text-gray-400 mb-4">{variant}</p>
-                    <button className="w-full px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => approveVariant(idx, variant)}
+                      className="w-full px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
                       <CheckCircle2 className="w-4 h-4" />
                       Approve Variant {String.fromCharCode(65 + idx)}
                     </button>
@@ -1331,22 +1390,66 @@ export default function AnalyzerResultsPage() {
 
             {!approvedChangesCollapsed && (
               <>
-                <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-gray-600" />
+                {approvedChanges.length === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-gray-600" />
+                    </div>
+                    <p className="text-sm text-gray-400 mb-2">No changes approved yet</p>
+                    <p className="text-xs text-gray-600 max-w-[240px]">
+                      Review suggestions in the Analysis panel and approve actions to add them here.
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-400 mb-2">No changes approved yet</p>
-                  <p className="text-xs text-gray-600 max-w-[240px]">
-                    Review suggestions in the Analysis panel and approve actions to add them here.
-                  </p>
-                </div>
+                ) : (
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="space-y-3">
+                      {approvedChanges.map((change) => (
+                        <div key={change.id} className="bg-gray-800/30 border border-gray-700 rounded-lg p-3">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              {change.type === 'fix' && change.issue && (
+                                <>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[10px] font-bold uppercase text-orange-500">Fix</span>
+                                    <span className="text-[10px] text-gray-500">Beat {change.beatNumber}</span>
+                                  </div>
+                                  <p className="text-xs text-gray-300 mb-1">{change.issue.message}</p>
+                                  <p className="text-[10px] text-gray-500 line-clamp-2">{change.issue.suggestion}</p>
+                                </>
+                              )}
+                              {change.type === 'variant' && change.variant && (
+                                <>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[10px] font-bold uppercase text-orange-500">Re-hook</span>
+                                    <span className="text-[10px] text-gray-500">Variant {change.variant.label}</span>
+                                  </div>
+                                  <p className="text-xs text-gray-400 line-clamp-3">{change.variant.text}</p>
+                                </>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => removeApprovedChange(change.id)}
+                              className="ml-2 p-1 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                              title="Remove"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Generate Button */}
-                <div className="mt-auto">
+                <div className="mt-auto pt-4">
                   <div className="mb-3 text-xs text-gray-500 text-center">
                     Est. Processing Time: <span className="text-white">~45s</span>
                   </div>
-                  <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
+                  <button
+                    disabled={approvedChanges.length === 0}
+                    className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                  >
                     <Zap className="w-4 h-4" fill="currentColor" />
                     Generate using approved changes
                   </button>
