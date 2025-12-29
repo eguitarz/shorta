@@ -74,6 +74,7 @@ interface AnalysisData {
       hookStrength: number;
       structurePacing: number;
       deliveryPerformance: number;
+      directorAssessment: string;
       retentionDrivers: string[];
       pacingStrategy: string;
       visualEngagementTactics: string;
@@ -560,9 +561,50 @@ export default function AnalyzerResultsPage() {
                 {/* Overall Score */}
                 <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
                   <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Overall Score</div>
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-baseline gap-2 mb-3">
                     <span className="text-3xl font-bold">{Math.round(analysisData.lintSummary.score)}</span>
                     <span className="text-lg text-gray-500">/100</span>
+                  </div>
+                  <div className="pt-3 border-t border-gray-800">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Director's Take</div>
+                    <div className="text-xs text-gray-400 leading-relaxed">
+                      {(() => {
+                        // Parse director assessment for **emphasis**
+                        const text = analysisData.storyboard.performance.directorAssessment;
+                        const segments: Array<{ text: string; bold: boolean }> = [];
+                        const emphasisPattern = /\*\*([^*]+)\*\*/g;
+                        let lastIndex = 0;
+                        let match;
+
+                        while ((match = emphasisPattern.exec(text)) !== null) {
+                          if (match.index > lastIndex) {
+                            segments.push({ text: text.substring(lastIndex, match.index), bold: false });
+                          }
+                          segments.push({ text: match[1], bold: true });
+                          lastIndex = match.index + match[0].length;
+                        }
+
+                        if (lastIndex < text.length) {
+                          segments.push({ text: text.substring(lastIndex), bold: false });
+                        }
+
+                        if (segments.length === 0) {
+                          segments.push({ text, bold: false });
+                        }
+
+                        return (
+                          <>
+                            {segments.map((seg, idx) =>
+                              seg.bold ? (
+                                <strong key={idx} className="text-white font-semibold">{seg.text}</strong>
+                              ) : (
+                                <span key={idx}>{seg.text}</span>
+                              )
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
                 </div>
 

@@ -216,6 +216,7 @@ Return ONLY valid JSON in this exact format:
     "hookStrength": number - 0-4 score,
     "structurePacing": number - 0-3 score,
     "deliveryPerformance": number - 0-3 score,
+    "directorAssessment": "string - 2-3 sentence director's perspective on current performance and viral potential. Use filmmaker language. Assess what's working, what's holding it back, and realistic viral potential. Wrap key terms in **double asterisks** (e.g., 'Solid fundamentals but **weak hook** limits viral ceiling to **50K views**', '**Strong retention mechanics** with **high viral potential** - could hit **500K+** with right promotion')",
     "retentionDrivers": ["string - key element 1", "string - key element 2", "..."],
     "pacingStrategy": "string - how video maintains momentum",
     "visualEngagementTactics": "string - text overlays, cuts, B-roll, etc.",
