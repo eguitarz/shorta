@@ -1102,9 +1102,18 @@ export default function AnalyzerResultsPage() {
                                       </span>
                                     </button>
                                   </div>
-                                  <p className={`text-xs text-gray-400 ${!isExpanded && 'truncate'}`}>
-                                    {issue.message}
-                                  </p>
+                                  <div className="flex-1 min-w-0">
+                                    {issue.ruleId && (
+                                      <div className="mb-1">
+                                        <span className="inline-block px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium">
+                                          {issue.ruleName || issue.ruleId}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <p className={`text-xs text-gray-400 ${!isExpanded && 'truncate'}`}>
+                                      {issue.message}
+                                    </p>
+                                  </div>
                                 </div>
                                 <div className="flex-shrink-0">
                                   {isExpanded ? (
@@ -1120,7 +1129,19 @@ export default function AnalyzerResultsPage() {
                                 <div className="px-3 pb-3 pt-1 space-y-3 border-t border-gray-800">
                                   {/* Full Message */}
                                   <div>
-                                    <div className="text-[10px] text-gray-500 uppercase font-semibold mb-1">Issue</div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <div className="text-[10px] text-gray-500 uppercase font-semibold">Issue</div>
+                                      {issue.ruleId && (
+                                        <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium">
+                                          Rule: {issue.ruleName || issue.ruleId}
+                                        </span>
+                                      )}
+                                      {!issue.ruleId && (
+                                        <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-medium">
+                                          AI Analysis
+                                        </span>
+                                      )}
+                                    </div>
                                     <p className="text-sm text-gray-300 leading-relaxed">{issue.message}</p>
                                   </div>
 

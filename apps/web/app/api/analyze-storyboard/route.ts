@@ -295,7 +295,9 @@ Return ONLY valid JSON in this exact format:
           {
             "severity": "string - 'critical', 'moderate', or 'minor'",
             "message": "string - what the issue is",
-            "suggestion": "string - specific actionable fix"
+            "suggestion": "string - specific actionable fix",
+            "ruleId": "string - OPTIONAL, only include if this issue comes from a lint violation (e.g., 'th_hook_timing'). Omit for AI-discovered issues.",
+            "ruleName": "string - OPTIONAL, only include if this issue comes from a lint violation (e.g., 'Hook Within 3 Seconds'). Omit for AI-discovered issues."
           }
         ]
       }
@@ -345,11 +347,12 @@ Return ONLY valid JSON in this exact format:
 
 CRITICAL INSTRUCTIONS:
 1. Map each lint violation to the appropriate beat based on timestamp
-2. Include the violation in that beat's retention.issues array
-3. Ensure retention.level accurately reflects the severity of issues found
-4. Be specific with timestamps - use actual seconds from the video
-5. Return ONLY the JSON object, no additional text or explanation
-6. Ensure all JSON is properly formatted and escaped
+2. Include the violation in that beat's retention.issues array, preserving ruleId and ruleName from the lint violation
+3. For AI-discovered issues (not from lint violations), include severity/message/suggestion but OMIT ruleId and ruleName
+4. Ensure retention.level accurately reflects the severity of issues found
+5. Be specific with timestamps - use actual seconds from the video
+6. Return ONLY the JSON object, no additional text or explanation
+7. Ensure all JSON is properly formatted and escaped
 7. FORMAT ANALYSIS AS BULLET POINTS: In the hook, structure, content, and delivery analysis fields, use newlines (\\n) to separate each bullet point. Start each line with the content directly (no bullet character needed). Example: "Strong hook opens at 0:02s\\nViral pattern matches proven format\\nIncrease loop potential by adding callback"
 8. HOOK CATEGORY SELECTION: Choose the MOST DOMINANT hook type from the predefined list. Context for each:
    - Outcome-first: Promises result/benefit upfront
