@@ -151,6 +151,33 @@ const extractYouTubeId = (url: string): string | null => {
   return null;
 };
 
+// Format relative time (e.g., "30 days ago")
+const formatRelativeTime = (dateString: string): string => {
+  const now = new Date();
+  const published = new Date(dateString);
+  const diffMs = now.getTime() - published.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) {
+    return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
+  } else if (diffMonths > 0) {
+    return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+  } else if (diffDays > 0) {
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  } else if (diffHours > 0) {
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else if (diffMinutes > 0) {
+    return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+  } else {
+    return 'just now';
+  }
+};
+
 export default function AnalyzerResultsPage() {
   const params = useParams();
   const router = useRouter();
@@ -168,7 +195,7 @@ export default function AnalyzerResultsPage() {
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set());
   const [approvedChangesCollapsed, setApprovedChangesCollapsed] = useState(true);
   const [approvedChanges, setApprovedChanges] = useState<ApprovedChange[]>([]);
-  const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number } | null>(null);
+  const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number; publishedAt: string } | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
   const approvedChangesCount = approvedChanges.length;
@@ -643,6 +670,18 @@ export default function AnalyzerResultsPage() {
                         <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
                       ) : videoStats?.likes ? (
                         new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(videoStats.likes)
+                      ) : (
+                        '—'
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-400 font-medium">
+                      {statsLoading ? (
+                        <span className="inline-block w-20 h-4 bg-gray-800 rounded animate-pulse"></span>
+                      ) : videoStats?.publishedAt ? (
+                        formatRelativeTime(videoStats.publishedAt)
                       ) : (
                         '—'
                       )}

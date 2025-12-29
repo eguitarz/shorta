@@ -26,7 +26,7 @@ async function fetchYouTubeStats(videoId: string, apiKey?: string) {
 
   try {
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${apiKey}`
+      `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${apiKey}`
     );
 
     if (!response.ok) {
@@ -42,10 +42,12 @@ async function fetchYouTubeStats(videoId: string, apiKey?: string) {
     }
 
     const stats = data.items[0].statistics;
+    const snippet = data.items[0].snippet;
     return {
       views: parseInt(stats.viewCount || '0', 10),
       likes: parseInt(stats.likeCount || '0', 10),
       comments: parseInt(stats.commentCount || '0', 10),
+      publishedAt: snippet.publishedAt,
     };
   } catch (error) {
     console.error('Error fetching YouTube stats:', error);
