@@ -170,7 +170,29 @@ Set via `wrangler.toml` or Cloudflare dashboard:
 - `LLM_MODEL` (default: "gemini-2.5-flash")
 
 Secrets (use `wrangler secret put`):
-- `GEMINI_API_KEY`
+- `GEMINI_API_KEY` - For Gemini video analysis
+- `YOUTUBE_API_KEY` - For fetching video views/likes stats
+
+### Setting Up YouTube API Key
+
+To show video views and likes:
+
+1. **Get YouTube Data API Key:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing one
+   - Enable "YouTube Data API v3"
+   - Create credentials → API Key
+   - Copy the API key
+
+2. **Set the secret:**
+   ```bash
+   npx wrangler secret put YOUTUBE_API_KEY
+   # Paste your API key when prompted
+   ```
+
+3. **Verify:**
+   - After deploying, video stats (views/likes) will appear below the embedded video
+   - If no API key is set, stats will show "—"
 
 ## Development
 

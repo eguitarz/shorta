@@ -4,6 +4,57 @@ import { VideoLinter } from '@/lib/linter';
 import type { VideoFormat } from '@/lib/linter';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Extract YouTube video ID from URL
+function extractYouTubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// Fetch YouTube video statistics
+async function fetchYouTubeStats(videoId: string, apiKey?: string) {
+  if (!apiKey) {
+    console.log('No YouTube API key provided, skipping stats fetch');
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${apiKey}`
+    );
+
+    if (!response.ok) {
+      console.error('YouTube API error:', response.status, response.statusText);
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (!data.items || data.items.length === 0) {
+      console.log('No video found for ID:', videoId);
+      return null;
+    }
+
+    const stats = data.items[0].statistics;
+    return {
+      views: parseInt(stats.viewCount || '0', 10),
+      likes: parseInt(stats.likeCount || '0', 10),
+      comments: parseInt(stats.commentCount || '0', 10),
+    };
+  } catch (error) {
+    console.error('Error fetching YouTube stats:', error);
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
@@ -203,6 +254,17 @@ export async function POST(request: NextRequest) {
     console.log('Bonus details:', bonusDetails);
     console.log('Final score:', finalScore);
     console.log('========================');
+
+    // Fetch YouTube statistics
+    const videoId = extractYouTubeId(url);
+    const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+    const videoStats = videoId ? await fetchYouTubeStats(videoId, youtubeApiKey) : null;
+
+    // Add videoStats to storyboard.performance
+    if (storyboard?.performance && videoStats) {
+      storyboard.performance.videoStats = videoStats;
+      console.log('Added video stats:', videoStats);
+    }
 
     const response = {
       url,
