@@ -219,6 +219,19 @@ export default function AnalyzerResultsPage() {
   };
 
   const approveFix = (beatNumber: number, beatTitle: string, issue: any) => {
+    // Check if this exact fix from the same beat already exists
+    const isDuplicate = approvedChanges.some(
+      change =>
+        change.type === 'fix' &&
+        change.beatNumber === beatNumber &&
+        change.issue?.suggestion === issue.suggestion
+    );
+
+    if (isDuplicate) {
+      alert('This fix has already been approved for this beat.');
+      return;
+    }
+
     const id = `fix-${beatNumber}-${Date.now()}`;
     const newChange: ApprovedChange = {
       id,
@@ -235,6 +248,9 @@ export default function AnalyzerResultsPage() {
   };
 
   const approveVariant = (index: number, variantText: string) => {
+    // Remove any existing variant (only one variant allowed at a time)
+    const withoutVariants = approvedChanges.filter(change => change.type !== 'variant');
+
     const id = `variant-${index}-${Date.now()}`;
     const label = String.fromCharCode(65 + index); // A, B, C...
     const newChange: ApprovedChange = {
@@ -246,7 +262,7 @@ export default function AnalyzerResultsPage() {
         text: variantText,
       },
     };
-    setApprovedChanges(prev => [...prev, newChange]);
+    setApprovedChanges([...withoutVariants, newChange]);
   };
 
   const removeApprovedChange = (id: string) => {
