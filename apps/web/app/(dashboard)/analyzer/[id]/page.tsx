@@ -77,6 +77,30 @@ interface AnalysisData {
       retentionDrivers: string[];
       pacingStrategy: string;
       visualEngagementTactics: string;
+      hook: {
+        duration: number;
+        viralPattern: number;
+        loopStrength: number;
+        analysis: string;
+      };
+      structure: {
+        videoLength: number;
+        pacingConsistency: number;
+        payoffTiming: number;
+        analysis: string;
+      };
+      content: {
+        contentType: string;
+        valueClarity: number;
+        uniqueness: number;
+        analysis: string;
+      };
+      delivery: {
+        energyLevel: number;
+        vocalClarity: number;
+        presence: number;
+        analysis: string;
+      };
     };
     replicationBlueprint: {
       elementsToKeep: string[];
@@ -113,6 +137,7 @@ export default function AnalyzerResultsPage() {
   const [hookExpanded, setHookExpanded] = useState(false);
   const [structureExpanded, setStructureExpanded] = useState(false);
   const [contentExpanded, setContentExpanded] = useState(false);
+  const [deliveryExpanded, setDeliveryExpanded] = useState(false);
 
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -457,7 +482,7 @@ export default function AnalyzerResultsPage() {
                 </div>
 
                 {/* Analysis Cards Grid */}
-                <div className="grid grid-cols-3 gap-3 items-start">
+                <div className="grid grid-cols-4 gap-3 items-start">
                   {/* Hook Card */}
                   <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
                     <div className="flex items-center gap-1.5 mb-2">
@@ -484,9 +509,23 @@ export default function AnalyzerResultsPage() {
                     </div>
 
                     {hookExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-800">
+                      <div className="mt-3 pt-3 border-t border-gray-800 space-y-3">
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Hook Duration</span>
+                            <span className="text-white font-semibold">{analysisData.storyboard.performance.hook.duration}s</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Viral Pattern</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.viralPattern}/100</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Loop Strength</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.loopStrength}/100</span>
+                          </div>
+                        </div>
                         <p className="text-xs text-gray-400 leading-relaxed">
-                          Hook pattern: {analysisData.storyboard.overview.hookPattern}
+                          {analysisData.storyboard.performance.hook.analysis}
                         </p>
                       </div>
                     )}
@@ -516,9 +555,23 @@ export default function AnalyzerResultsPage() {
                     </div>
 
                     {structureExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-800">
+                      <div className="mt-3 pt-3 border-t border-gray-800 space-y-3">
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Video Length</span>
+                            <span className="text-white font-semibold">{analysisData.storyboard.performance.structure.videoLength}s</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Pacing Consistency</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.structure.pacingConsistency}/100</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Payoff Timing</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.structure.payoffTiming}/100</span>
+                          </div>
+                        </div>
                         <p className="text-xs text-gray-400 leading-relaxed">
-                          {analysisData.storyboard.performance.pacingStrategy}
+                          {analysisData.storyboard.performance.structure.analysis}
                         </p>
                       </div>
                     )}
@@ -548,9 +601,69 @@ export default function AnalyzerResultsPage() {
                     </div>
 
                     {contentExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-800">
+                      <div className="mt-3 pt-3 border-t border-gray-800 space-y-3">
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Content Type</span>
+                            <span className="text-white font-semibold">{analysisData.storyboard.performance.content.contentType}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Value Clarity</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.content.valueClarity}/100</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Uniqueness</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.content.uniqueness}/100</span>
+                          </div>
+                        </div>
                         <p className="text-xs text-gray-400 leading-relaxed">
-                          {analysisData.storyboard.overview.contentType}
+                          {analysisData.storyboard.performance.content.analysis}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Delivery Card */}
+                  <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                      </svg>
+                      <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Delivery</span>
+                      <button
+                        onClick={() => setDeliveryExpanded(!deliveryExpanded)}
+                        className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
+                      >
+                        {deliveryExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
+                      </button>
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-2xl font-bold">{Math.round(analysisData.storyboard.performance.deliveryPerformance * 33.33)}</span>
+                      <span className="text-sm text-gray-500">/100</span>
+                      <span className="ml-auto px-1.5 py-0.5 bg-purple-500/10 text-purple-500 rounded text-[9px] font-semibold uppercase">Engaging</span>
+                    </div>
+                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-2">
+                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${analysisData.storyboard.performance.deliveryPerformance * 33.33}%` }}></div>
+                    </div>
+
+                    {deliveryExpanded && (
+                      <div className="mt-3 pt-3 border-t border-gray-800 space-y-3">
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Energy Level</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.energyLevel}/100</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Vocal Clarity</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.vocalClarity}/100</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Presence</span>
+                            <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.presence}/100</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-400 leading-relaxed">
+                          {analysisData.storyboard.performance.delivery.analysis}
                         </p>
                       </div>
                     )}

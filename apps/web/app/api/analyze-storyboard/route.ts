@@ -218,7 +218,31 @@ Return ONLY valid JSON in this exact format:
     "deliveryPerformance": number - 0-3 score,
     "retentionDrivers": ["string - key element 1", "string - key element 2", "..."],
     "pacingStrategy": "string - how video maintains momentum",
-    "visualEngagementTactics": "string - text overlays, cuts, B-roll, etc."
+    "visualEngagementTactics": "string - text overlays, cuts, B-roll, etc.",
+    "hook": {
+      "duration": number - seconds of hook (0-5),
+      "viralPattern": number - 0-100 how well it matches viral patterns,
+      "loopStrength": number - 0-100 re-watch potential,
+      "analysis": "string - what works + actionable insight with estimated impact"
+    },
+    "structure": {
+      "videoLength": number - total seconds,
+      "pacingConsistency": number - 0-100 how consistent the pacing is,
+      "payoffTiming": number - 0-100 how well-timed the payoff is,
+      "analysis": "string - what works + actionable insight with estimated impact"
+    },
+    "content": {
+      "contentType": "string - Educational/Entertainment/Tutorial/Story/etc",
+      "valueClarity": number - 0-100 how clear the value proposition is,
+      "uniqueness": number - 0-100 how unique the angle/perspective is,
+      "analysis": "string - what works + actionable insight with estimated impact"
+    },
+    "delivery": {
+      "energyLevel": number - 0-100 vocal energy and enthusiasm,
+      "vocalClarity": number - 0-100 how clear and understandable speech is,
+      "presence": number - 0-100 camera presence and charisma,
+      "analysis": "string - what works + actionable insight with estimated impact"
+    }
   },
   "replicationBlueprint": {
     "elementsToKeep": ["string - universal technique 1", "..."],
