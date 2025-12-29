@@ -168,6 +168,8 @@ export default function AnalyzerResultsPage() {
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set());
   const [approvedChangesCollapsed, setApprovedChangesCollapsed] = useState(true);
   const [approvedChanges, setApprovedChanges] = useState<ApprovedChange[]>([]);
+  const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   const approvedChangesCount = approvedChanges.length;
 
@@ -299,6 +301,32 @@ export default function AnalyzerResultsPage() {
 
     analyzeVideo();
   }, [videoUrl, analysisData, params.id]);
+
+  // Fetch fresh YouTube stats on every render
+  useEffect(() => {
+    if (!videoUrl) return;
+
+    const fetchStats = async () => {
+      setStatsLoading(true);
+      try {
+        const response = await fetch(`/api/youtube-stats?url=${encodeURIComponent(videoUrl)}`);
+        if (response.ok) {
+          const stats = await response.json();
+          setVideoStats(stats);
+        } else {
+          console.error('Failed to fetch YouTube stats');
+          setVideoStats(null);
+        }
+      } catch (error) {
+        console.error('Error fetching YouTube stats:', error);
+        setVideoStats(null);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [videoUrl]);
 
   // Initialize YouTube IFrame API
   useEffect(() => {
@@ -599,10 +627,10 @@ export default function AnalyzerResultsPage() {
                   <div className="flex items-center gap-1.5">
                     <Eye className="w-4 h-4 text-gray-500" />
                     <span className="text-sm text-gray-400 font-medium">
-                      {loading ? (
+                      {statsLoading ? (
                         <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
-                      ) : analysisData?.storyboard?.performance?.videoStats?.views ? (
-                        new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(analysisData.storyboard.performance.videoStats.views)
+                      ) : videoStats?.views ? (
+                        new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(videoStats.views)
                       ) : (
                         '—'
                       )}
@@ -611,10 +639,10 @@ export default function AnalyzerResultsPage() {
                   <div className="flex items-center gap-1.5">
                     <Heart className="w-4 h-4 text-gray-500" />
                     <span className="text-sm text-gray-400 font-medium">
-                      {loading ? (
+                      {statsLoading ? (
                         <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
-                      ) : analysisData?.storyboard?.performance?.videoStats?.likes ? (
-                        new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(analysisData.storyboard.performance.videoStats.likes)
+                      ) : videoStats?.likes ? (
+                        new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(videoStats.likes)
                       ) : (
                         '—'
                       )}
