@@ -274,7 +274,8 @@ export default function AnalyzerResultsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate storyboard');
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+        throw new Error(errorMsg || 'Failed to generate storyboard');
       }
 
       // Store generated data in sessionStorage
@@ -285,7 +286,9 @@ export default function AnalyzerResultsPage() {
       router.push(`/analyzer/generate/${generatedId}`);
     } catch (err) {
       console.error('Generation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate storyboard');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate storyboard';
+      alert(`Generation failed: ${errorMessage}\n\nCheck browser console for details.`);
+      setError(errorMessage);
       setGenerating(false);
     }
   };
