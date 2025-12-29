@@ -449,15 +449,43 @@ export default function AnalyzerResultsPage() {
     return (
       <ul className="space-y-1.5 text-xs text-gray-400">
         {lines.map((line, idx) => {
-          // Bold keywords: numbers followed by %, specific terms
-          const formatted = line
-            .replace(/(\d+%)/g, '<strong class="text-white font-semibold">$1</strong>')
-            .replace(/\b(strong|weak|good|excellent|critical|high|low|increase|decrease|improve|fix|add|remove|very|extremely)\b/gi, '<strong class="text-white font-semibold">$1</strong>');
+          // Parse line into segments with bold keywords
+          const segments: Array<{ text: string; bold: boolean }> = [];
+          const trimmedLine = line.trim();
+
+          // Keywords to bold
+          const keywords = /\b(\d+%|strong|weak|good|excellent|critical|high|low|increase|decrease|improve|fix|add|remove|very|extremely|at \d+:\d+s?)\b/gi;
+
+          let lastIndex = 0;
+          let match;
+
+          while ((match = keywords.exec(trimmedLine)) !== null) {
+            // Add text before match
+            if (match.index > lastIndex) {
+              segments.push({ text: trimmedLine.substring(lastIndex, match.index), bold: false });
+            }
+            // Add matched keyword
+            segments.push({ text: match[0], bold: true });
+            lastIndex = match.index + match[0].length;
+          }
+
+          // Add remaining text
+          if (lastIndex < trimmedLine.length) {
+            segments.push({ text: trimmedLine.substring(lastIndex), bold: false });
+          }
 
           return (
             <li key={idx} className="flex gap-2">
               <span className="text-gray-600 mt-0.5">•</span>
-              <span dangerouslySetInnerHTML={{ __html: formatted }} />
+              <span>
+                {segments.map((seg, segIdx) =>
+                  seg.bold ? (
+                    <strong key={segIdx} className="text-white font-semibold">{seg.text}</strong>
+                  ) : (
+                    <span key={segIdx}>{seg.text}</span>
+                  )
+                )}
+              </span>
             </li>
           );
         })}
