@@ -541,7 +541,7 @@ export default function AnalyzerResultsPage() {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-[1fr_380px] h-full">
+        <div className={`grid h-full transition-all duration-300 ${approvedChangesCollapsed ? 'grid-cols-[1fr_48px]' : 'grid-cols-[1fr_380px]'}`}>
           {/* Left Column - Analysis */}
           <div className="p-8 overflow-y-auto">
             {/* Header */}
@@ -574,7 +574,35 @@ export default function AnalyzerResultsPage() {
               <div className="flex flex-col gap-4">
                 {/* Overall Score */}
                 <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
-                  <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Overall Score</div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className="text-xs text-gray-500 uppercase tracking-wider">Overall Score</div>
+                    <div className="relative group">
+                      <InfoIcon className="w-3.5 h-3.5 text-gray-600 hover:text-gray-400 cursor-help transition-colors" />
+                      <div className="absolute left-0 top-6 w-72 bg-gray-900 border border-gray-700 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl">
+                        <div className="text-xs text-gray-300 space-y-2">
+                          <p className="font-semibold text-white">How is this score calculated?</p>
+                          <p>The <span className="text-orange-400 font-medium">Overall Score</span> (0-100) is based on automated linting rules that check for common retention issues:</p>
+                          <ul className="space-y-1 pl-3">
+                            <li className="flex items-start gap-1.5">
+                              <span className="text-red-400 mt-0.5">•</span>
+                              <span><span className="text-red-400 font-medium">Critical</span> violations: -10 points each</span>
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <span className="text-yellow-400 mt-0.5">•</span>
+                              <span><span className="text-yellow-400 font-medium">Moderate</span> violations: -5 points each</span>
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <span className="text-blue-400 mt-0.5">•</span>
+                              <span><span className="text-blue-400 font-medium">Minor</span> violations: -2 points each</span>
+                            </li>
+                          </ul>
+                          <p className="pt-2 border-t border-gray-800 text-[11px]">
+                            The 4 performance cards below (<span className="text-orange-400">Hook</span>, <span className="text-green-400">Structure</span>, <span className="text-purple-400">Content</span>, <span className="text-blue-400">Delivery</span>) are separate AI-evaluated metrics based on video analysis.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex items-baseline gap-2 mb-3">
                     <span className="text-3xl font-bold">{Math.round(analysisData.lintSummary.score)}</span>
                     <span className="text-lg text-gray-500">/100</span>
@@ -1129,26 +1157,39 @@ export default function AnalyzerResultsPage() {
           </div>
 
           {/* Right Column - Approved Changes */}
-          <div className={`border-l border-gray-800 flex flex-col transition-all duration-300 ${approvedChangesCollapsed ? 'w-16' : 'p-6'}`}>
-            <div className={`flex items-center ${approvedChangesCollapsed ? 'flex-col gap-3 p-4' : 'justify-between mb-6'}`}>
-              {!approvedChangesCollapsed && <h3 className="text-lg font-semibold">Approved Changes</h3>}
-              <div className="flex items-center gap-2">
-                <span className="w-7 h-7 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-sm font-bold">
+          <div className={`border-l border-gray-800 flex flex-col transition-all duration-300 ${approvedChangesCollapsed ? '' : 'p-6'}`}>
+            {approvedChangesCollapsed ? (
+              <div className="flex flex-col items-center pt-6 gap-3">
+                <button
+                  onClick={() => setApprovedChangesCollapsed(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  title="Expand approved changes"
+                >
+                  <ChevronDown className="w-5 h-5 rotate-90" />
+                </button>
+                <span className="w-7 h-7 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-xs font-bold">
                   {approvedChangesCount}
                 </span>
-                <button
-                  onClick={() => setApprovedChangesCollapsed(!approvedChangesCollapsed)}
-                  className="text-gray-400 hover:text-white transition-colors"
-                  title={approvedChangesCollapsed ? "Expand approved changes" : "Collapse approved changes"}
-                >
-                  {approvedChangesCollapsed ? (
-                    <ChevronDown className="w-5 h-5" />
-                  ) : (
-                    <ChevronUp className="w-5 h-5" />
-                  )}
-                </button>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold">Approved Changes</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-sm font-bold">
+                      {approvedChangesCount}
+                    </span>
+                    <button
+                      onClick={() => setApprovedChangesCollapsed(true)}
+                      className="text-gray-400 hover:text-white transition-colors"
+                      title="Collapse approved changes"
+                    >
+                      <ChevronUp className="w-5 h-5 -rotate-90" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
             {!approvedChangesCollapsed && (
               <>
