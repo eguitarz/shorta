@@ -64,13 +64,6 @@ export async function POST(request: NextRequest) {
 
     const client = createDefaultLLMClient(env);
 
-    if (!client.generateText) {
-      return NextResponse.json(
-        { error: 'Client does not support text generation' },
-        { status: 500 }
-      );
-    }
-
     // Apply approved changes to storyboard
     const updatedBeats = applyApprovedChanges(storyboard.beats, approvedChanges);
 
@@ -81,12 +74,17 @@ export async function POST(request: NextRequest) {
     let generatedStoryboard;
 
     try {
-      const response = await client.generateText(generationPrompt, {
+      const response = await client.chat([
+        {
+          role: 'user',
+          content: generationPrompt,
+        }
+      ], {
         temperature: 0.7,
         maxTokens: 16384,
       });
 
-      generatedStoryboard = JSON.parse(response);
+      generatedStoryboard = JSON.parse(response.content);
     } catch (error) {
       console.error('Generation error:', error);
       return NextResponse.json(
