@@ -59,7 +59,7 @@ export class VideoLinter {
       prompt,
       {
         temperature: 0.2, // Low temperature for consistent linting
-        maxTokens: 4096, // Increased to ensure complete responses
+        maxTokens: 16384, // Very high limit to prevent incomplete JSON responses
       }
     );
 
@@ -77,10 +77,15 @@ export class VideoLinter {
 
       parsedResult = JSON.parse(jsonText);
     } catch (error) {
-      const preview = response.content.substring(0, 500);
-      console.error('Failed to parse lint JSON. Preview:', preview);
+      const contentLength = response.content.length;
+      const preview = response.content.substring(0, 1000);
+      const ending = response.content.substring(Math.max(0, contentLength - 500));
+      console.error('Failed to parse lint JSON.');
+      console.error('Content length:', contentLength);
+      console.error('Preview (first 1000 chars):', preview);
+      console.error('Ending (last 500 chars):', ending);
       console.error('Parse error:', error);
-      throw new Error(`Failed to parse lint results. The response may be incomplete or malformed. Check server logs for details.`);
+      throw new Error(`Failed to parse lint results. The response may be incomplete or malformed. Content length: ${contentLength} chars. Check server logs for details.`);
     }
 
     const violations: RuleViolation[] = parsedResult.violations || [];
