@@ -151,17 +151,50 @@ export default function GenerateResultsPage() {
             </h2>
             <div className="space-y-3">
               {generatedData.appliedChanges.map((change) => (
-                <div key={change.id} className="text-sm">
+                <div key={change.id} className="text-sm group relative">
                   {change.type === 'fix' ? (
-                    <div className="flex gap-2">
-                      <span className="text-purple-400 font-medium">Beat {change.beatNumber}:</span>
-                      <span className="text-gray-300">{change.issue.suggestion}</span>
-                    </div>
+                    <>
+                      <div className="flex gap-2 cursor-help">
+                        <span className="text-purple-400 font-medium">Beat {change.beatNumber}:</span>
+                        <span className="text-gray-300">{change.issue.suggestion}</span>
+                      </div>
+                      {/* Tooltip */}
+                      <div className="absolute left-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] p-4 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-gray-400 font-medium mb-1">Issue:</p>
+                            <p className="text-sm text-gray-200">{change.issue.message}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-400 font-medium mb-1">Suggestion:</p>
+                            <p className="text-sm text-gray-200">{change.issue.suggestion}</p>
+                          </div>
+                          <div>
+                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                              change.issue.severity === 'critical' ? 'bg-red-900/50 text-red-300' :
+                              change.issue.severity === 'moderate' ? 'bg-orange-900/50 text-orange-300' :
+                              'bg-blue-900/50 text-blue-300'
+                            }`}>
+                              {change.issue.severity}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   ) : (
-                    <div className="flex gap-2">
-                      <span className="text-purple-400 font-medium">Re-hook Variant {change.variant.label}:</span>
-                      <span className="text-gray-300">Applied to opening</span>
-                    </div>
+                    <>
+                      <div className="flex gap-2 cursor-help">
+                        <span className="text-purple-400 font-medium">Re-hook Variant {change.variant.label}:</span>
+                        <span className="text-gray-300">Applied to opening</span>
+                      </div>
+                      {/* Tooltip */}
+                      <div className="absolute left-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] p-4 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div>
+                          <p className="text-xs text-gray-400 font-medium mb-1">New Hook Text:</p>
+                          <p className="text-sm text-gray-200 italic">&quot;{change.variant.text}&quot;</p>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </div>
               ))}
