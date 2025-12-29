@@ -916,7 +916,7 @@ export default function AnalyzerResultsPage() {
                       </button>
                     </div>
                     {(() => {
-                      const hookScore = Math.round(analysisData.storyboard.performance.hookStrength * 25);
+                      const hookScore = Math.min(Math.round(analysisData.storyboard.performance.hookStrength), 100);
                       const badge = getHookBadge(hookScore);
                       return (
                         <>
@@ -987,7 +987,7 @@ export default function AnalyzerResultsPage() {
                       </button>
                     </div>
                     {(() => {
-                      const structureScore = Math.round(analysisData.storyboard.performance.structurePacing * 33.33);
+                      const structureScore = Math.min(Math.round(analysisData.storyboard.performance.structurePacing), 100);
                       const badge = getStructureBadge(structureScore);
                       return (
                         <>
@@ -1045,7 +1045,7 @@ export default function AnalyzerResultsPage() {
                     </div>
                     {(() => {
                       // Calculate content score from average of valueClarity and uniqueness
-                      const contentScore = Math.round((analysisData.storyboard.performance.content.valueClarity + analysisData.storyboard.performance.content.uniqueness) / 2);
+                      const contentScore = Math.min(Math.round((analysisData.storyboard.performance.content.valueClarity + analysisData.storyboard.performance.content.uniqueness) / 2), 100);
                       const badge = getContentBadge(contentScore);
                       return (
                         <>
@@ -1102,7 +1102,7 @@ export default function AnalyzerResultsPage() {
                       </button>
                     </div>
                     {(() => {
-                      const deliveryScore = Math.round(analysisData.storyboard.performance.deliveryPerformance * 33.33);
+                      const deliveryScore = Math.min(Math.round(analysisData.storyboard.performance.deliveryPerformance), 100);
                       const badge = getDeliveryBadge(deliveryScore);
                       return (
                         <>

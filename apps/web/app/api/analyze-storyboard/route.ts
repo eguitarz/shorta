@@ -237,10 +237,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Bonus 2: Strong hook (>= 80% of max 4 = 3.2) - +5 points
-    if (storyboard.performance?.hookStrength >= 3.2) {
+    // Bonus 2: Strong hook (>= 80/100) - +5 points
+    if (storyboard.performance?.hookStrength >= 80) {
       bonusPoints += 5;
-      bonusDetails.push(`Strong hook (${storyboard.performance.hookStrength}/4): +5`);
+      bonusDetails.push(`Strong hook (${storyboard.performance.hookStrength}/100): +5`);
     }
 
     // Apply bonuses to score (can exceed 100)
@@ -367,9 +367,9 @@ Return ONLY valid JSON in this exact format:
   ],
   "performance": {
     "score": number - 0-10 overall score,
-    "hookStrength": number - 0-4 score,
-    "structurePacing": number - 0-3 score,
-    "deliveryPerformance": number - 0-3 score,
+    "hookStrength": number - 0-100 score for hook quality,
+    "structurePacing": number - 0-100 score for structure and pacing,
+    "deliveryPerformance": number - 0-100 score for delivery quality,
     "directorAssessment": "string - 2-3 sentence director's perspective on current performance and viral potential. Use filmmaker language. Assess what's working, what's holding it back, and realistic viral potential. Wrap key terms in **double asterisks** (e.g., 'Solid fundamentals but **weak hook** limits viral ceiling to **50K views**', '**Strong retention mechanics** with **high viral potential** - could hit **500K+** with right promotion')",
     "retentionDrivers": ["string - key element 1", "string - key element 2", "..."],
     "pacingStrategy": "string - how video maintains momentum",
