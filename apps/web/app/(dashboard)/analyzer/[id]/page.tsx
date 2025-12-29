@@ -146,6 +146,10 @@ export default function AnalyzerResultsPage() {
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set());
+  const [approvedChangesCollapsed, setApprovedChangesCollapsed] = useState(true);
+
+  // Track approved changes count (currently hardcoded to 0, will be dynamic later)
+  const approvedChangesCount = 0;
 
   const toggleIssue = (beatNumber: number, issueIndex: number) => {
     const key = `${beatNumber}-${issueIndex}`;
@@ -274,6 +278,13 @@ export default function AnalyzerResultsPage() {
       }
     };
   }, [analysisData]);
+
+  // Auto-expand approved changes panel when there are approved changes
+  useEffect(() => {
+    if (approvedChangesCount > 0) {
+      setApprovedChangesCollapsed(false);
+    }
+  }, [approvedChangesCount]);
 
   // Function to seek video to specific timestamp
   const seekToTimestamp = (seconds: number) => {
@@ -1118,34 +1129,51 @@ export default function AnalyzerResultsPage() {
           </div>
 
           {/* Right Column - Approved Changes */}
-          <div className="border-l border-gray-800 p-6 flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Approved Changes</h3>
-              <span className="w-7 h-7 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-sm font-bold">
-                0
-              </span>
+          <div className={`border-l border-gray-800 flex flex-col transition-all duration-300 ${approvedChangesCollapsed ? 'w-16' : 'p-6'}`}>
+            <div className={`flex items-center ${approvedChangesCollapsed ? 'flex-col gap-3 p-4' : 'justify-between mb-6'}`}>
+              {!approvedChangesCollapsed && <h3 className="text-lg font-semibold">Approved Changes</h3>}
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-sm font-bold">
+                  {approvedChangesCount}
+                </span>
+                <button
+                  onClick={() => setApprovedChangesCollapsed(!approvedChangesCollapsed)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  title={approvedChangesCollapsed ? "Expand approved changes" : "Collapse approved changes"}
+                >
+                  {approvedChangesCollapsed ? (
+                    <ChevronDown className="w-5 h-5" />
+                  ) : (
+                    <ChevronUp className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-8 h-8 text-gray-600" />
-              </div>
-              <p className="text-sm text-gray-400 mb-2">No changes approved yet</p>
-              <p className="text-xs text-gray-600 max-w-[240px]">
-                Review suggestions in the Analysis panel and approve actions to add them here.
-              </p>
-            </div>
+            {!approvedChangesCollapsed && (
+              <>
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-gray-600" />
+                  </div>
+                  <p className="text-sm text-gray-400 mb-2">No changes approved yet</p>
+                  <p className="text-xs text-gray-600 max-w-[240px]">
+                    Review suggestions in the Analysis panel and approve actions to add them here.
+                  </p>
+                </div>
 
-            {/* Generate Button */}
-            <div className="mt-auto">
-              <div className="mb-3 text-xs text-gray-500 text-center">
-                Est. Processing Time: <span className="text-white">~45s</span>
-              </div>
-              <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
-                <Zap className="w-4 h-4" fill="currentColor" />
-                Generate using approved changes
-              </button>
-            </div>
+                {/* Generate Button */}
+                <div className="mt-auto">
+                  <div className="mb-3 text-xs text-gray-500 text-center">
+                    Est. Processing Time: <span className="text-white">~45s</span>
+                  </div>
+                  <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
+                    <Zap className="w-4 h-4" fill="currentColor" />
+                    Generate using approved changes
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </main>
