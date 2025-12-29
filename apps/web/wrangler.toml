@@ -26,3 +26,11 @@ LLM_MODEL = "gemini-2.5-flash"
 
 # Secrets (use: wrangler secret put GEMINI_API_KEY)
 # GEMINI_API_KEY = "your-api-key-here" (deploy with: wrangler secret put GEMINI_API_KEY)
+
+# Observability configuration
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
