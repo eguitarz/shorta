@@ -6,14 +6,24 @@
 
 ### Build and Deploy Process
 
-1. **Build the application:**
+**IMPORTANT:** Use `cf:build` not `build` for Cloudflare Workers!
+
+1. **Build for Cloudflare:**
    ```bash
-   npm run build
+   npm run cf:build
    ```
+   This runs `opennextjs-cloudflare build` which creates the `.open-next` directory.
+
+   ⚠️ **Do NOT use** `npm run build` - it only runs `next build` without OpenNext bundling.
 
 2. **Deploy to Cloudflare Workers:**
    ```bash
    npx wrangler deploy
+   ```
+
+3. **One-liner (recommended):**
+   ```bash
+   npm run cf:build && npx wrangler deploy
    ```
 
 ### Troubleshooting - Seeing Old Version
@@ -30,7 +40,7 @@ If Cloudflare shows old code but local is updated:
 
 4. **Rebuild and redeploy:**
    ```bash
-   npm run build && npx wrangler deploy
+   npm run cf:build && npx wrangler deploy
    ```
 
 5. **Check deployment version:**
@@ -148,9 +158,12 @@ npm install
 # Run development server
 npm run dev
 
-# Build for production
-npm run build
+# Build for Cloudflare Workers (NOT npm run build!)
+npm run cf:build
 
 # Deploy to Cloudflare Workers
 npx wrangler deploy
+
+# One-liner: Build and deploy
+npm run cf:build && npx wrangler deploy
 ```
