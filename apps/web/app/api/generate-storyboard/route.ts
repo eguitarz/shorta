@@ -91,13 +91,20 @@ export async function POST(request: NextRequest) {
 
       // Try to extract JSON if it's wrapped in markdown code blocks
       let jsonContent = response.content.trim();
-      if (jsonContent.startsWith('```')) {
-        const match = jsonContent.match(/```(?:json)?\s*\n([\s\S]*?)\n```/);
-        if (match) {
-          jsonContent = match[1];
-        }
+
+      // Remove markdown code blocks - handle various formats
+      // Matches: ```json\n{...}\n``` or ```{...}``` or ```json{...}```
+      const codeBlockMatch = jsonContent.match(/```(?:json)?\s*({[\s\S]*?})\s*```/);
+      if (codeBlockMatch) {
+        jsonContent = codeBlockMatch[1];
+        console.log('Extracted JSON from code block');
+      } else if (jsonContent.startsWith('```')) {
+        // Fallback: just remove the ``` markers
+        jsonContent = jsonContent.replace(/^```(?:json)?/g, '').replace(/```$/g, '').trim();
+        console.log('Removed code block markers');
       }
 
+      console.log('JSON to parse (first 200 chars):', jsonContent.substring(0, 200));
       generatedStoryboard = JSON.parse(jsonContent);
       console.log('Successfully parsed JSON, beats count:', generatedStoryboard.beats?.length);
     } catch (error) {
