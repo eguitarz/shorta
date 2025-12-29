@@ -22,7 +22,9 @@ import {
   AlertTriangle,
   Info as InfoIcon,
   Clock,
-  Lightbulb
+  Lightbulb,
+  Eye,
+  Heart
 } from "lucide-react";
 
 interface Beat {
@@ -134,10 +136,10 @@ const extractYouTubeId = (url: string): string | null => {
 export default function AnalyzerResultsPage() {
   const params = useParams();
   const router = useRouter();
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [loadingStage, setLoadingStage] = useState<string>("Initializing...");
   const [hookExpanded, setHookExpanded] = useState(false);
   const [structureExpanded, setStructureExpanded] = useState(false);
   const [contentExpanded, setContentExpanded] = useState(false);
@@ -168,42 +170,51 @@ export default function AnalyzerResultsPage() {
     return expandedIssues.has(`${beatNumber}-${issueIndex}`);
   };
 
+  // Load URL immediately and show video player
   useEffect(() => {
-    const analyzeVideo = async () => {
-      const id = params.id as string;
-      const stored = sessionStorage.getItem(`analysis_${id}`);
+    const id = params.id as string;
+    const stored = sessionStorage.getItem(`analysis_${id}`);
 
-      if (!stored) {
+    if (!stored) {
+      router.push("/analyzer/create");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored);
+
+      // Extract and set URL immediately
+      const url = parsed.url;
+      if (!url) {
         router.push("/analyzer/create");
         return;
       }
 
+      setVideoUrl(url);
+
+      // If analysis is already complete, just display it
+      if (parsed.status === "complete" && parsed.storyboard) {
+        setAnalysisData(parsed);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("Error loading from sessionStorage:", err);
+      router.push("/analyzer/create");
+    }
+  }, [params.id, router]);
+
+  // Start analysis if not already complete
+  useEffect(() => {
+    if (!videoUrl || analysisData) return;
+
+    const analyzeVideo = async () => {
       try {
-        const parsed = JSON.parse(stored);
-
-        // If analysis is already complete, just display it
-        if (parsed.status === "complete" && parsed.storyboard) {
-          setAnalysisData(parsed);
-          setLoading(false);
-          return;
-        }
-
-        // Otherwise, we need to analyze
-        const url = parsed.url;
-        if (!url) {
-          router.push("/analyzer/create");
-          return;
-        }
-
-        // Start analysis
-        setLoadingStage("Classifying video format...");
-
         const response = await fetch("/api/analyze-storyboard", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({ url: videoUrl }),
         });
 
         const data = await response.json();
@@ -211,8 +222,6 @@ export default function AnalyzerResultsPage() {
         if (!response.ok) {
           throw new Error(data.error || "Failed to analyze storyboard");
         }
-
-        setLoadingStage("Analyzing storyboard...");
 
         // Store complete analysis data
         const completeData = {
@@ -224,6 +233,7 @@ export default function AnalyzerResultsPage() {
           status: "complete",
         };
 
+        const id = params.id as string;
         sessionStorage.setItem(`analysis_${id}`, JSON.stringify(completeData));
         setAnalysisData(completeData);
         setLoading(false);
@@ -235,13 +245,13 @@ export default function AnalyzerResultsPage() {
     };
 
     analyzeVideo();
-  }, [params.id, router]);
+  }, [videoUrl, analysisData, params.id]);
 
   // Initialize YouTube IFrame API
   useEffect(() => {
-    if (!analysisData) return;
+    if (!videoUrl) return;
 
-    const videoId = extractYouTubeId(analysisData.url);
+    const videoId = extractYouTubeId(videoUrl);
     if (!videoId) return;
 
     // Load YouTube IFrame API script
@@ -277,7 +287,7 @@ export default function AnalyzerResultsPage() {
         playerRef.current = null;
       }
     };
-  }, [analysisData]);
+  }, [videoUrl]);
 
   // Auto-expand approved changes panel when there are approved changes
   useEffect(() => {
@@ -301,53 +311,6 @@ export default function AnalyzerResultsPage() {
       }
     }
   };
-
-  if (loading) {
-    return (
-      <>
-        {/* Top Bar */}
-        <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
-          <div className="flex items-center gap-6">
-            <button className="text-sm text-gray-400 hover:text-white transition-colors">
-              Projects
-            </button>
-            <button className="text-sm text-white font-medium border-b-2 border-orange-500 pb-[22px] -mb-[17px]">
-              Analyzing...
-            </button>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 rounded-lg">
-            <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
-            <span className="text-sm text-orange-500 font-medium">Analyzing</span>
-          </div>
-        </header>
-
-        {/* Loading Content */}
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md">
-            <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Loader2 className="w-10 h-10 animate-spin text-orange-500" />
-            </div>
-            <h2 className="text-2xl font-bold mb-3">Analyzing Your Short</h2>
-            <p className="text-gray-400 mb-4">{loadingStage}</p>
-            <div className="flex flex-col gap-2 text-sm text-gray-500">
-              <div className="flex items-center gap-2 justify-center">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                <span>Classifying video format</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
-                <span>Running retention analysis</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <div className="w-1.5 h-1.5 bg-gray-600 rounded-full"></div>
-                <span>Generating storyboard breakdown</span>
-              </div>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
 
   if (error) {
     return (
@@ -381,11 +344,11 @@ export default function AnalyzerResultsPage() {
     );
   }
 
-  if (!analysisData) {
+  if (!videoUrl) {
     return null;
   }
 
-  const videoId = extractYouTubeId(analysisData.url);
+  const videoId = extractYouTubeId(videoUrl);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -401,15 +364,15 @@ export default function AnalyzerResultsPage() {
     return mins * 60 + secs;
   };
 
-  // Calculate issue counts by severity
-  const allIssues = analysisData.storyboard.beats.flatMap(beat =>
+  // Calculate issue counts by severity (only if analysis is complete)
+  const allIssues = analysisData ? analysisData.storyboard.beats.flatMap(beat =>
     beat.retention.issues.map(issue => ({
       ...issue,
       beatNumber: beat.beatNumber,
       beatTitle: beat.title,
       timestamp: `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`
     }))
-  );
+  ) : [];
   const criticalCount = allIssues.filter(i => i.severity === 'critical').length;
   const moderateCount = allIssues.filter(i => i.severity === 'moderate').length;
   const minorCount = allIssues.filter(i => i.severity === 'minor').length;
@@ -524,7 +487,7 @@ export default function AnalyzerResultsPage() {
             Projects
           </button>
           <button className="text-sm text-gray-400 hover:text-white transition-colors">
-            {analysisData.storyboard.overview.title || "My New Short"}
+            {analysisData?.storyboard.overview.title || "My New Short"}
           </button>
           <button className="text-sm text-white font-medium border-b-2 border-orange-500 pb-[22px] -mb-[17px]">
             Analysis
@@ -532,10 +495,17 @@ export default function AnalyzerResultsPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-green-500 font-medium">Analysis Complete</span>
-          </div>
+          {loading ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 rounded-lg">
+              <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
+              <span className="text-sm text-orange-500 font-medium">Analyzing</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-lg">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-green-500 font-medium">Analysis Complete</span>
+            </div>
+          )}
         </div>
       </header>
 
@@ -556,28 +526,79 @@ export default function AnalyzerResultsPage() {
 
             {/* Video and Cards Grid */}
             <div className="grid grid-cols-[240px_1fr] gap-6 mb-8">
-              {/* Video Container */}
-              <div className="relative rounded-2xl aspect-[9/16] overflow-hidden bg-black">
-                {videoId ? (
-                  <div
-                    ref={playerContainerRef}
-                    className="w-full h-full"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    <p className="text-sm">Video unavailable</p>
+              {/* Video Container with Stats */}
+              <div className="flex flex-col gap-3">
+                <div className="relative rounded-2xl aspect-[9/16] overflow-hidden bg-black">
+                  {videoId ? (
+                    <div
+                      ref={playerContainerRef}
+                      className="w-full h-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                      <p className="text-sm">Video unavailable</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Video Stats */}
+                <div className="flex items-center gap-4 px-2">
+                  <div className="flex items-center gap-1.5">
+                    <Eye className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-400 font-medium">
+                      {loading ? (
+                        <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
+                      ) : analysisData?.storyboard?.performance?.videoStats?.views ? (
+                        new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(analysisData.storyboard.performance.videoStats.views)
+                      ) : (
+                        '—'
+                      )}
+                    </span>
                   </div>
-                )}
+                  <div className="flex items-center gap-1.5">
+                    <Heart className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-400 font-medium">
+                      {loading ? (
+                        <span className="inline-block w-12 h-4 bg-gray-800 rounded animate-pulse"></span>
+                      ) : analysisData?.storyboard?.performance?.videoStats?.likes ? (
+                        new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(analysisData.storyboard.performance.videoStats.likes)
+                      ) : (
+                        '—'
+                      )}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Right Side */}
               <div className="flex flex-col gap-4">
-                {/* Overall Score */}
-                <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <div className="text-xs text-gray-500 uppercase tracking-wider">Overall Score</div>
-                    <div className="relative group">
-                      <InfoIcon className="w-3.5 h-3.5 text-gray-600 hover:text-gray-400 cursor-help transition-colors" />
+                {loading ? (
+                  <>
+                    {/* Loading State for Overall Score */}
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+                        <div className="text-xs text-orange-500 font-medium">Analyzing video...</div>
+                      </div>
+                      <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-gray-800/30 rounded-lg">
+                        <Clock className="w-3.5 h-3.5 text-gray-500" />
+                        <span className="text-xs text-gray-400">This will take about <span className="text-white font-semibold">1 minute</span></span>
+                      </div>
+                      <div className="space-y-3 animate-pulse">
+                        <div className="h-10 bg-gray-800/50 rounded"></div>
+                        <div className="h-20 bg-gray-800/30 rounded"></div>
+                        <div className="h-16 bg-gray-800/30 rounded"></div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Overall Score */}
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider">Overall Score</div>
+                        <div className="relative group">
+                          <InfoIcon className="w-3.5 h-3.5 text-gray-600 hover:text-gray-400 cursor-help transition-colors" />
                       <div className="absolute left-0 top-6 w-72 bg-gray-900 border border-gray-700 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl">
                         <div className="text-xs text-gray-300 space-y-2">
                           <p className="font-semibold text-white">How is this score calculated?</p>
@@ -695,11 +716,30 @@ export default function AnalyzerResultsPage() {
                     </div>
                   )}
                 </div>
+                  </>
+                )}
 
                 {/* Analysis Cards Grid */}
-                <div className="grid grid-cols-4 gap-3 items-start">
-                  {/* Hook Card */}
-                  <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
+                {loading ? (
+                  <div className="grid grid-cols-4 gap-3 items-start">
+                    {/* Loading skeletons for 4 cards */}
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3 animate-pulse">
+                        <div className="h-4 bg-gray-800/50 rounded mb-3 w-16"></div>
+                        <div className="h-8 bg-gray-800/50 rounded mb-2"></div>
+                        <div className="h-1 bg-gray-800/50 rounded mb-3"></div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-800/30 rounded"></div>
+                          <div className="h-4 bg-gray-800/30 rounded"></div>
+                          <div className="h-4 bg-gray-800/30 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-4 gap-3 items-start">
+                    {/* Hook Card */}
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
                     <div className="flex items-center gap-1.5 mb-2">
                       <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -941,13 +981,37 @@ export default function AnalyzerResultsPage() {
                     })()}
                   </div>
                 </div>
+                )}
               </div>
             </div>
 
             {/* Beat-by-Beat Breakdown */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold">🎬 Beat-by-Beat Breakdown</h3>
+            {loading ? (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold">🎬 Beat-by-Beat Breakdown</h3>
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 rounded-lg">
+                    <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
+                    <span className="text-sm text-orange-500 font-medium">Analyzing</span>
+                  </div>
+                </div>
+                <div className="space-y-4 animate-pulse">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
+                      <div className="space-y-3">
+                        <div className="h-5 bg-gray-800/50 rounded w-32"></div>
+                        <div className="h-4 bg-gray-800/30 rounded w-full"></div>
+                        <div className="h-4 bg-gray-800/30 rounded w-3/4"></div>
+                        <div className="h-16 bg-gray-800/20 rounded"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold">🎬 Beat-by-Beat Breakdown</h3>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-500">{analysisData.storyboard.beats.length} beats</span>
                   {criticalCount > 0 && (
@@ -1179,11 +1243,34 @@ export default function AnalyzerResultsPage() {
                 ))}
               </div>
             </div>
+            )}
 
             {/* Re-hook Variants */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-6">
-                <h3 className="text-xl font-semibold">Re-hook Variants</h3>
+            {loading ? (
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <h3 className="text-xl font-semibold">Re-hook Variants</h3>
+                  <div className="flex items-center gap-2 px-2.5 py-1 bg-orange-500/10 rounded-lg">
+                    <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5 animate-pulse">
+                      <div className="h-4 bg-gray-800/50 rounded w-20 mb-3"></div>
+                      <div className="space-y-2 mb-4">
+                        <div className="h-3 bg-gray-800/30 rounded w-full"></div>
+                        <div className="h-3 bg-gray-800/30 rounded w-4/5"></div>
+                      </div>
+                      <div className="h-10 bg-gray-800/20 rounded"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <h3 className="text-xl font-semibold">Re-hook Variants</h3>
                 <span className="px-2 py-1 bg-orange-500/10 text-orange-500 rounded text-xs font-semibold uppercase">
                   AI Suggested
                 </span>
@@ -1204,6 +1291,7 @@ export default function AnalyzerResultsPage() {
                 ))}
               </div>
             </div>
+            )}
           </div>
 
           {/* Right Column - Approved Changes */}
