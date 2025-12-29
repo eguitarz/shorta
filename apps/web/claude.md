@@ -129,12 +129,13 @@ If Cloudflare shows old code but local is updated:
 ## Features
 
 ### Video Stats
-- Views and likes displayed under embedded video
+- Views, likes, and publish time displayed under embedded video
 - **Fetched fresh on every page load** via `/api/youtube-stats` endpoint
-- Data stored in component state: `videoStats.{views,likes}`
+- Data stored in component state: `videoStats.{views,likes,publishedAt}`
 - Shows loading skeleton while fetching (separate from analysis loading)
 - Shows "—" if data unavailable or API key not set
 - **Always up-to-date** - reflects current YouTube metrics, not cached from analysis time
+- Publish time displayed as relative time (e.g., "30 days ago", "2 months ago")
 
 ### Approved Changes & Generation
 - **Right sidebar panel** for collecting approved changes before generation
