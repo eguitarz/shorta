@@ -90,21 +90,45 @@ export class VideoLinter {
 
     const violations: RuleViolation[] = parsedResult.violations || [];
 
-    // Calculate stats
-    const totalRules = ruleSet.rules.length;
-    const critical = violations.filter(v => v.severity === 'critical').length;
-    const moderate = violations.filter(v => v.severity === 'moderate').length;
-    const passed = totalRules - violations.length;
+    // Deduplicate violations by ruleId - same rule type only counts once for scoring
+    const uniqueViolations = Array.from(
+      violations.reduce((map, v) => {
+        if (!map.has(v.ruleId)) {
+          map.set(v.ruleId, v);
+        }
+        return map;
+      }, new Map<string, RuleViolation>()).values()
+    );
 
-    // Calculate score (0-100)
-    // Critical: -10 points each, Moderate: -5 points each, Minor: -2 points each
+    // Calculate stats based on unique violations
+    const totalRules = ruleSet.rules.length;
+    const critical = uniqueViolations.filter(v => v.severity === 'critical').length;
+    const moderate = uniqueViolations.filter(v => v.severity === 'moderate').length;
+    const minor = uniqueViolations.filter(v => v.severity === 'minor').length;
+    const passed = totalRules - uniqueViolations.length;
+
+    // Debug logging
+    console.log('=== SCORE CALCULATION DEBUG ===');
+    console.log('Total violations (before dedup):', violations.length);
+    console.log('Unique violations (after dedup):', uniqueViolations.length);
+    console.log('Critical:', critical, 'x -10 =', critical * -10);
+    console.log('Moderate:', moderate, 'x -5 =', moderate * -5);
+    console.log('Minor:', minor, 'x -2 =', minor * -2);
+    console.log('Unique violations:', uniqueViolations.map(v => ({ id: v.ruleId, severity: v.severity })));
+
+    // Calculate score (0-100) using unique violations only
+    // Same rule type only counts once, even if it fails in multiple beats
     let score = 100;
-    violations.forEach(v => {
+    uniqueViolations.forEach(v => {
       if (v.severity === 'critical') score -= 10;
       else if (v.severity === 'moderate') score -= 5;
       else score -= 2;
     });
     score = Math.max(0, Math.min(100, score));
+
+    console.log('Expected score:', 100 - (critical * 10) - (moderate * 5) - (minor * 2));
+    console.log('Actual score:', score);
+    console.log('============================');
 
     return {
       format,

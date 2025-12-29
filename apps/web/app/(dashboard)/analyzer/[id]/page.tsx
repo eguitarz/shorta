@@ -596,6 +596,9 @@ export default function AnalyzerResultsPage() {
                               <span><span className="text-blue-500 font-medium">Minor</span> violations: -2 points each</span>
                             </li>
                           </ul>
+                          <p className="pt-2 border-t border-gray-800 text-[11px] text-gray-400">
+                            <span className="font-medium text-gray-300">Note:</span> Each rule type only counts once for scoring, even if it appears in multiple beats.
+                          </p>
                           <p className="pt-2 border-t border-gray-800 text-[11px]">
                             The 4 performance cards below (<span className="text-orange-400">Hook</span>, <span className="text-green-400">Structure</span>, <span className="text-purple-400">Content</span>, <span className="text-blue-400">Delivery</span>) are separate AI-evaluated metrics based on video analysis.
                           </p>
