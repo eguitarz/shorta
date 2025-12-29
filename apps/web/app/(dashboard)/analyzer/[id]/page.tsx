@@ -1147,11 +1147,6 @@ export default function AnalyzerResultsPage() {
                           <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs font-semibold">
                             {beat.type}
                           </span>
-                          {beat.retention?.issues?.some(i => i.severity === 'critical') && (
-                            <span className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-xs font-semibold">
-                              CRITICAL
-                            </span>
-                          )}
                         </div>
                         <h4 className="font-medium text-white mb-3">{beat.title}</h4>
 
@@ -1172,9 +1167,23 @@ export default function AnalyzerResultsPage() {
                       </div>
                     </div>
                     <div className="mb-3">
-                      <div className="text-xs text-gray-500 mb-1">Retention</div>
-                      <div className="text-sm font-semibold text-white">
-                        {beat.retention?.level?.replace('_', ' ') || 'N/A'}
+                      <div className="text-xs text-gray-500 mb-1">Retention Drop Estimate</div>
+                      <div className={`text-sm font-semibold ${
+                        beat.retention?.issues?.some(i => i.severity === 'critical')
+                          ? 'text-red-500'
+                          : beat.retention?.issues?.some(i => i.severity === 'moderate')
+                          ? 'text-orange-500'
+                          : beat.retention?.issues?.some(i => i.severity === 'minor')
+                          ? 'text-blue-500'
+                          : 'text-green-500'
+                      }`}>
+                        {beat.retention?.issues?.some(i => i.severity === 'critical')
+                          ? 'High Drop Risk'
+                          : beat.retention?.issues?.some(i => i.severity === 'moderate')
+                          ? 'Moderate Drop'
+                          : beat.retention?.issues?.some(i => i.severity === 'minor')
+                          ? 'Minor Drop'
+                          : 'Strong Retention'}
                       </div>
                     </div>
                     {(beat.retention?.issues?.length ?? 0) > 0 ? (
