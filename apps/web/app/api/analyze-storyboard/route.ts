@@ -184,7 +184,10 @@ Return ONLY valid JSON in this exact format:
   "overview": {
     "title": "string - video title if detectable",
     "length": number - total duration in seconds,
-    "hookPattern": "string - e.g., 'Confession + Specific Outcome', 'Shocking Statistic'",
+    "hookCategory": "string - MUST be one of: 'Outcome-first', 'Relatable pain', 'Contradiction / Myth-busting', 'Shock / Bold claim', 'Curiosity gap', 'Authority / Credibility', 'Specific number / specificity', 'Direct call-out', 'Pattern interrupt (verbal)', 'Before / After contrast', 'Time-bound promise', 'Negative framing', 'Question hook', 'Other'",
+    "hookPattern": "string - specific description of the hook approach used (e.g., 'Quick win promise with timeframe', 'Personal pain point revealed')",
+    "nicheCategory": "string - MUST be one of: 'Creator / Personal Brand', 'Business / Career', 'Tech / AI', 'Productivity / Mindset', 'Money / Growth', 'Marketing / Growth', 'Education / Explainer', 'Life / Psychology', 'Design / Creative', 'Other'",
+    "nicheDescription": "string - specific subcategory (e.g., 'AI tools', 'YouTube growth / Shorts growth', 'Copywriting', 'Mental models')",
     "contentType": "string - e.g., 'Talking head', 'Screen recording', 'B-roll montage'",
     "targetAudience": "string - inferred audience"
   },
@@ -261,6 +264,32 @@ CRITICAL INSTRUCTIONS:
 5. Return ONLY the JSON object, no additional text or explanation
 6. Ensure all JSON is properly formatted and escaped
 7. FORMAT ANALYSIS AS BULLET POINTS: In the hook, structure, content, and delivery analysis fields, use newlines (\\n) to separate each bullet point. Start each line with the content directly (no bullet character needed). Example: "Strong hook opens at 0:02s\\nViral pattern matches proven format\\nIncrease loop potential by adding callback"
+8. HOOK CATEGORY SELECTION: Choose the MOST DOMINANT hook type from the predefined list. Context for each:
+   - Outcome-first: Promises result/benefit upfront
+   - Relatable pain: Surfaces unspoken viewer struggle
+   - Contradiction / Myth-busting: Challenges common belief
+   - Shock / Bold claim: Extreme/counterintuitive statement
+   - Curiosity gap: Incomplete info forces continuation
+   - Authority / Credibility: Establishes expertise quickly
+   - Specific number / specificity: Uses concrete data/metrics
+   - Direct call-out: Targets specific audience segment
+   - Pattern interrupt (verbal): Unusual delivery/phrasing
+   - Before / After contrast: Shows transformation
+   - Time-bound promise: Emphasizes speed/urgency
+   - Negative framing: Leads with mistake/risk
+   - Question hook: Poses unspoken viewer question
+   - Other: Mixed or unique approach
+9. NICHE CATEGORY SELECTION: Choose the PRIMARY niche. Available categories:
+   - Creator / Personal Brand: Content creation, YouTube/Shorts growth, Personal branding, Creator workflows
+   - Business / Career: Startups, SaaS, Entrepreneurship, Freelancing, Career advice
+   - Tech / AI: AI tools, No-code/Automation, Developer productivity, Tech explainers
+   - Productivity / Mindset: Productivity, Time management, Focus/Deep work, Note-taking
+   - Money / Growth: Make money online, Side hustles, Personal finance, Investing basics
+   - Marketing / Growth: Marketing tactics, Copywriting, Growth hacking, Social media strategy
+   - Education / Explainer: Learning hacks, Quick explainers, Mental models
+   - Life / Psychology: Self-improvement, Psychology, Habits, Rational motivation
+   - Design / Creative: UI/UX design, Design critique, Creative process
+   - Other: Mixed or uncategorized content
 
 VISUAL & AUDIO ANALYSIS - Director's Perspective:
 - Don't just describe what you see/hear - explain what WORKS or what's MISSING
