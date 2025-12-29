@@ -223,25 +223,25 @@ Return ONLY valid JSON in this exact format:
       "duration": number - seconds of hook (0-5),
       "viralPattern": number - 0-100 how well it matches viral patterns,
       "loopStrength": number - 0-100 re-watch potential,
-      "analysis": "string - 2-3 bullet points with actionable insights. Each bullet should highlight key findings with bold keywords (e.g., 'Strong hook at 0:02s', 'Increase energy by 15%')"
+      "analysis": "string - 2-3 bullet points with actionable insights. Wrap important terms in **double asterisks** for emphasis (e.g., 'Opens with **strong hook** at **0:02s**', 'Increase **loop potential** by **15%**')"
     },
     "structure": {
       "videoLength": number - total seconds,
       "pacingConsistency": number - 0-100 how consistent the pacing is,
       "payoffTiming": number - 0-100 how well-timed the payoff is,
-      "analysis": "string - 2-3 bullet points with actionable insights. Each bullet should highlight key findings with bold keywords (e.g., 'Well-paced throughout', 'Add payoff at 0:35s')"
+      "analysis": "string - 2-3 bullet points with actionable insights. Wrap important terms in **double asterisks** for emphasis (e.g., '**Well-paced** throughout with **consistent** energy', 'Add **payoff** at **0:35s**')"
     },
     "content": {
       "contentType": "string - Educational/Entertainment/Tutorial/Story/etc",
       "valueClarity": number - 0-100 how clear the value proposition is,
       "uniqueness": number - 0-100 how unique the angle/perspective is,
-      "analysis": "string - 2-3 bullet points with actionable insights. Each bullet should highlight key findings with bold keywords (e.g., 'High value clarity', 'Improve uniqueness with X')"
+      "analysis": "string - 2-3 bullet points with actionable insights. Wrap important terms in **double asterisks** for emphasis (e.g., '**High value** proposition is **clear** from start', 'Improve **uniqueness** with different angle')"
     },
     "delivery": {
       "energyLevel": number - 0-100 vocal energy and enthusiasm,
       "vocalClarity": number - 0-100 how clear and understandable speech is,
       "presence": number - 0-100 camera presence and charisma,
-      "analysis": "string - 2-3 bullet points with actionable insights. Each bullet should highlight key findings with bold keywords (e.g., 'Excellent energy at 85%', 'Increase vocal clarity')"
+      "analysis": "string - 2-3 bullet points with actionable insights. Wrap important terms in **double asterisks** for emphasis (e.g., '**Excellent energy** at **85%**', 'Increase **vocal clarity** in middle section')"
     }
   },
   "replicationBlueprint": {
