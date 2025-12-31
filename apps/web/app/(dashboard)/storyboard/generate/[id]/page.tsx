@@ -395,10 +395,10 @@ export default function StoryboardResultsPage() {
 
                             return (
                               <li key={idx} className="flex gap-2 items-start">
-                                <span className={`flex-shrink-0 mt-0.5 ${isHighlighted ? 'text-yellow-400' : 'text-purple-400/50'}`}>
-                                  {isHighlighted ? '⚡' : '•'}
+                                <span className={`flex-shrink-0 mt-0.5 ${isHighlighted ? 'text-yellow-500/60' : 'text-purple-400/50'}`}>
+                                  •
                                 </span>
-                                <span className={`flex-1 ${isHighlighted ? 'text-yellow-200 font-medium' : ''}`}>
+                                <span className={`flex-1 ${isHighlighted ? 'text-yellow-400/80 font-medium' : ''}`}>
                                   {displayText}
                                 </span>
                               </li>
