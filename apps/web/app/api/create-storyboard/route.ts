@@ -187,6 +187,9 @@ DIRECTOR NOTES GUIDELINES:
 - Keep each point concise and actionable
 - Format as bullet points: "• First instruction\\n• Second instruction"
 - 3-5 points per beat
+- HIGHLIGHT CRITICAL NOTES: Wrap the 1-2 MOST IMPORTANT notes in **double asterisks** for emphasis
+- Example: "• **Start with direct eye contact - this is crucial**\\n• Use high energy throughout\\n• Cut to B-roll at 0:03"
+- Only highlight notes that are truly critical to the beat's success
 
 VISUAL GUIDELINES:
 - 2-3 concise bullet points maximum
