@@ -387,12 +387,23 @@ export default function StoryboardResultsPage() {
                             ? beat.directorNotes
                             : (typeof beat.directorNotes === 'string' ? beat.directorNotes.split('\n') : []);
 
-                          return notes.filter(line => line && line.trim()).map((note, idx) => (
-                            <li key={idx} className="flex gap-2 items-start">
-                              <span className="text-purple-400/50 flex-shrink-0 mt-0.5">•</span>
-                              <span className="flex-1">{typeof note === 'string' ? note.replace(/^[•\-\*]\s*/, '') : note}</span>
-                            </li>
-                          ));
+                          return notes.filter(line => line && line.trim()).map((note, idx) => {
+                            const noteText = typeof note === 'string' ? note.replace(/^[•\-\*]\s*/, '') : note;
+                            // Check if note is highlighted with **text**
+                            const isHighlighted = noteText.includes('**');
+                            const displayText = noteText.replace(/\*\*/g, '');
+
+                            return (
+                              <li key={idx} className="flex gap-2 items-start">
+                                <span className={`flex-shrink-0 mt-0.5 ${isHighlighted ? 'text-yellow-400' : 'text-purple-400/50'}`}>
+                                  {isHighlighted ? '⚡' : '•'}
+                                </span>
+                                <span className={`flex-1 ${isHighlighted ? 'text-yellow-200 font-medium' : ''}`}>
+                                  {displayText}
+                                </span>
+                              </li>
+                            );
+                          });
                         })()}
                       </ul>
                     )}

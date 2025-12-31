@@ -217,6 +217,9 @@ IMPORTANT GUIDELINES:
 - Maintain the original script/visual/audio unless a fix specifically changes them
 - No analysis or issues - only actionable shooting instructions
 - FORMAT DIRECTOR NOTES AS BULLET POINTS (3-5 actionable points per beat)
+- HIGHLIGHT CRITICAL NOTES: Wrap the 1-2 MOST IMPORTANT notes in **double asterisks** for emphasis
+- Example: "• **Start with direct eye contact - this is crucial**\n• Use high energy throughout\n• Cut to B-roll at 0:03"
+- Only highlight notes that are truly critical to the beat's success
 
 VISUAL FORMATTING:
 - 2-3 concise bullet points maximum
