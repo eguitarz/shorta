@@ -218,6 +218,18 @@ IMPORTANT GUIDELINES:
 - No analysis or issues - only actionable shooting instructions
 - FORMAT DIRECTOR NOTES AS BULLET POINTS (3-5 actionable points per beat)
 
+VISUAL FORMATTING:
+- 2-3 concise bullet points maximum
+- Format: "• Camera angle/shot type\\n• Key visual element\\n• Context/setting"
+- Examples: "• Medium close-up", "• Natural home setting", "• Hold prop for context"
+- Keep each bullet under 10 words
+
+AUDIO FORMATTING:
+- 1-2 concise bullet points maximum
+- Format: "• Music description\\n• Sound effect (if needed)"
+- Examples: "• Upbeat acoustic guitar", "• Subtle whoosh on text reveal"
+- Keep each bullet under 8 words
+
 Return a JSON object with this structure:
 {
   "beats": [
@@ -229,8 +241,8 @@ Return a JSON object with this structure:
       "title": "Beat title",
       "directorNotes": "• First actionable instruction\n• Second instruction\n• Third instruction",
       "script": "What to say (same as original unless fix changes it)",
-      "visual": "What to show (same as original unless fix changes it)",
-      "audio": "Audio elements (same as original unless fix changes it)"
+      "visual": "• Medium close-up\n• Natural setting\n• Direct eye contact",
+      "audio": "• Upbeat acoustic music\n• Subtle whoosh effect"
     }
   ]
 }`;
