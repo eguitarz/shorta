@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Play, Lightbulb, ArrowLeft } from "lucide-react";
+import { Loader2, Play, Lightbulb, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 
 interface GeneratedBeat {
   beatNumber: number;
@@ -36,6 +36,7 @@ export default function GenerateResultsPage() {
   const [generatedData, setGeneratedData] = useState<GeneratedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [collapsedBeats, setCollapsedBeats] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const id = params.id as string;
@@ -61,6 +62,18 @@ export default function GenerateResultsPage() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const toggleDirectorNotes = (beatNumber: number) => {
+    setCollapsedBeats(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(beatNumber)) {
+        newSet.delete(beatNumber);
+      } else {
+        newSet.add(beatNumber);
+      }
+      return newSet;
+    });
   };
 
   if (loading) {
@@ -230,44 +243,90 @@ export default function GenerateResultsPage() {
               </div>
 
               {/* Beat Content */}
-              <div className="p-6 space-y-4">
-                {/* Director Notes - Prominent */}
-                <div className="bg-purple-900/20 border border-purple-800/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-purple-300 mb-3 flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4" />
-                    Director&apos;s Notes
-                  </h4>
-                  <ul className="text-gray-300 leading-relaxed space-y-2 list-none">
-                    {(() => {
-                      // Handle both string and array formats
-                      const notes = Array.isArray(beat.directorNotes)
-                        ? beat.directorNotes
-                        : (typeof beat.directorNotes === 'string' ? beat.directorNotes.split('\n') : []);
-
-                      return notes.filter(line => line && line.trim()).map((note, idx) => (
-                        <li key={idx} className="flex gap-2 items-start">
-                          <span className="text-purple-400 flex-shrink-0 mt-0.5">•</span>
-                          <span className="flex-1">{typeof note === 'string' ? note.replace(/^[•\-\*]\s*/, '') : note}</span>
-                        </li>
-                      ));
-                    })()}
-                  </ul>
+              <div className="p-6 space-y-6">
+                {/* Script - Primary Focus */}
+                <div>
+                  <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-3 font-semibold">What to Say</h4>
+                  <p className="text-lg leading-relaxed text-gray-100 font-medium">{beat.script}</p>
                 </div>
 
-                {/* Script, Visual, Audio */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Visual & Audio - Concise Bullets */}
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-sm text-gray-400 mb-2">Script</h4>
-                    <p className="text-gray-300 text-sm">{beat.script}</p>
+                    <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">Visual</h4>
+                    <ul className="text-sm text-gray-400 space-y-1 list-none">
+                      {(() => {
+                        const visual = beat.visual.split('\n').filter(line => line.trim());
+                        return visual.map((line, idx) => (
+                          <li key={idx} className="flex gap-2 items-start">
+                            <span className="text-gray-600 flex-shrink-0">•</span>
+                            <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
+                          </li>
+                        ));
+                      })()}
+                    </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm text-gray-400 mb-2">Visual</h4>
-                    <p className="text-gray-300 text-sm">{beat.visual}</p>
+                    <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">Audio</h4>
+                    <ul className="text-sm text-gray-400 space-y-1 list-none">
+                      {(() => {
+                        const audio = beat.audio.split('\n').filter(line => line.trim());
+                        return audio.map((line, idx) => (
+                          <li key={idx} className="flex gap-2 items-start">
+                            <span className="text-gray-600 flex-shrink-0">•</span>
+                            <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
+                          </li>
+                        ));
+                      })()}
+                    </ul>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-sm text-gray-400 mb-2">Audio</h4>
-                    <p className="text-gray-300 text-sm">{beat.audio}</p>
-                  </div>
+                </div>
+
+                {/* Director's Notes - Collapsible */}
+                <div className="border-t border-gray-800 pt-4">
+                  <button
+                    onClick={() => toggleDirectorNotes(beat.beatNumber)}
+                    className="w-full flex items-center justify-between text-left group hover:bg-gray-900/50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-purple-400" />
+                      <h4 className="text-sm font-semibold text-purple-300">Director&apos;s Notes</h4>
+                      <span className="text-xs text-gray-500">(analysis & tips)</span>
+                    </div>
+                    {collapsedBeats.has(beat.beatNumber) ? (
+                      <ChevronDown className="w-4 h-4 text-gray-500 group-hover:text-gray-400" />
+                    ) : (
+                      <ChevronUp className="w-4 h-4 text-gray-500 group-hover:text-gray-400" />
+                    )}
+                  </button>
+                  {!collapsedBeats.has(beat.beatNumber) && (
+                    <ul className="mt-3 text-sm text-gray-400 leading-relaxed space-y-2 list-none pl-6">
+                      {(() => {
+                        // Handle both string and array formats
+                        const notes = Array.isArray(beat.directorNotes)
+                          ? beat.directorNotes
+                          : (typeof beat.directorNotes === 'string' ? beat.directorNotes.split('\n') : []);
+
+                        return notes.filter(line => line && line.trim()).map((note, idx) => {
+                          const noteText = typeof note === 'string' ? note.replace(/^[•\-\*]\s*/, '') : note;
+                          // Check if note is highlighted with **text**
+                          const isHighlighted = noteText.includes('**');
+                          const displayText = noteText.replace(/\*\*/g, '');
+
+                          return (
+                            <li key={idx} className="flex gap-2 items-start">
+                              <span className={`flex-shrink-0 mt-0.5 ${isHighlighted ? 'text-yellow-400' : 'text-purple-400/50'}`}>
+                                {isHighlighted ? '⚡' : '•'}
+                              </span>
+                              <span className={`flex-1 ${isHighlighted ? 'text-yellow-200 font-medium' : ''}`}>
+                                {displayText}
+                              </span>
+                            </li>
+                          );
+                        });
+                      })()}
+                    </ul>
+                  )}
                 </div>
               </div>
             </div>
