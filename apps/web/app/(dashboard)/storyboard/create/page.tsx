@@ -95,14 +95,23 @@ export default function CreateStoryboardPage() {
 
       const data: ChatResponse = await response.json();
 
+      console.log('Chat response:', { isReady: data.isReady, hasExtractedData: !!data.extractedData });
+
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: data.message },
       ]);
 
-      if (data.isReady && data.extractedData) {
-        setIsReady(true);
+      // Always update extracted data if available
+      if (data.extractedData) {
         setExtractedData(data.extractedData);
+        console.log('Updated extractedData:', data.extractedData);
+      }
+
+      // Update ready state
+      if (data.isReady) {
+        setIsReady(true);
+        console.log('Button is now ready!');
       }
     } catch (error) {
       console.error("Chat error:", error);
@@ -123,7 +132,8 @@ export default function CreateStoryboardPage() {
   };
 
   const handleGenerate = async () => {
-    if (!extractedData) return;
+    // Allow generation even without extracted data (use defaults)
+    console.log('Generate clicked with extractedData:', extractedData);
 
     setIsGenerating(true);
 
@@ -137,7 +147,7 @@ export default function CreateStoryboardPage() {
           ...prev,
           {
             role: "assistant",
-            content: `Analyzing recent viral videos in "${extractedData.topic}"... (this takes ~10 seconds)`,
+            content: `Analyzing recent viral videos in "${extractedData?.topic || 'your niche'}"... (this takes ~10 seconds)`,
           },
         ]);
 
@@ -145,7 +155,7 @@ export default function CreateStoryboardPage() {
           const patternsResponse = await fetch("/api/analyze-viral-patterns", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ niche: extractedData.topic }),
+            body: JSON.stringify({ niche: extractedData?.topic || 'general content' }),
           });
 
           if (patternsResponse.ok) {
@@ -206,14 +216,16 @@ Incorporating these into your storyboard...`;
 
       // Step 2: Generate storyboard with patterns
       const dataToSend = {
-        topic: extractedData.topic || "Untitled Video",
-        format: extractedData.format || "talking_head",
-        targetLength: extractedData.targetLength || 30,
-        keyPoints: extractedData.keyPoints.length > 0 ? extractedData.keyPoints : ["Main point"],
-        targetAudience: extractedData.targetAudience,
-        contentType: extractedData.contentType || "educational",
+        topic: extractedData?.topic || "Untitled Video",
+        format: extractedData?.format || "talking_head",
+        targetLength: extractedData?.targetLength || 30,
+        keyPoints: extractedData?.keyPoints?.length > 0 ? extractedData.keyPoints : ["Main point"],
+        targetAudience: extractedData?.targetAudience,
+        contentType: extractedData?.contentType || "educational",
         viralPatterns: patterns, // Pass patterns to generation
       };
+
+      console.log('Sending to generation:', dataToSend);
 
       const response = await fetch("/api/create-storyboard", {
         method: "POST",
@@ -320,25 +332,12 @@ Incorporating these into your storyboard...`;
           {!isGenerating && messages.length > 1 && (
             <div className="mb-4">
               {/* Info/Warning Message */}
-              {extractedData && (
-                <div className={`mb-3 p-3 rounded-lg border text-sm ${
-                  isReady
-                    ? 'bg-green-900/20 border-green-800/50 text-green-300'
-                    : 'bg-yellow-900/20 border-yellow-800/50 text-yellow-300'
-                }`}>
-                  {isReady ? (
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" />
-                      <span>Ready! I have all the info needed to generate a great storyboard.</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">⚠️ Missing information</span>
-                      </div>
-                      <span>I can try to generate, but the storyboard quality may be limited. Consider providing more details in the chat.</span>
-                    </div>
-                  )}
+              {extractedData && isReady && (
+                <div className="mb-3 p-2 rounded-lg border text-xs bg-green-900/10 border-green-800/30 text-green-400">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Ready to generate!</span>
+                  </div>
                 </div>
               )}
 

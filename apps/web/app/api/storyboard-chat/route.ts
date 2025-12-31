@@ -82,6 +82,7 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
     const extractionResponse = await client.chat([
       { role: 'user', content: extractionPrompt }
     ], {
+      model: 'gemini-2.0-flash-exp',
       temperature: 0.1,
       maxTokens: 512,
     });
@@ -144,6 +145,7 @@ export async function POST(request: NextRequest) {
     console.log('Storyboard chat - message count:', messages.length);
 
     const response = await client.chat(conversation, {
+      model: 'gemini-3-flash-preview',
       temperature: 0.7,
       maxTokens: 1024,
     });
@@ -152,16 +154,33 @@ export async function POST(request: NextRequest) {
 
     // Extract data from conversation history + new response using LLM agent
     const extractedData = await extractDataFromConversation(client, messages, response.content);
-    const isReady = extractedData.topic && extractedData.format && extractedData.targetLength && extractedData.keyPoints.length >= 2;
+
+    console.log('Extracted data:', JSON.stringify(extractedData, null, 2));
+
+    // Check if we have minimum required data
+    const hasRequiredData = !!(
+      extractedData.topic &&
+      extractedData.format &&
+      extractedData.targetLength > 0 &&
+      extractedData.keyPoints &&
+      extractedData.keyPoints.length >= 1
+    );
+
+    console.log('Has required data check:', {
+      topic: !!extractedData.topic,
+      format: !!extractedData.format,
+      targetLength: extractedData.targetLength > 0,
+      keyPoints: extractedData.keyPoints?.length || 0,
+      isReady: hasRequiredData
+    });
 
     const chatResponse: ChatResponse = {
       message: response.content,
-      isReady: isReady,
-      extractedData: isReady ? extractedData : undefined,
+      isReady: hasRequiredData,
+      extractedData: hasRequiredData ? extractedData : extractedData, // Always send extractedData for debugging
     };
 
-    console.log('Extracted data:', extractedData);
-    console.log('Is ready:', isReady);
+    console.log('Is ready:', hasRequiredData);
 
     return NextResponse.json(chatResponse);
   } catch (error) {

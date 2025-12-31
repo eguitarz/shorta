@@ -238,12 +238,19 @@ export default function GenerateResultsPage() {
                     Director&apos;s Notes
                   </h4>
                   <ul className="text-gray-300 leading-relaxed space-y-2 list-none">
-                    {beat.directorNotes.split('\n').filter(line => line.trim()).map((note, idx) => (
-                      <li key={idx} className="flex gap-2">
-                        <span className="text-purple-400 mt-1">•</span>
-                        <span className="flex-1">{note.replace(/^[•\-\*]\s*/, '')}</span>
-                      </li>
-                    ))}
+                    {(() => {
+                      // Handle both string and array formats
+                      const notes = Array.isArray(beat.directorNotes)
+                        ? beat.directorNotes
+                        : (typeof beat.directorNotes === 'string' ? beat.directorNotes.split('\n') : []);
+
+                      return notes.filter(line => line && line.trim()).map((note, idx) => (
+                        <li key={idx} className="flex gap-2 items-start">
+                          <span className="text-purple-400 flex-shrink-0 mt-0.5">•</span>
+                          <span className="flex-1">{typeof note === 'string' ? note.replace(/^[•\-\*]\s*/, '') : note}</span>
+                        </li>
+                      ));
+                    })()}
                   </ul>
                 </div>
 

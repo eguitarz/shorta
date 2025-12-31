@@ -180,9 +180,25 @@ RULES TO CHECK:
 For each violation found, provide:
 1. Rule ID that was violated
 2. Specific timestamp where issue occurs (if applicable)
-3. Clear description of what's wrong
-4. Actionable suggestion to fix it
+3. What's wrong - be specific and reference actual content
+4. How to fix it - use this format:
+   - Start with action verb (Cut, Replace, Add, Move, Show, Start)
+   - State exactly what to change
+   - Give specific example if applicable
+   - Keep under 15 words when possible
+   - NO vague words: avoid "consider", "maybe", "try to", "could"
 5. Confidence score (0.0-1.0)
+
+SUGGESTION EXAMPLES (Good):
+✓ "Cut the first 5 seconds. Start with: 'Most people waste money on...'"
+✓ "Replace 'Today I want to talk about' with the main point directly"
+✓ "Add eye contact with camera during 0:00-0:03"
+✓ "Move the question from 0:05 to 0:00"
+
+SUGGESTION EXAMPLES (Bad):
+✗ "Consider making the hook more engaging" (too vague)
+✗ "You should try to improve the energy" (not specific)
+✗ "Maybe add some visual elements to make it better" (not actionable)
 
 Return VALID JSON ONLY in this format:
 {
@@ -194,12 +210,12 @@ Return VALID JSON ONLY in this format:
       "category": "hook",
       "message": "Hook appears at 0:05, which is too late",
       "timestamp": "0:05",
-      "suggestion": "Move the core question to 0:00. Start with: 'Want to know why...'",
+      "suggestion": "Cut 0:00-0:05. Start with: 'Want to know why 90% fail?'",
       "confidence": 0.95
     }
   ],
   "summary": "Brief 2-3 sentence summary of overall video quality and main issues"
 }
 
-Be specific. Reference actual moments in the video. Provide actionable feedback.`,
+Be direct. Use imperative verbs. Give specific examples.`,
 };
