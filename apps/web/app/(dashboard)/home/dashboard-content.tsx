@@ -1,10 +1,41 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, Link2, Lightbulb, BarChart3, Hammer, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function DashboardContent() {
+  const router = useRouter();
+  const [analyzeUrl, setAnalyzeUrl] = useState("");
+  const [topicInput, setTopicInput] = useState("");
+
+  const handleAnalyze = () => {
+    if (!analyzeUrl.trim()) return;
+
+    // Generate unique analysis ID
+    const analysisId = crypto.randomUUID();
+
+    // Store URL in sessionStorage
+    sessionStorage.setItem(`analysis_${analysisId}`, JSON.stringify({
+      url: analyzeUrl.trim(),
+      status: "pending"
+    }));
+
+    // Navigate directly to analysis page
+    router.push(`/analyzer/${analysisId}`);
+  };
+
+  const handleCreateStoryboard = () => {
+    if (topicInput.trim()) {
+      // Pass topic as query parameter
+      router.push(`/storyboard/create?topic=${encodeURIComponent(topicInput.trim())}`);
+    } else {
+      router.push("/storyboard/create");
+    }
+  };
+
   return (
     <>
       {/* Top Bar */}
@@ -66,11 +97,18 @@ export default function DashboardContent() {
                   <Input
                     type="text"
                     placeholder="https://youtube.com/shorts/..."
+                    value={analyzeUrl}
+                    onChange={(e) => setAnalyzeUrl(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && analyzeUrl.trim() && handleAnalyze()}
                     className="w-full bg-[#0a0a0a] border-gray-800 rounded-xl h-14 pl-12 text-gray-400 placeholder:text-gray-600"
                   />
                 </div>
               </div>
-              <Button className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-base">
+              <Button
+                onClick={handleAnalyze}
+                disabled={!analyzeUrl.trim()}
+                className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <BarChart3 className="w-5 h-5 mr-2" />
                 Run Analysis
               </Button>
@@ -96,11 +134,17 @@ export default function DashboardContent() {
                   <Input
                     type="text"
                     placeholder="e.g., AI productivity tools for designers..."
+                    value={topicInput}
+                    onChange={(e) => setTopicInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleCreateStoryboard()}
                     className="w-full bg-[#0a0a0a] border-gray-800 rounded-xl h-14 pl-12 text-gray-400 placeholder:text-gray-600"
                   />
                 </div>
               </div>
-              <Button className="w-full h-14 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold text-base">
+              <Button
+                onClick={handleCreateStoryboard}
+                className="w-full h-14 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold text-base"
+              >
                 <Hammer className="w-5 h-5 mr-2" />
                 Generate Storyboard
               </Button>
