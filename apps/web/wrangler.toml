@@ -28,6 +28,12 @@ LLM_MODEL = "gemini-2.5-flash"
 # GEMINI_API_KEY = "your-api-key-here" (deploy with: wrangler secret put GEMINI_API_KEY)
 # YOUTUBE_API_KEY = "your-youtube-api-key" (deploy with: wrangler secret put YOUTUBE_API_KEY)
 
+# KV Namespaces for caching
+[[kv_namespaces]]
+binding = "VIRAL_PATTERNS"
+id = "ce358921d943432a92004dc20dcca0eb"
+preview_id = "487b0e46eb934adea7eaaaaeb6b18266"
+
 # Observability configuration
 [observability]
 enabled = true
