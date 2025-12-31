@@ -78,13 +78,31 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Search YouTube for viral videos
-    const videos = await searchYouTubeVideos(niche, process.env.YOUTUBE_API_KEY);
+    let videos = await searchYouTubeVideos(niche, process.env.YOUTUBE_API_KEY);
 
+    // 2. If no videos found, retry with broader scope
     if (videos.length === 0) {
-      return NextResponse.json(
-        { error: 'No videos found for this niche' },
-        { status: 404 }
-      );
+      console.log('No videos found, retrying with broader scope...');
+
+      // Extract main keywords and retry with simpler search
+      const broaderNiche = niche
+        .replace(/\d+/g, '') // Remove numbers
+        .replace(/for \d+/gi, '') // Remove "for 2026" etc
+        .split(' ')
+        .filter(word => word.length > 3) // Keep only meaningful words
+        .slice(0, 3) // Take first 3 words
+        .join(' ')
+        .trim();
+
+      console.log(`Retrying with broader niche: "${broaderNiche}"`);
+      videos = await searchYouTubeVideos(broaderNiche, process.env.YOUTUBE_API_KEY);
+
+      if (videos.length === 0) {
+        return NextResponse.json(
+          { error: 'No videos found for this niche, even with broader search' },
+          { status: 404 }
+        );
+      }
     }
 
     console.log(`Found ${videos.length} videos`);

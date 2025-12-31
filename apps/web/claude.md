@@ -119,14 +119,24 @@ If Cloudflare shows old code but local is updated:
 
 ## Key Files
 
+**Analyzer (Video Analysis):**
 - `/app/(dashboard)/analyzer/[id]/page.tsx` - Main analyzer UI with approved changes panel
-- `/app/(dashboard)/analyzer/generate/[id]/page.tsx` - Generated storyboard results page
+- `/app/(dashboard)/analyzer/generate/[id]/page.tsx` - Generated storyboard results page (from analysis)
 - `/app/api/analyze-storyboard/route.ts` - Analysis API endpoint
 - `/app/api/generate-storyboard/route.ts` - Generate director storyboard API endpoint
+
+**Storyboard Creator (From Scratch):**
+- `/app/(dashboard)/storyboard/create/page.tsx` - Conversational chat UI for creating storyboards
+- `/app/(dashboard)/storyboard/generate/[id]/page.tsx` - Generated storyboard results page (from scratch)
+- `/app/api/storyboard-chat/route.ts` - Conversational AI endpoint
+- `/app/api/create-storyboard/route.ts` - Generate storyboard from text input
+
+**Shared:**
 - `/app/api/youtube-stats/route.ts` - YouTube stats API endpoint (fetched on every page load)
 - `/lib/linter/engine.ts` - Linter scoring logic
 - `/lib/linter/rules/talking_head.ts` - Linter rules
 - `wrangler.toml` - Cloudflare Workers configuration
+- `/stories/` - Feature documentation (numbered stories)
 
 ## Features
 
@@ -177,6 +187,23 @@ If Cloudflare shows old code but local is updated:
 - Info icon with hover tooltip explaining calculation
 - Severity colors: red-500 (critical), orange-500 (moderate), blue-500 (minor)
 - Bonus points displayed with green card
+
+### Conversational Storyboard Creator (NEW)
+- **Route**: `/storyboard/create` - Create storyboards from scratch
+- **No video required**: Plan before shooting
+- **Conversational UI**: Chat interface instead of forms
+- **AI-guided**: Asks follow-up questions to gather:
+  - Topic/title
+  - Format (talking head, b-roll, vlog, tutorial)
+  - Target length (15s, 30s, 60s, 90s)
+  - Key points (3-5 main ideas)
+  - Target audience (optional)
+  - Content type (educational, entertaining, inspirational)
+- **Generate button**: Appears when AI has enough info
+- **Processing time**: ~30-45 seconds (including conversation)
+- **Output**: Same director notes format as analysis-based generation
+- **Storage**: Results in sessionStorage (`created_{id}`)
+- **See**: `/stories/002-conversational-storyboard-creation.md` for full documentation
 
 ## Environment Variables
 

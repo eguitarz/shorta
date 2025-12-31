@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
           content: prompt,
         }
       ], {
+        model: 'gemini-3-flash-preview',
         temperature: 0.7,
         maxTokens: 16384,
       });
