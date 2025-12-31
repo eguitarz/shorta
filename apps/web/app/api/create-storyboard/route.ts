@@ -188,6 +188,18 @@ DIRECTOR NOTES GUIDELINES:
 - Format as bullet points: "• First instruction\\n• Second instruction"
 - 3-5 points per beat
 
+VISUAL GUIDELINES:
+- 2-3 concise bullet points maximum
+- Format: "• Camera angle/shot type\\n• Key visual element\\n• Context/setting"
+- Examples: "• Medium close-up", "• Natural home setting", "• Hold prop for context"
+- Keep each bullet under 10 words
+
+AUDIO GUIDELINES:
+- 1-2 concise bullet points maximum
+- Format: "• Music description\\n• Sound effect (if needed)"
+- Examples: "• Upbeat acoustic guitar", "• Subtle whoosh on text reveal"
+- Keep each bullet under 8 words
+
 TIMING GUIDELINES:
 - Hook: 0-${Math.min(5, Math.floor(input.targetLength * 0.15))}s (grab attention immediately)
 - Setup: Brief context if needed (20-25% of video)
@@ -213,8 +225,8 @@ Return VALID JSON ONLY in this format:
       "title": "Hook - [Descriptive Title]",
       "directorNotes": "• First actionable instruction\\n• Second instruction\\n• Third instruction",
       "script": "What to say in this beat",
-      "visual": "What to show (camera angle, framing, etc.)",
-      "audio": "Background music, sound effects, etc."
+      "visual": "• Medium close-up\\n• Natural setting\\n• Direct eye contact",
+      "audio": "• Upbeat acoustic music\\n• Subtle whoosh effect"
     }
   ]
 }
