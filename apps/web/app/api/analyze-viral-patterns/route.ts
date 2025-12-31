@@ -285,7 +285,7 @@ Be specific and actionable. Avoid vague advice.`;
   const response = await llmClient.chat([
     { role: 'user', content: prompt }
   ], {
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-2.5-flash-lite',
     temperature: 0.3,
     maxTokens: 4096, // Increased to ensure complete response
   });

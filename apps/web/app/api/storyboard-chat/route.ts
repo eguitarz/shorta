@@ -82,7 +82,7 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
     const extractionResponse = await client.chat([
       { role: 'user', content: extractionPrompt }
     ], {
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash-lite',
       temperature: 0.1,
       maxTokens: 512,
     });
