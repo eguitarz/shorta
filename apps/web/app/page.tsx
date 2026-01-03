@@ -10,7 +10,12 @@ import { CTAForm } from "@/components/CTAForm";
 import { QuestionButton } from "@/components/QuestionButton";
 import { ComparisonExample } from "@/components/ComparisonExample";
 import { TrustBadges } from "@/components/TrustBadges";
+import { Button } from "@/components/ui/button";
 import { redirectToCheckout } from "@/lib/stripe";
+import { UseCases } from "@/components/UseCases";
+import { Differentiation } from "@/components/Differentiation";
+import { AIComparison } from "@/components/AIComparison";
+import { CreativityLoop } from "@/components/CreativityLoop";
 
 const shortaLogo = "/shorta-logo.png";
 const daleHeadshot = "/dale-ma-headshot.jpg";
@@ -23,221 +28,75 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="pt-6">
-        <div className="container mx-auto px-2">
-          <img src={shortaLogo} alt="Shorta" className="h-36 md:h-40" />
+      <header className="pt-6 pb-4">
+        <div className="container mx-auto px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src={shortaLogo} alt="Shorta" className="h-16 w-16" />
+              <span className="text-2xl font-semibold text-foreground">Shorta AI</span>
+            </div>
+            <button
+              onClick={redirectToCheckout}
+              className="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg text-base"
+            >
+              Join as a Founding Member
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Hero */}
       <HeroSection />
 
-      {/* Problem */}
-      <Section id="pain" maxWidth="narrow">
-        <SectionTitle>The problem</SectionTitle>
-        <p className="text-muted-foreground text-lg mb-6">
-          Creating Shorts isn't hard. Creating Shorts that get watched is.
-        </p>
-        <BulletList
-          items={[
-            "Your hooks get skipped in the first 3 seconds — and you don't know why",
-            "ChatGPT scripts sound like every other AI creator",
-            "Competitors already went viral with YOUR idea — you're weeks behind",
-            "Every failed Short costs you time, money, and algorithmic momentum",
-          ]}
-        />
-      </Section>
+      {/* AI Comparison */}
+      <AIComparison />
 
-      {/* Solution */}
-      <Section id="solution">
-        <SectionGrid columns={2}>
-          <div>
-            <SectionTitle>The Shorta solution</SectionTitle>
-            <p className="text-muted-foreground mb-4">
-              Shorta doesn't guess. It learns from real viral Shorts.
-            </p>
-            <p className="text-muted-foreground mb-6">
-              Instead of asking you to write better prompts, Shorta studies what already works — hooks, structure, pacing, delivery — and generates storyboards with performance direction before you film.
-            </p>
-            <BulletList
-              items={[
-                "Fresh pattern analysis from recent viral Shorts",
-                "Hook-to-content matching, not random viral hooks",
-                "Ranked options so you pick fast",
-              ]}
-            />
-          </div>
-          <Card title="How it works">
-            <NumberedSteps
-              steps={[
-                "Paste your channel or reference Shorts",
-                "Shorta analyzes viral hooks and structure",
-                "Enter a topic or angle",
-                "Get 10–20 storyboards with performance notes",
-                "Storyboards are auto-scored and ranked",
-              ]}
-            />
-          </Card>
-        </SectionGrid>
-      </Section>
+      {/* Creativity Loop */}
+      <CreativityLoop />
 
-      {/* Your Shorts Library */}
-      <Section id="library" maxWidth="narrow">
-        <SectionTitle>Your Shorts Library</SectionTitle>
-        <p className="text-muted-foreground text-lg mb-6">
-          Save what works. Reuse it anytime.
-        </p>
-        <p className="text-muted-foreground mb-6">
-          Shorta doesn't auto-dump everything you generate.
-        </p>
-        <p className="text-muted-foreground mb-8">
-          You save the hooks and storyboards that matter — and those become your Shorts library.
-        </p>
-        
-        <div className="mb-8">
-          <p className="text-foreground font-medium text-lg mb-4">
-            Most tools generate text and forget.
-          </p>
-          <p className="text-foreground font-medium text-lg mb-6">
-            Shorta remembers.
-          </p>
-          <BulletList
-            items={[
-              "Save and organize winning hooks",
-              "Reuse scripts instead of rewriting",
-              "Compare and iterate, not guess",
-            ]}
-          />
-        </div>
-
-        <p className="text-muted-foreground mb-4">
-          Over time, your library turns into a curated collection of:
-        </p>
-        <BulletList
-          items={[
-            "Proven hooks you want to reuse",
-            "Ready-to-record storyboards with performance notes",
-            "Variants you can compare and build on",
-          ]}
-          className="mb-6"
-        />
-        <p className="text-foreground font-medium">
-          No clutter. No starting from scratch.
-        </p>
-        <p className="text-foreground font-medium">
-          Just a system that compounds every good decision you make.
-        </p>
-      </Section>
-
-      {/* Example */}
-      <Section id="example">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3 text-center tracking-tight">ChatGPT vs Shorta</h2>
-          <p className="text-center text-muted-foreground mb-8">
-            Same prompt. Different results.
-          </p>
-          <ComparisonExample />
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            <em>Note: This is a realistic mockup. Actual Shorta output will analyze your specific niche and channel data.</em>
-          </p>
+      {/* Use Cases */}
+      <Section id="use-cases">
+        <SectionTitle>Who uses Shorta</SectionTitle>
+        <UseCases />
+        <div className="flex justify-center mt-12">
+          <Button variant="hero" size="lg" onClick={redirectToCheckout}>
+            Join as a Founding Member
+          </Button>
         </div>
       </Section>
 
-      {/* What you get in V1 */}
-      <Section id="v1">
-        <SectionGrid columns={2}>
-          <div>
-            <SectionTitle>What Your AI Director Delivers</SectionTitle>
-            <CheckList
-              items={[
-                "Storyboards with script + performance notes + visual direction",
-                "Fresh viral hook analysis (trained on 10,000+ Shorts)",
-                "Content-matched hook selection (hooks chosen for your topic)",
-                "Delivery guidance (tone, pacing, emphasis, shot composition)",
-                "Multiple variations per idea",
-                "Automatic scoring & ranking",
-              ]}
-            />
-          </div>
-          <Card title="Not in V1 (yet)">
-            <CrossList
-              items={[
-                "Full publishing automation",
-                "Trend alerts",
-                "Multi-platform posting",
-              ]}
-              className="mb-4"
-            />
-            <p className="text-sm text-muted-foreground">
-              Clear scope. No surprises.
-            </p>
-          </Card>
-        </SectionGrid>
-      </Section>
-
-      {/* Why this works */}
-      <Section id="why" maxWidth="narrow">
-        <SectionTitle>Why this works</SectionTitle>
-        <p className="text-muted-foreground mb-4">
-          Viral Shorts aren't random. They follow repeatable patterns: hook timing, narrative beats, emotional pacing.
-        </p>
-        <p className="text-muted-foreground">
-          Shorta learns patterns from proven videos — and applies them systematically — so you can decide what to film before you hit record.
-        </p>
-      </Section>
-
-      {/* Still skeptical */}
-      <Section id="skeptical" maxWidth="narrow">
-        <SectionTitle>Still skeptical? Here's why hooks matter.</SectionTitle>
-
-        <p className="text-foreground font-medium mb-4">
-          Short-form platforms don't guess what to promote — they measure it.
-        </p>
-
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-foreground font-semibold mb-3">What the data consistently shows:</h3>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>• Platforms rank Shorts based on early retention and watch time</li>
-              <li>• Videos that keep viewers past the first 3–5 seconds get wider distribution</li>
-              <li>• Higher retention increases rewatches and loop cycles, compounding reach</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-foreground font-semibold mb-3">What platforms & creators agree on:</h3>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>• YouTube explicitly teaches creators to optimize the first seconds to improve performance</li>
-              <li>• Short-form growth guides show that improving the opening line alone can lift retention — even when the rest of the video stays the same</li>
-              <li>• High-retention Shorts are more likely to be replayed, a strong signal for discovery</li>
-            </ul>
-          </div>
-
-          <div className="bg-primary/5 rounded-lg p-6 border border-primary/20">
-            <p className="text-foreground font-semibold text-lg">
-              In short:
-            </p>
-            <p className="text-foreground mt-2">
-              Better hooks → higher retention → more loops → more reach.
-            </p>
-            <p className="text-muted-foreground mt-4">
-              That's exactly the layer Shorta focuses on.
-            </p>
-          </div>
-
-          <p className="text-xs text-muted-foreground italic text-center">
-            Based on public platform guidance and creator analytics — not guesswork.
-          </p>
+      {/* Differentiation */}
+      <Section id="differentiation">
+        <SectionTitle>Shorta vs ChatGPT</SectionTitle>
+        <Differentiation />
+        <div className="flex justify-center mt-12">
+          <Button variant="hero" size="lg" onClick={redirectToCheckout}>
+            Join as a Founding Member
+          </Button>
         </div>
       </Section>
 
-      {/* FAQ Lite */}
-      <Section id="faq-lite" maxWidth="narrow">
+      {/* FAQ */}
+      <Section id="faq" maxWidth="narrow">
         <SectionTitle>Frequently asked questions</SectionTitle>
-        <div className="space-y-8">
+        <div className="space-y-10">
           <div>
-            <h3 className="text-foreground font-semibold mb-3">Can't I just use ChatGPT?</h3>
-            <div className="space-y-3 text-muted-foreground">
+            <h3 className="text-xl font-semibold text-foreground mb-4">Is Shorta just another AI script generator?</h3>
+            <p className="text-lg text-muted-foreground">
+              No. Shorta focuses on analysis and feedback first. Generation is optional and guided by what actually needs fixing.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold text-foreground mb-4">Why don't you offer a monthly plan?</h3>
+            <p className="text-lg text-muted-foreground">
+              Building a successful YouTube Shorts channel is a long-term business, not a quick experiment. Annual pricing ensures you're committed to the process and gives you enough runway to see real results. We're building for creators who are serious about growth.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold text-foreground mb-4">Can't I just use ChatGPT?</h3>
+            <div className="space-y-4 text-lg text-muted-foreground">
               <p>
                 You can — but ChatGPT is trained on old data and gives you generic hooks.
               </p>
@@ -251,51 +110,91 @@ export default function HomePage() {
           </div>
 
           <div>
-            <h3 className="text-foreground font-semibold mb-3">How long does it take to generate scripts?</h3>
-            <p className="text-muted-foreground">
-              Less than 5 minutes. Paste your references, enter your topic, and get 10-20 ranked scripts instantly.
+            <h3 className="text-xl font-semibold text-foreground mb-4">What if my niche isn't productivity or AI?</h3>
+            <p className="text-lg text-muted-foreground">
+              Shorta analyzes structure and viewer behavior patterns, not niche-specific buzzwords.
             </p>
           </div>
 
           <div>
-            <h3 className="text-foreground font-semibold mb-3">Can I use this for TikTok or Instagram Reels?</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-xl font-semibold text-foreground mb-4">Will this replace my creativity?</h3>
+            <p className="text-lg text-muted-foreground">
+              No. It removes uncertainty so you can focus on creative decisions that matter.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold text-foreground mb-4">How long does it take to generate scripts?</h3>
+            <p className="text-lg text-muted-foreground">
+              Less than 5 minutes. Paste your references, enter your topic, and get high quality storyboard instantly.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold text-foreground mb-4">Can I use this for TikTok or Instagram Reels?</h3>
+            <p className="text-lg text-muted-foreground">
               You can — the principles of viral short-form content apply across platforms. However, our current focus is on YouTube Shorts, so the analysis and patterns are optimized for that platform.
             </p>
           </div>
 
           <div>
-            <h3 className="text-foreground font-semibold mb-3">Do you store my channel data?</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-xl font-semibold text-foreground mb-4">Do you store my channel data?</h3>
+            <p className="text-lg text-muted-foreground">
               We store summarized channel data (not raw videos) so the AI can generate the best content specifically for your audience and style. Your data is never shared with third parties.
             </p>
           </div>
         </div>
+        <div className="flex justify-center mt-12">
+          <Button variant="hero" size="lg" onClick={redirectToCheckout}>
+            Join as a Founding Member
+          </Button>
+        </div>
       </Section>
 
-      {/* Audience */}
-      <Section id="audience">
-        <SectionGrid columns={2}>
-          <div>
-            <SectionTitle>Who it's for</SectionTitle>
-            <CheckList
-              items={[
-                "YouTube Shorts creators",
-                "Creators repurposing long-form content",
-                "Solo creators & small teams",
-              ]}
+      {/* Founder */}
+      <Section id="founder" maxWidth="narrow">
+        <SectionTitle>What Shorta changed in my workflow</SectionTitle>
+        <div className="space-y-6">
+          <div className="flex items-start gap-4">
+            <img
+              src={daleHeadshot}
+              alt="Dale Ma"
+              className="w-24 h-24 rounded-full object-cover flex-shrink-0"
             />
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-foreground mb-2">Dale Ma</h3>
+              <div className="flex gap-3 text-base">
+                <a
+                  href="https://x.com/eguitarz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Twitter
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/dalema/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  LinkedIn
+                </a>
+              </div>
+            </div>
           </div>
-          <div>
-            <SectionTitle>Who it's not for</SectionTitle>
-            <CrossList
-              items={[
-                "Long-form-only channels",
-                "Fully automated spam content",
-              ]}
-            />
+          <div className="space-y-5 text-lg text-muted-foreground">
+            <p>
+              Hi, I'm Dale Ma. I built productivity tools and infra for developers at Meta, where speed and clarity matter. The best results didn't come from better prompts — they came from having the right context.
+            </p>
+            <p>
+              Context switching — jumping between examples, references, and half-formed ideas — was always the real cost. Content creation turned out to be the same problem.
+            </p>
+            <p>
+              Shorta is my attempt to solve that by bringing the right examples together, extracting patterns automatically, and turning context into decisions you can act on before hitting record.
+            </p>
           </div>
-        </SectionGrid>
+        </div>
       </Section>
 
       {/* Pricing */}
@@ -303,7 +202,7 @@ export default function HomePage() {
         <SectionGrid columns={2}>
           <div>
             <SectionTitle>Founding Member pricing</SectionTitle>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-lg text-muted-foreground mb-6">
               One plan. One price. Keep it forever.
             </p>
             <BulletList
@@ -314,9 +213,9 @@ export default function HomePage() {
                 "Direct access to the founder",
               ]}
             />
-            <div className="mt-6 p-4 bg-surface rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">Value breakdown:</p>
-              <ul className="text-sm text-muted-foreground space-y-1">
+            <div className="mt-6 p-5 bg-surface rounded-lg border border-border">
+              <p className="text-base text-muted-foreground mb-3">Value breakdown:</p>
+              <ul className="text-base text-muted-foreground space-y-2">
                 <li>• $199/year = $16.58/month</li>
                 <li>• Less than one freelance script ($50-200 each)</li>
                 <li>• Replaces hours of manual research per video</li>
@@ -338,74 +237,22 @@ export default function HomePage() {
       {/* Plan */}
       <Section id="plan" maxWidth="narrow">
         <SectionTitle>Kickoff, delivery, guarantee</SectionTitle>
-        <div className="space-y-3 text-foreground mb-8">
+        <div className="space-y-4 text-lg text-foreground mb-8">
           <p>
-            Development starts immediately once <strong>5 Founding Members</strong> join.
+            Development is <strong>underway</strong>.
           </p>
           <p>
-            If we don't reach 5 members by <strong>January 31, 2026</strong>, you'll receive a full refund.
+            Launch: <strong>End of February 2026</strong>.
           </p>
           <p>
-            Target ship window: within <strong>60 days</strong> after kickoff.
-          </p>
-          <p>
-            If we miss the ship window: <strong>full refund</strong>, no questions asked.
-          </p>
-          <p>
-            After launch: <strong>14-day money-back guarantee</strong> if you're not satisfied.
+            After launch: <strong>7-day money-back guarantee</strong> if you're not satisfied.
           </p>
         </div>
         <Callout
-          title="You're not buying hype."
-          text="You're triggering the build."
+          title="Development is underway. Join before launch."
+          text="Try the beta before public release."
           variant="subtle"
         />
-      </Section>
-
-      {/* Founder */}
-      <Section id="founder" maxWidth="narrow">
-        <SectionTitle>About the founder</SectionTitle>
-        <div className="space-y-4">
-          <div className="flex items-start gap-4">
-            <img
-              src={daleHeadshot}
-              alt="Dale Ma"
-              className="w-20 h-20 rounded-full object-cover flex-shrink-0"
-            />
-            <div className="flex-1">
-              <h3 className="text-foreground font-semibold mb-1">Dale Ma</h3>
-              <div className="flex gap-3 text-sm">
-                <a
-                  href="https://x.com/eguitarz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Twitter
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/dalema/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  LinkedIn
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-4 text-muted-foreground">
-            <p>
-              Hi, I'm Dale Ma. I built productivity tools and infra for developers at Meta, where speed and clarity matter. The best results didn't come from better prompts — they came from having the right context.
-            </p>
-            <p>
-              Context switching — jumping between examples, references, and half-formed ideas — was always the real cost. Content creation turned out to be the same problem.
-            </p>
-            <p>
-              Shorta is my attempt to solve that by bringing the right examples together, extracting patterns automatically, and turning context into decisions you can act on before hitting record.
-            </p>
-          </div>
-        </div>
       </Section>
 
       {/* CTA */}
@@ -426,7 +273,7 @@ export default function HomePage() {
                 Public launch: <strong>$399 / year</strong>
               </p>
               <p>
-                Ships within <strong>60 days</strong> after kickoff or <strong>full refund</strong>
+                Launches <strong>February 2026</strong>. <strong>7-day money-back guarantee</strong>
               </p>
             </div>
           </div>
