@@ -1,5 +1,6 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
+import { requireAuth } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -49,6 +50,12 @@ interface Storyboard {
 }
 
 export async function POST(request: NextRequest) {
+  // Require authentication for this API route
+  const authError = await requireAuth(request);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const input: CreateStoryboardInput = await request.json();
 

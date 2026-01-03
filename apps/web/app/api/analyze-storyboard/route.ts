@@ -2,6 +2,7 @@ import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
 import { VideoLinter } from '@/lib/linter';
 import type { VideoFormat } from '@/lib/linter';
+import { requireAuth } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Extract YouTube video ID from URL
@@ -56,6 +57,12 @@ async function fetchYouTubeStats(videoId: string, apiKey?: string) {
 }
 
 export async function POST(request: NextRequest) {
+  // Require authentication for this API route
+  const authError = await requireAuth(request);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const { url } = await request.json();
 
