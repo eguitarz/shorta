@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         patterns: cachedPatterns,
         source: 'cache',
-        analyzedAt: cachedPatterns.timestamp
+        analyzedAt: (cachedPatterns as CachedPattern).timestamp
       });
     }
 

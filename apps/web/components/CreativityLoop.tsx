@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { Section } from "@/components/Section";

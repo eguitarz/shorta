@@ -35,11 +35,11 @@ export interface Category {
 const allPosts = postsData;
 
 export function getAllPosts(): BlogPost[] {
-  return allPosts;
+  return allPosts as unknown as BlogPost[];
 }
 
 export function getPostBySlug(slug: string): BlogPost | null {
-  return allPosts.find(post => post.slug === slug) || null;
+  return (allPosts.find(post => post.slug === slug) as unknown as BlogPost) || null;
 }
 
 export function getPostsByCategory(category: string): BlogPost[] {

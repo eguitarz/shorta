@@ -219,7 +219,7 @@ Incorporating these into your storyboard...`;
         topic: extractedData?.topic || "Untitled Video",
         format: extractedData?.format || "talking_head",
         targetLength: extractedData?.targetLength || 30,
-        keyPoints: extractedData?.keyPoints?.length > 0 ? extractedData.keyPoints : ["Main point"],
+        keyPoints: (extractedData?.keyPoints?.length || 0) > 0 ? extractedData?.keyPoints : ["Main point"],
         targetAudience: extractedData?.targetAudience,
         contentType: extractedData?.contentType || "educational",
         viralPatterns: patterns, // Pass patterns to generation
