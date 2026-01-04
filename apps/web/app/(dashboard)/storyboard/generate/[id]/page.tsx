@@ -502,11 +502,11 @@ export default function StoryboardResultsPage() {
                   <Check className="w-4 h-4" />
                   PROPOSED CHANGES
                 </p>
-                <div className="text-sm space-y-2 max-h-32 overflow-y-auto">
+                <div className="text-sm space-y-3 max-h-64 overflow-y-auto">
                   {Object.entries(proposedChanges).map(([key, value]) => (
-                    <div key={key}>
-                      <span className="text-gray-400 capitalize">{key}:</span>
-                      <span className="text-gray-200 ml-2">{String(value).substring(0, 50)}...</span>
+                    <div key={key} className="space-y-1">
+                      <span className="text-gray-400 capitalize font-medium block">{key}:</span>
+                      <p className="text-gray-200 pl-2 whitespace-pre-wrap break-words">{String(value)}</p>
                     </div>
                   ))}
                 </div>

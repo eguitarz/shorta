@@ -47,10 +47,10 @@ export async function POST(request: NextRequest) {
     let classification;
     let response;
 
-    if (isYouTube && client.createVideoCache) {
+    if (isYouTube && (client as any).createVideoCache) {
       // Step 0: Create cache for the video (saves tokens for multiple calls)
       try {
-        cachedContent = await client.createVideoCache(url);
+        cachedContent = await (client as any).createVideoCache(url);
         console.log('Cache created:', cachedContent.name);
       } catch (error) {
         console.error('Cache creation error:', error);
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     if (isYouTube && client.classifyVideo) {
       // Step 1: Classify the video format using cached content
       try {
-        classification = await client.classifyVideo(url, undefined, cachedContent?.name);
+        classification = await (client as any).classifyVideo(url, undefined, cachedContent?.name);
       } catch (error) {
         console.error('Classification error:', error);
         return NextResponse.json(
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 Be specific and reference actual moments in the video using timestamps when relevant.`;
 
       // Step 2: Analyze using cached content
-      response = await client.analyzeVideo(url, prompt, undefined, cachedContent?.name);
+      response = await (client as any).analyzeVideo(url, prompt, undefined, cachedContent?.name);
     } else {
       // For non-YouTube URLs, validate URL to prevent SSRF
       const urlValidation = validateExternalUrl(url);

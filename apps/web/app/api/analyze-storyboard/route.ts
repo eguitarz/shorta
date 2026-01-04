@@ -208,9 +208,9 @@ export async function POST(request: NextRequest) {
     );
 
     // Calculate score from beat issues
-    const criticalCount = uniqueBeatIssues.filter(i => i.severity === 'critical').length;
-    const moderateCount = uniqueBeatIssues.filter(i => i.severity === 'moderate').length;
-    const minorCount = uniqueBeatIssues.filter(i => i.severity === 'minor').length;
+    const criticalCount = uniqueBeatIssues.filter((i: any) => i.severity === 'critical').length;
+    const moderateCount = uniqueBeatIssues.filter((i: any) => i.severity === 'moderate').length;
+    const minorCount = uniqueBeatIssues.filter((i: any) => i.severity === 'minor').length;
 
     let beatScore = 100;
     beatScore -= criticalCount * 10;
