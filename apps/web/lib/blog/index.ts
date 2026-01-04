@@ -13,7 +13,7 @@ export interface BlogPost {
     tags: string[];
     featured?: boolean;
     coverImage?: string;
-    readingTime?: number;
+    readingTime?: string; // Changed from number to string to match generated data
     seo?: {
       canonicalUrl?: string;
       ogImage?: string;
@@ -35,11 +35,11 @@ export interface Category {
 const allPosts = postsData;
 
 export function getAllPosts(): BlogPost[] {
-  return allPosts as unknown as BlogPost[];
+  return allPosts;
 }
 
 export function getPostBySlug(slug: string): BlogPost | null {
-  return (allPosts.find(post => post.slug === slug) as unknown as BlogPost) || null;
+  return allPosts.find(post => post.slug === slug) || null;
 }
 
 export function getPostsByCategory(category: string): BlogPost[] {
