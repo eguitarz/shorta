@@ -21,9 +21,9 @@ export function CTAForm() {
       </Button>
       <TrustBadges />
       <p className="text-xs text-muted-foreground text-center">
-        You'll be charged today to support the development.<br />
-        If we don't reach 5 founding members, you'll receive a full refund immediately.<br />
-        Your 1-year membership starts on launch day.
+        Charged today. Beta access before launch (Feb 2026).<br />
+        Your 1-year membership starts on launch day.<br />
+        7-day money-back guarantee after launch.
       </p>
     </div>
   );

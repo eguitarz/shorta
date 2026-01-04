@@ -1,0 +1,37 @@
+{
+  "content-creation": {
+    "name": "Content Creation",
+    "slug": "content-creation",
+    "description": "Tips and strategies for creating engaging YouTube Shorts and viral video content",
+    "color": "hsl(25 100% 55%)",
+    "icon": "video"
+  },
+  "youtube-shorts": {
+    "name": "YouTube Shorts",
+    "slug": "youtube-shorts",
+    "description": "Everything about YouTube Shorts optimization, algorithm insights, and growth strategies",
+    "color": "hsl(142 76% 36%)",
+    "icon": "play"
+  },
+  "ai-video": {
+    "name": "AI Video Tools",
+    "slug": "ai-video",
+    "description": "Leveraging AI for video analysis, script generation, and content optimization",
+    "color": "hsl(217 91% 60%)",
+    "icon": "brain"
+  },
+  "viral-content": {
+    "name": "Viral Content",
+    "slug": "viral-content",
+    "description": "Proven strategies and patterns for creating viral videos and maximizing engagement",
+    "color": "hsl(280 80% 60%)",
+    "icon": "trending-up"
+  },
+  "tutorials": {
+    "name": "Tutorials",
+    "slug": "tutorials",
+    "description": "Step-by-step guides for using Shorta and mastering content creation techniques",
+    "color": "hsl(45 93% 47%)",
+    "icon": "book"
+  }
+}

@@ -10,12 +10,12 @@ export function Card({ title, children, className }: CardProps) {
   return (
     <div
       className={cn(
-        "bg-card rounded-xl border border-border p-6 md:p-8 shadow-sm",
+        "bg-card rounded-lg border border-border p-8 md:p-10 shadow-md",
         className
       )}
     >
       {title && (
-        <h3 className="text-lg font-semibold text-card-foreground mb-4">
+        <h3 className="text-xl font-semibold text-card-foreground mb-6">
           {title}
         </h3>
       )}
@@ -42,26 +42,26 @@ export function PricingCard({
   onCtaClick: () => void;
 }) {
   return (
-    <div className="bg-card rounded-xl border border-border p-6 md:p-8 shadow-md">
-      <div className="flex flex-wrap gap-2 mb-4">
+    <div className="bg-card rounded-lg border border-border p-8 md:p-10 shadow-md">
+      <div className="flex flex-wrap gap-2 mb-6">
         {badges.map((badge) => (
           <span
             key={badge}
-            className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-foreground"
+            className="inline-flex items-center rounded-md bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary"
           >
             {badge}
           </span>
         ))}
       </div>
-      <h3 className="text-lg font-semibold text-card-foreground mb-2">{title}</h3>
-      <div className="flex items-baseline gap-1 mb-2">
-        <span className="text-4xl font-bold text-foreground">{price}</span>
-        <span className="text-muted-foreground">/ {period}</span>
+      <h3 className="text-xl font-semibold text-card-foreground mb-3">{title}</h3>
+      <div className="flex items-baseline gap-2 mb-3">
+        <span className="text-5xl font-bold text-foreground">{price}</span>
+        <span className="text-lg text-muted-foreground">/ {period}</span>
       </div>
-      <p className="text-sm text-muted-foreground mb-6">{finePrint}</p>
+      <p className="text-base text-muted-foreground mb-8">{finePrint}</p>
       <button
         onClick={onCtaClick}
-        className="w-full bg-primary text-primary-foreground rounded-lg py-3 px-4 font-medium hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md"
+        className="w-full bg-primary text-primary-foreground rounded-lg py-4 px-6 font-semibold hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg text-lg"
       >
         {ctaLabel}
       </button>

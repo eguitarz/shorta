@@ -40,7 +40,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       {/* Header */}
       <header className="mb-8">
-        <img src={shortaLogo} alt="Shorta" className="h-32 md:h-36" />
+        <img src={shortaLogo} alt="Shorta" className="h-16 w-16" />
       </header>
 
       {/* Login Card */}

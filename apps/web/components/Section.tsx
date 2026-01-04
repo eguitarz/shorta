@@ -22,8 +22,8 @@ export function Section({
     <section
       id={id}
       className={cn(
-        "py-16 md:py-20",
-        background === "surface" && "bg-surface rounded-2xl border border-border mx-4 md:mx-6",
+        "py-20 md:py-28",
+        background === "surface" && "bg-surface rounded-lg border border-border mx-4 md:mx-6",
         className
       )}
     >
@@ -33,7 +33,7 @@ export function Section({
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={cn(
-          "container mx-auto px-6",
+          "container mx-auto px-8",
           maxWidth === "narrow" && "max-w-[880px]"
         )}
       >
@@ -45,7 +45,7 @@ export function Section({
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6 tracking-tight">
+    <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6 tracking-tight text-center">
       {children}
     </h2>
   );

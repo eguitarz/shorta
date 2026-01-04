@@ -11,8 +11,8 @@ export function BulletList({
   return (
     <ul className={cn("space-y-3", className)}>
       {items.map((item, index) => (
-        <li key={index} className="flex items-start gap-3 text-muted-foreground">
-          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted-foreground/50 flex-shrink-0" />
+        <li key={index} className="flex items-start gap-3 text-lg text-muted-foreground">
+          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-muted-foreground/50 flex-shrink-0" />
           <span>{item}</span>
         </li>
       ))}
