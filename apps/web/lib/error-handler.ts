@@ -4,6 +4,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { logger } from './logger';
 
 /**
  * Error codes for different types of errors
@@ -68,15 +69,20 @@ export function createErrorResponse(
   errorCode: ErrorCode,
   context?: string
 ): NextResponse {
-  // Log detailed error server-side for debugging
-  console.error(`[${errorCode}] ${context || 'API Error'}:`, {
-    error: error instanceof Error ? {
-      name: error.name,
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-    } : error,
-    timestamp: new Date().toISOString(),
-  });
+  // Log detailed error server-side using structured logger
+  if (error instanceof Error) {
+    logger.error(
+      `${context || 'API Error'}: ${SAFE_ERROR_MESSAGES[errorCode]}`,
+      error,
+      { errorCode, context }
+    );
+  } else {
+    logger.error(
+      `${context || 'API Error'}: ${SAFE_ERROR_MESSAGES[errorCode]}`,
+      undefined,
+      { errorCode, context, error }
+    );
+  }
 
   // Return safe error to client
   const response = {
