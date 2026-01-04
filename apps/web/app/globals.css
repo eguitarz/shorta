@@ -4,84 +4,84 @@
 
 @layer base {
   :root {
-    --background: 0 0% 99%;
-    --foreground: 240 10% 6%;
+    --background: 180 50% 1%;
+    --foreground: 20 11% 89%;
 
-    --card: 240 5% 96%;
-    --card-foreground: 240 10% 6%;
+    --card: 0 0% 13%;
+    --card-foreground: 20 11% 89%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 6%;
+    --popover: 0 0% 13%;
+    --popover-foreground: 20 11% 89%;
 
-    --primary: 240 10% 6%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 25 100% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 94%;
-    --secondary-foreground: 240 10% 6%;
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 20 11% 89%;
 
-    --muted: 240 5% 92%;
-    --muted-foreground: 240 5% 46%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 20 5% 65%;
 
-    --accent: 240 5% 94%;
-    --accent-foreground: 240 10% 6%;
+    --accent: 25 100% 55%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 20 11% 89%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 240 10% 6%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 25 100% 55%;
 
-    --radius: 1rem;
+    --radius: 0.5rem;
 
     /* Custom tokens */
-    --surface: 240 5% 97%;
-    --surface-foreground: 240 10% 6%;
+    --surface: 0 0% 13%;
+    --surface-foreground: 20 11% 89%;
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
     /* Typography */
-    --font-heading: "Space Grotesk", system-ui, sans-serif;
+    --font-heading: ui-monospace, "SF Mono", "Roboto Mono", "Cascadia Code", "Courier New", monospace;
     --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(240 10% 6% / 0.03);
-    --shadow-md: 0 4px 6px -1px hsl(240 10% 6% / 0.05), 0 2px 4px -2px hsl(240 10% 6% / 0.05);
-    --shadow-lg: 0 10px 15px -3px hsl(240 10% 6% / 0.08), 0 4px 6px -4px hsl(240 10% 6% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(240 10% 6% / 0.1), 0 8px 10px -6px hsl(240 10% 6% / 0.05);
+    --shadow-sm: 0 2px 4px 0 hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 6px 12px -2px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.5);
+    --shadow-xl: 0 24px 48px -8px hsl(0 0% 0% / 0.6);
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
+    --background: 180 50% 1%;
+    --foreground: 20 11% 89%;
 
-    --card: 240 10% 8%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 13%;
+    --card-foreground: 20 11% 89%;
 
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 13%;
+    --popover-foreground: 20 11% 89%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 10% 6%;
+    --primary: 25 100% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 6% 14%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 20 11% 89%;
 
-    --muted: 240 6% 14%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 20 5% 65%;
 
-    --accent: 240 6% 14%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 25 100% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 20 11% 89%;
 
-    --border: 240 6% 18%;
-    --input: 240 6% 18%;
-    --ring: 240 5% 84%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 25 100% 55%;
 
-    --surface: 240 10% 8%;
-    --surface-foreground: 0 0% 98%;
+    --surface: 0 0% 13%;
+    --surface-foreground: 20 11% 89%;
   }
 }
 

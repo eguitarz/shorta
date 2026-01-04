@@ -31,7 +31,7 @@ function SuccessContent() {
       {/* Header */}
       <header className="pt-6">
         <div className="container mx-auto px-2">
-          <img src={shortaLogo} alt="Shorta" className="h-36 md:h-40" />
+          <img src={shortaLogo} alt="Shorta" className="h-16 w-16" />
         </div>
       </header>
 

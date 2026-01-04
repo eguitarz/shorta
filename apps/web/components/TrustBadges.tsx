@@ -13,7 +13,7 @@ export function TrustBadges() {
       </div>
       <div className="flex items-center gap-1.5">
         <Shield className="w-3.5 h-3.5" />
-        <span>14-Day Money-Back</span>
+        <span>7-Day Money-Back</span>
       </div>
     </div>
   );

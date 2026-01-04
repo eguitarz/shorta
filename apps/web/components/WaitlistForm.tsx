@@ -190,7 +190,7 @@ export function WaitlistForm() {
 				/>
 				<Button
 					type="submit"
-					variant="hero"
+					variant="outline"
 					size="lg"
 					className="w-full"
 					disabled={isSubmitting}

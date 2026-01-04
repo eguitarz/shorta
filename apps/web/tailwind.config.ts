@@ -19,7 +19,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ["var(--font-heading)", "Space Grotesk", "system-ui", "sans-serif"],
+        heading: ["var(--font-heading)", "ui-monospace", "SF Mono", "Roboto Mono", "monospace"],
         body: ["var(--font-body)", "system-ui", "sans-serif"],
       },
       colors: {
