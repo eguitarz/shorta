@@ -1,23 +1,49 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv, Message } from '@/lib/llm';
-import { requireAuth } from '@/lib/auth-helpers';
+import { requireAuthWithCsrf } from '@/lib/auth-helpers';
+import { ApiSchemas, validateRequestBody } from '@/lib/validation';
+import { validateLLMInput } from '@/lib/prompt-injection';
+import { safeParseJSON, createErrorResponse, ErrorCode } from '@/lib/error-handler';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  // Require authentication for this API route
-  const authError = await requireAuth(request);
+  // Require authentication and CSRF protection
+  const authError = await requireAuthWithCsrf(request);
   if (authError) {
     return authError;
   }
 
-  try {
-    const { messages, config } = await request.json();
+  // Parse and validate request size
+  const parseResult = await safeParseJSON(request);
+  if (!parseResult.success) {
+    return parseResult.error;
+  }
 
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: 'Invalid request: messages array is required' },
-        { status: 400 }
-      );
+  // Validate request schema
+  const validation = validateRequestBody(ApiSchemas.chat, parseResult.data);
+  if (!validation.success) {
+    return validation.error;
+  }
+
+  const { messages, config } = validation.data;
+
+  try {
+    // Validate each message for prompt injection
+    for (const message of messages) {
+      if (message.role === 'user') {
+        const llmValidation = validateLLMInput(message.content);
+        if (!llmValidation.valid) {
+          return NextResponse.json(
+            {
+              error: 'Invalid message content',
+              message: llmValidation.reason,
+            },
+            { status: 400 }
+          );
+        }
+        // Use sanitized content
+        message.content = llmValidation.sanitized;
+      }
     }
 
     // Create LLM client with environment variables
@@ -33,13 +59,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Chat API error:', error);
-
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    );
+    return createErrorResponse(error, ErrorCode.LLM_ERROR, 'Chat API');
   }
 }
