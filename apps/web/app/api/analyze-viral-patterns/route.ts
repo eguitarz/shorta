@@ -1,6 +1,8 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
-import { requireAuth } from '@/lib/auth-helpers';
+import { requireAuthWithCsrf } from '@/lib/auth-helpers';
+import { ApiSchemas, validateRequestBody } from '@/lib/validation';
+import { safeParseJSON, createErrorResponse, ErrorCode } from '@/lib/error-handler';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -30,21 +32,27 @@ interface CachedPattern extends ViralPatterns {
 }
 
 export async function POST(request: NextRequest) {
-  // Require authentication for this API route
-  const authError = await requireAuth(request);
+  // Require authentication and CSRF protection
+  const authError = await requireAuthWithCsrf(request);
   if (authError) {
     return authError;
   }
 
-  try {
-    const { niche } = await request.json();
+  // Parse and validate request size
+  const parseResult = await safeParseJSON(request);
+  if (!parseResult.success) {
+    return parseResult.error;
+  }
 
-    if (!niche || typeof niche !== 'string') {
-      return NextResponse.json(
-        { error: 'Niche is required' },
-        { status: 400 }
-      );
-    }
+  // Validate request schema
+  const validation = validateRequestBody(ApiSchemas.analyzeViralPatterns, parseResult.data);
+  if (!validation.success) {
+    return validation.error;
+  }
+
+  const { niche } = validation.data;
+
+  try {
 
     console.log('Analyzing viral patterns for niche:', niche);
 
@@ -144,14 +152,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Viral pattern analysis error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to analyze viral patterns',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return createErrorResponse(error, ErrorCode.EXTERNAL_API_ERROR, 'Viral pattern analysis');
   }
 }
 
