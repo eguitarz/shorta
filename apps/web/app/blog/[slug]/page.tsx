@@ -8,7 +8,6 @@ import { TableOfContents } from '@/components/blog/TableOfContents';
 import { Footer } from '@/components/Footer';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import remarkGfm from 'remark-gfm';
@@ -72,7 +71,6 @@ export default async function BlogPostPage({ params }: Props) {
     remarkPlugins: [remarkGfm],
     rehypePlugins: [
       rehypeSlug,
-      [rehypePrettyCode, { theme: 'github-dark', keepBackground: false }],
       [rehypeAutolinkHeadings, { behavior: 'wrap', properties: { className: ['anchor-link'] } }],
     ],
   };

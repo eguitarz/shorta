@@ -1,7 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-import readingTime from 'reading-time';
+import { postsData } from './posts-data';
+import categoriesData from '../../content/blog/categories/categories.json';
 
 export interface BlogPost {
   slug: string;
@@ -33,50 +31,15 @@ export interface Category {
   icon: string;
 }
 
-const postsDirectory = path.join(process.cwd(), 'content/blog/posts');
-const categoriesPath = path.join(process.cwd(), 'content/blog/categories/categories.json');
+// Use pre-generated posts data for Cloudflare Workers compatibility
+const allPosts: BlogPost[] = postsData as BlogPost[];
 
 export function getAllPosts(): BlogPost[] {
-  // Check if directory exists
-  if (!fs.existsSync(postsDirectory)) {
-    return [];
-  }
-
-  const fileNames = fs.readdirSync(postsDirectory);
-  const posts = fileNames
-    .filter(fileName => fileName.endsWith('.md'))
-    .map(fileName => {
-      const slug = fileName.replace(/\.md$/, '');
-      return getPostBySlug(slug);
-    })
-    .filter(Boolean) as BlogPost[];
-
-  // Sort by publishedAt descending
-  return posts.sort((a, b) =>
-    new Date(b.frontmatter.publishedAt).getTime() -
-    new Date(a.frontmatter.publishedAt).getTime()
-  );
+  return allPosts;
 }
 
 export function getPostBySlug(slug: string): BlogPost | null {
-  try {
-    const fullPath = path.join(postsDirectory, `${slug}.md`);
-    const fileContents = fs.readFileSync(fullPath, 'utf8');
-    const { data, content } = matter(fileContents);
-    const stats = readingTime(content);
-
-    return {
-      slug,
-      frontmatter: {
-        ...data,
-        readingTime: Math.ceil(stats.minutes),
-      } as BlogPost['frontmatter'],
-      content,
-      readingTime: stats.text,
-    };
-  } catch {
-    return null;
-  }
+  return allPosts.find(post => post.slug === slug) || null;
 }
 
 export function getPostsByCategory(category: string): BlogPost[] {
@@ -92,10 +55,10 @@ export function getPostsByTag(tag: string): BlogPost[] {
 }
 
 export function getRelatedPosts(post: BlogPost, limit = 3): BlogPost[] {
-  const allPosts = getAllPosts().filter(p => p.slug !== post.slug);
+  const filtered = getAllPosts().filter(p => p.slug !== post.slug);
 
   // Score posts by category/tag overlap
-  const scored = allPosts.map(p => {
+  const scored = filtered.map(p => {
     let score = 0;
     p.frontmatter.categories.forEach(cat => {
       if (post.frontmatter.categories.includes(cat)) score += 3;
@@ -113,15 +76,7 @@ export function getRelatedPosts(post: BlogPost, limit = 3): BlogPost[] {
 }
 
 export function getAllCategories(): Category[] {
-  try {
-    if (!fs.existsSync(categoriesPath)) {
-      return [];
-    }
-    const data = JSON.parse(fs.readFileSync(categoriesPath, 'utf8'));
-    return Object.values(data);
-  } catch {
-    return [];
-  }
+  return Object.values(categoriesData);
 }
 
 export function getAllTags(): string[] {
