@@ -1,8 +1,16 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
+import { requireAuthWithCsrfAndRateLimit } from '@/lib/auth-helpers';
+import { validateExternalUrl } from '@/lib/url-validation';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  // Require authentication, CSRF protection, and rate limiting
+  const authError = await requireAuthWithCsrfAndRateLimit(request);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const { url } = await request.json();
 
@@ -224,7 +232,16 @@ Now analyze the video and generate the complete storyboard.`;
 
       response = await client.analyzeVideo(url, prompt);
     } else {
-      // For non-YouTube URLs, try to fetch and analyze content
+      // For non-YouTube URLs, validate URL to prevent SSRF
+      const urlValidation = validateExternalUrl(url);
+      if (!urlValidation.isValid) {
+        return NextResponse.json(
+          { error: urlValidation.error || 'Invalid URL' },
+          { status: 400 }
+        );
+      }
+
+      // Try to fetch and analyze content
       let pageContent = '';
       try {
         const fetchResponse = await fetch(url, {

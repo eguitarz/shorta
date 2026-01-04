@@ -1,11 +1,12 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
-import { requireAuth } from '@/lib/auth-helpers';
+import { requireAuthWithCsrfAndRateLimit } from '@/lib/auth-helpers';
+import { validateExternalUrl } from '@/lib/url-validation';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  // Require authentication for this API route
-  const authError = await requireAuth(request);
+  // Require authentication, CSRF protection, and rate limiting
+  const authError = await requireAuthWithCsrfAndRateLimit(request);
   if (authError) {
     return authError;
   }
@@ -88,7 +89,16 @@ Be specific and reference actual moments in the video using timestamps when rele
       // Step 2: Analyze using cached content
       response = await client.analyzeVideo(url, prompt, undefined, cachedContent?.name);
     } else {
-      // For non-YouTube URLs, try to fetch and analyze content
+      // For non-YouTube URLs, validate URL to prevent SSRF
+      const urlValidation = validateExternalUrl(url);
+      if (!urlValidation.isValid) {
+        return NextResponse.json(
+          { error: urlValidation.error || 'Invalid URL' },
+          { status: 400 }
+        );
+      }
+
+      // Try to fetch and analyze content
       let pageContent = '';
       try {
         const fetchResponse = await fetch(url, {
