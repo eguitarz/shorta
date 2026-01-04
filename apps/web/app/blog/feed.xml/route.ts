@@ -38,7 +38,7 @@ export async function GET() {
       ],
       date: new Date(post.frontmatter.publishedAt),
       category: post.frontmatter.categories.map(cat => ({ name: cat })),
-      image: post.frontmatter.coverImage,
+      image: post.frontmatter.coverImage ? `${baseUrl}${post.frontmatter.coverImage}` : undefined,
     });
   });
 
