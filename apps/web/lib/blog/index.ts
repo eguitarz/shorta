@@ -32,7 +32,7 @@ export interface Category {
 }
 
 // Use pre-generated posts data for Cloudflare Workers compatibility
-const allPosts: BlogPost[] = postsData as BlogPost[];
+const allPosts = postsData;
 
 export function getAllPosts(): BlogPost[] {
   return allPosts;

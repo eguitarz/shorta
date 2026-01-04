@@ -8,9 +8,6 @@ import { TableOfContents } from '@/components/blog/TableOfContents';
 import { Footer } from '@/components/Footer';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import rehypeSlug from 'rehype-slug';
-import rehypeAutolinkHeadings from 'rehype-autolink-headings';
-import remarkGfm from 'remark-gfm';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -66,15 +63,6 @@ export default async function BlogPostPage({ params }: Props) {
 
   const relatedPosts = getRelatedPosts(post);
 
-  // MDX options for RSC
-  const mdxOptions = {
-    remarkPlugins: [remarkGfm],
-    rehypePlugins: [
-      rehypeSlug,
-      [rehypeAutolinkHeadings, { behavior: 'wrap', properties: { className: ['anchor-link'] } }],
-    ],
-  };
-
   // Generate JSON-LD structured data
   const structuredData = {
     '@context': 'https://schema.org',
@@ -124,7 +112,7 @@ export default async function BlogPostPage({ params }: Props) {
           <BlogPostHeader post={post} />
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-12">
-            <BlogPostContent content={post.content} mdxOptions={mdxOptions} />
+            <BlogPostContent content={post.content} />
             <aside className="hidden lg:block">
               <div className="sticky top-8">
                 <TableOfContents content={post.content} />
