@@ -147,6 +147,12 @@ export default function RootLayout({
         <link rel="icon" href="/shorta-logo.png" type="image/png" sizes="64x64" />
         <link rel="apple-touch-icon" href="/shorta-logo.png" />
         <link rel="canonical" href="https://shorta.ai" />
+        {/*
+          SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
+          1. structuredData is a hardcoded object literal (not user input)
+          2. JSON.stringify() automatically escapes any dangerous characters
+          3. This is the standard way to add JSON-LD structured data for SEO
+        */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

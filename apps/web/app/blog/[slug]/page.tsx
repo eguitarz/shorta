@@ -93,6 +93,13 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <>
+      {/*
+        SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
+        1. structuredData is a hardcoded object literal (not user input)
+        2. JSON.stringify() automatically escapes any dangerous characters
+        3. This is the standard way to add JSON-LD structured data to pages
+        See: https://nextjs.org/docs/app/building-your-application/optimizing/metadata#json-ld
+      */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

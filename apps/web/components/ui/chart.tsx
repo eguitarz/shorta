@@ -68,6 +68,13 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   }
 
   return (
+    /*
+      SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
+      1. THEMES is a hardcoded object literal from this file
+      2. The CSS variables are generated from controlled theme configuration
+      3. No user input is included in the style content
+      4. This is a UI library pattern for dynamic theming
+    */
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
