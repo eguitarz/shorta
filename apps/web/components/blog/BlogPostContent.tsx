@@ -1,11 +1,11 @@
-import { MDXRemote } from 'next-mdx-remote/rsc';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Props {
   content: string;
-  mdxOptions: any;
 }
 
-export function BlogPostContent({ content, mdxOptions }: Props) {
+export function BlogPostContent({ content }: Props) {
   return (
     <div className="prose prose-invert prose-lg max-w-none
       prose-headings:font-heading prose-headings:text-foreground
@@ -20,7 +20,7 @@ export function BlogPostContent({ content, mdxOptions }: Props) {
       prose-ul:text-muted-foreground prose-ol:text-muted-foreground
       prose-li:marker:text-primary
     ">
-      <MDXRemote source={content} options={mdxOptions} />
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>
   );
 }
