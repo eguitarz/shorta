@@ -1,12 +1,12 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
-import { requireAuth } from '@/lib/auth-helpers';
+import { requireAuthWithCsrfAndRateLimit } from '@/lib/auth-helpers';
 import { validateExternalUrl } from '@/lib/url-validation';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  // Require authentication for this API route
-  const authError = await requireAuth(request);
+  // Require authentication, CSRF protection, and rate limiting
+  const authError = await requireAuthWithCsrfAndRateLimit(request);
   if (authError) {
     return authError;
   }

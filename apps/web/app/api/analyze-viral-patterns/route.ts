@@ -187,18 +187,21 @@ async function searchYouTubeVideos(
   searchUrl.searchParams.set('maxResults', '20');
   searchUrl.searchParams.set('key', apiKey);
 
-  console.log('Searching YouTube:', searchUrl.toString().replace(apiKey, 'API_KEY_HIDDEN'));
+  // Note: Do not log the full URL as it contains the API key
+  console.log('Searching YouTube for niche:', niche);
 
   const searchResponse = await fetch(searchUrl.toString());
 
   if (!searchResponse.ok) {
     const errorText = await searchResponse.text();
+    // Do not log URL or params that might contain API key
     console.error('YouTube API error:', {
       status: searchResponse.status,
       statusText: searchResponse.statusText,
-      error: errorText
+      message: 'Search request failed'
     });
-    throw new Error(`YouTube search failed: ${searchResponse.status} - ${errorText}`);
+    // Do not include errorText in error message as it might contain sensitive info
+    throw new Error(`YouTube search failed with status ${searchResponse.status}`);
   }
 
   const searchData = await searchResponse.json();
@@ -217,8 +220,13 @@ async function searchYouTubeVideos(
   const statsResponse = await fetch(statsUrl.toString());
 
   if (!statsResponse.ok) {
-    const errorText = await statsResponse.text();
-    throw new Error(`YouTube stats failed: ${statsResponse.status} - ${errorText}`);
+    // Do not log URL or error text that might contain API key
+    console.error('YouTube stats API error:', {
+      status: statsResponse.status,
+      statusText: statsResponse.statusText,
+      message: 'Stats request failed'
+    });
+    throw new Error(`YouTube stats failed with status ${statsResponse.status}`);
   }
 
   const statsData = await statsResponse.json();
