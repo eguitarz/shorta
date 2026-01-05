@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -27,6 +27,12 @@ jobs:
       - name: Run type check
         run: npm run build
         working-directory: apps/web
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder_key_for_ci_build
+          NEXT_PUBLIC_STRIPE_PAYMENT_LINK: https://placeholder.stripe.com
+          NEXT_PUBLIC_POSTHOG_KEY: placeholder_posthog_key
+          NEXT_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
 
       - name: Check for @ts-nocheck usage
         run: |
