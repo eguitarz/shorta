@@ -1049,7 +1049,6 @@ export default function AnalyzerResultsPage() {
                         {contentExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                       </button>
                     </div>
-                      if (!analysisData) return null;
                     {(() => {
                       if (!analysisData) return null;
                       // Calculate content score from average of valueClarity and uniqueness
@@ -1108,7 +1107,6 @@ export default function AnalyzerResultsPage() {
                       >
                         {deliveryExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                       </button>
-                      if (!analysisData) return null;
                     </div>
                     {(() => {
                       if (!analysisData) return null;
