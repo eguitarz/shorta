@@ -16,6 +16,7 @@ import { UseCases } from "@/components/UseCases";
 import { Differentiation } from "@/components/Differentiation";
 import { AIComparison } from "@/components/AIComparison";
 import { CreativityLoop } from "@/components/CreativityLoop";
+import { HookAnalysis } from "@/components/HookAnalysis";
 
 const shortaLogo = "/shorta-logo.png";
 const daleHeadshot = "/dale-ma-headshot.jpg";
@@ -53,6 +54,9 @@ export default function HomePage() {
 
       {/* Creativity Loop */}
       <CreativityLoop />
+
+      {/* Hook Analysis */}
+      <HookAnalysis />
 
       {/* Use Cases */}
       <Section id="use-cases">
