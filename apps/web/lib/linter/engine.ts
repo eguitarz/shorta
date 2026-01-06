@@ -58,7 +58,7 @@ export class VideoLinter {
       videoUrl,
       prompt,
       {
-        temperature: 0.2, // Low temperature for consistent linting
+        temperature: 0.0, // Minimum temperature for maximum consistency in scoring
         maxTokens: 16384, // Very high limit to prevent incomplete JSON responses
       }
     );

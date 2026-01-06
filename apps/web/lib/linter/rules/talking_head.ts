@@ -113,10 +113,10 @@ export const talkingHeadRules: RuleSet = {
     {
       id: 'th_duration',
       name: 'Optimal Duration',
-      description: 'Talking head shorts should be 15-45 seconds',
+      description: 'Talking head shorts should be 15-90 seconds for best retention',
       severity: 'moderate',
       category: 'structure',
-      check: 'Is the video length appropriate (15-45s for most topics)?',
+      check: 'Is the video length appropriate? Aim for 15-90s for talking head content (YouTube Shorts support up to 180s).',
     },
     {
       id: 'gen_credibility_gap',

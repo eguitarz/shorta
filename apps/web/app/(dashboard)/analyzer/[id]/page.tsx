@@ -190,6 +190,12 @@ export default function AnalyzerResultsPage() {
   const [contentExpanded, setContentExpanded] = useState(false);
   const [deliveryExpanded, setDeliveryExpanded] = useState(false);
 
+  // Async job state
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<'pending' | 'classifying' | 'linting' | 'storyboarding' | 'completed' | 'failed'>('pending');
+  const [currentStep, setCurrentStep] = useState(0);
+  const [progressPercent, setProgressPercent] = useState(0);
+
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set());
@@ -329,49 +335,100 @@ export default function AnalyzerResultsPage() {
     }
   }, [params.id, router]);
 
-  // Start analysis if not already complete
+  // Create analysis job if not already complete
   useEffect(() => {
-    if (!videoUrl || analysisData) return;
+    if (!videoUrl || analysisData || jobId) return;
 
-    const analyzeVideo = async () => {
+    const createJob = async () => {
       try {
-        const response = await fetch("/api/analyze-storyboard", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+        const response = await fetch('/api/jobs/analysis/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: videoUrl }),
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to analyze storyboard");
+          throw new Error(data.error || 'Failed to create analysis job');
         }
 
-        // Store complete analysis data
-        const completeData = {
-          url: data.url,
-          classification: data.classification,
-          lintSummary: data.lintSummary,
-          storyboard: data.storyboard,
-          analyzedAt: new Date().toISOString(),
-          status: "complete",
-        };
+        setJobId(data.job_id);
+        setJobStatus(data.status);
 
+        // Store job info for persistence if user navigates away
         const id = params.id as string;
-        sessionStorage.setItem(`analysis_${id}`, JSON.stringify(completeData));
-        setAnalysisData(completeData);
-        setLoading(false);
+        sessionStorage.setItem(`analysis_${id}`, JSON.stringify({
+          job_id: data.job_id,
+          url: videoUrl,
+          status: 'pending',
+        }));
+
+        console.log('[Frontend] Job created:', data.job_id);
       } catch (err) {
-        console.error("Analysis error:", err);
-        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error('Job creation error:', err);
+        setError(err instanceof Error ? err.message : 'Failed to create job');
         setLoading(false);
       }
     };
 
-    analyzeVideo();
-  }, [videoUrl, analysisData, params.id]);
+    createJob();
+  }, [videoUrl, analysisData, jobId, params.id]);
+
+  // Poll job status every 3 seconds
+  useEffect(() => {
+    if (!jobId || jobStatus === 'completed' || jobStatus === 'failed') return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/jobs/analysis/${jobId}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch job status');
+        }
+
+        setJobStatus(data.status);
+        setCurrentStep(data.current_step);
+        setProgressPercent(data.progress_percent);
+
+        console.log('[Frontend] Poll:', data.status, `step ${data.current_step}/${data.total_steps}`);
+
+        if (data.status === 'completed') {
+          // Store complete results
+          const completeData = {
+            url: data.url,
+            classification: data.classification,
+            lintSummary: data.lintSummary,
+            storyboard: data.storyboard,
+            analyzedAt: data.completed_at,
+            status: 'complete',
+          };
+
+          const id = params.id as string;
+          sessionStorage.setItem(`analysis_${id}`, JSON.stringify(completeData));
+          setAnalysisData(completeData);
+          setLoading(false);
+
+          clearInterval(interval);
+          console.log('[Frontend] Analysis completed!');
+        }
+
+        if (data.status === 'failed') {
+          setError(data.error_message || 'Analysis failed');
+          setLoading(false);
+          clearInterval(interval);
+          console.error('[Frontend] Analysis failed:', data.error_message);
+        }
+      } catch (err) {
+        console.error('Polling error:', err);
+        setError(err instanceof Error ? err.message : 'Polling failed');
+        clearInterval(interval);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [jobId, jobStatus, params.id]);
 
   // Fetch fresh YouTube stats on every render
   useEffect(() => {
@@ -740,16 +797,43 @@ export default function AnalyzerResultsPage() {
               <div className="flex flex-col gap-4">
                 {loading || !analysisData ? (
                   <>
-                    {/* Loading State for Overall Score */}
+                    {/* Loading State with Progress */}
                     <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-4">
                         <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
-                        <div className="text-xs text-orange-500 font-medium">Analyzing video...</div>
+                        <div className="text-xs text-orange-500 font-medium">
+                          {jobStatus === 'classifying' && 'Classifying video format...'}
+                          {jobStatus === 'linting' && 'Analyzing retention patterns...'}
+                          {jobStatus === 'storyboarding' && 'Generating storyboard...'}
+                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 0 && 'Starting analysis...'}
+                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 1 && 'Classification complete'}
+                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 2 && 'Linting complete'}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-gray-800/30 rounded-lg">
-                        <Clock className="w-3.5 h-3.5 text-gray-500" />
-                        <span className="text-xs text-gray-400">This will take about <span className="text-white font-semibold">1 minute</span></span>
+
+                      {/* Progress bar */}
+                      <div className="w-full bg-gray-800 rounded-full h-2 mb-3">
+                        <div
+                          className="bg-orange-500 h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${progressPercent}%` }}
+                        />
                       </div>
+
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-xs text-gray-400">
+                          Step {currentStep} of 3
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-gray-500" />
+                          <span className="text-xs text-gray-400">
+                            {currentStep === 0 && '~2 minutes remaining'}
+                            {currentStep === 1 && '~90 seconds remaining'}
+                            {currentStep === 2 && '~60 seconds remaining'}
+                            {currentStep === 3 && 'Almost done...'}
+                          </span>
+                        </div>
+                      </div>
+
                       <div className="space-y-3 animate-pulse">
                         <div className="h-10 bg-gray-800/50 rounded"></div>
                         <div className="h-20 bg-gray-800/30 rounded"></div>

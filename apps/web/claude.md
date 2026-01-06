@@ -260,24 +260,46 @@ npx wrangler deploy
 npm run cf:build && npx wrangler deploy
 ```
 
-## Known Limitations
+## Async Video Analysis
 
-### Error 524: Timeout on Long Videos
+**Status:** ✅ Implemented
 
-**Problem:** Gemini video analysis can timeout on longer videos (>60 seconds) with error 524.
+The video analyzer now runs asynchronously to avoid Cloudflare 524 timeout errors on long videos.
 
-**Cause:**
-- Cloudflare has a 100-second gateway timeout (Free/Pro plans)
-- Gemini video analysis can take 2-3 minutes
-- Worker gets killed before Gemini finishes
+**How it works:**
+- Analysis is broken into 3 sequential steps, each completing in <100 seconds
+- Frontend polls every 3 seconds to check progress and trigger next step
+- Progress bar shows real-time status (Classification → Linting → Storyboard)
+- Analysis history is stored in Supabase for persistence
+- Users can navigate away and return later - progress is maintained
 
-**Current Impact:**
-- Videos under ~60 seconds: Usually work fine
-- Longer videos: May fail with "524: timeout" error
+**Architecture:**
+```
+Frontend → Create Job → Returns job_id
+         ↓
+         Poll every 3s
+         ↓
+         Step 1: Classification (5-10s) → DB update
+         ↓
+         Step 2: Linting (30-45s) → DB update
+         ↓
+         Step 3: Storyboard (60-90s) → DB update (completed)
+```
 
-**Solutions:**
-1. **Retry shorter videos** - Works best for videos under 60 seconds
-2. **Async processing (future)** - Implement background job queue with polling
-3. **Cloudflare Enterprise** - Has higher timeout limits (not recommended for cost)
+**Files:**
+- Database: `/supabase/migrations/001_create_analysis_jobs.sql`
+- API: `/app/api/jobs/analysis/create/route.ts` and `/app/api/jobs/analysis/[job_id]/route.ts`
+- Processing: `/lib/analysis/process-*.ts` (classification, linting, storyboard)
+- Frontend: `/app/(dashboard)/analyzer/[id]/page.tsx` (polling UI)
 
-**Workaround for now:** Analyze shorter videos or retry if the video is close to the timeout threshold.
+**Setup Required:**
+1. Run migration in Supabase dashboard to create `analysis_jobs` table
+2. Set `SUPABASE_SERVICE_ROLE_KEY` secret: `npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY`
+3. Deploy with `npm run cf:build && npx wrangler deploy`
+
+**Benefits:**
+- ✅ No more 524 timeouts
+- ✅ Works on Cloudflare Free tier
+- ✅ Real-time progress tracking
+- ✅ Analysis history in database
+- ✅ Can navigate away and return
