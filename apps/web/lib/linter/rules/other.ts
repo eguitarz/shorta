@@ -71,10 +71,10 @@ export const otherRules: RuleSet = {
     {
       id: 'ot_length',
       name: 'Appropriate Length',
-      description: 'Should be 15-60 seconds based on content',
+      description: 'Should be 15-180 seconds (YouTube Shorts max duration)',
       severity: 'minor',
       category: 'structure',
-      check: 'Is the video length appropriate for the content type?',
+      check: 'Is the video length appropriate for the content type? YouTube Shorts support up to 3 minutes (180s).',
     },
 
     // STRUCTURE RULES
