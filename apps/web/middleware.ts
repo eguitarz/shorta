@@ -2,9 +2,10 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  // Force HTTPS redirect
+  // Force HTTPS redirect (skip in development)
+  const isDevelopment = process.env.NODE_ENV === 'development';
   const proto = request.headers.get('x-forwarded-proto') || 'https';
-  if (proto === 'http') {
+  if (!isDevelopment && proto === 'http') {
     const url = request.nextUrl.clone();
     url.protocol = 'https:';
     return NextResponse.redirect(url, 301);
