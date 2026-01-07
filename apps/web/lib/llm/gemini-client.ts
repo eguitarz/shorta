@@ -1,40 +1,37 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import type { Message, LLMResponse, LLMConfig, LLMClient, VideoClassification, CachedContent } from './types';
 
 export class GeminiClient implements LLMClient {
-  private readonly genAI: GoogleGenerativeAI;
+  private readonly ai: GoogleGenAI;
   private readonly defaultModel = 'gemini-2.5-flash';
 
   constructor(apiKey: string) {
     if (!apiKey) {
       throw new Error('Gemini API key is required');
     }
-    this.genAI = new GoogleGenerativeAI(apiKey);
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   async chat(messages: Message[], config?: LLMConfig): Promise<LLMResponse> {
     const modelName = config?.model || this.defaultModel;
-    const model = this.genAI.getGenerativeModel({ model: modelName });
 
-    // Transform messages to Gemini format
+    // Build contents from messages
     const contents = messages.map((msg) => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
 
-    const result = await model.generateContent({
+    const response = await this.ai.models.generateContent({
+      model: modelName,
       contents,
-      generationConfig: {
+      config: {
         temperature: config?.temperature ?? 0.7,
         maxOutputTokens: config?.maxTokens ?? 2048,
       },
     });
 
-    const response = result.response;
-    const text = response.text();
-
     return {
-      content: text,
+      content: response.text || '',
       usage: {
         promptTokens: response.usageMetadata?.promptTokenCount || 0,
         completionTokens: response.usageMetadata?.candidatesTokenCount || 0,
@@ -45,32 +42,31 @@ export class GeminiClient implements LLMClient {
 
   async *stream(messages: Message[], config?: LLMConfig): AsyncIterable<string> {
     const modelName = config?.model || this.defaultModel;
-    const model = this.genAI.getGenerativeModel({ model: modelName });
 
-    // Transform messages to Gemini format
+    // Build contents from messages
     const contents = messages.map((msg) => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
 
-    const result = await model.generateContentStream({
+    const response = await this.ai.models.generateContentStream({
+      model: modelName,
       contents,
-      generationConfig: {
+      config: {
         temperature: config?.temperature ?? 0.7,
         maxOutputTokens: config?.maxTokens ?? 2048,
       },
     });
 
-    for await (const chunk of result.stream) {
-      const chunkText = chunk.text();
-      yield chunkText;
+    for await (const chunk of response) {
+      if (chunk.text) {
+        yield chunk.text;
+      }
     }
   }
 
   async classifyVideo(videoUrl: string, config?: LLMConfig): Promise<VideoClassification> {
-    // Use gemini-2.5-flash for classification
     const modelName = config?.model || 'gemini-2.5-flash';
-    const model = this.genAI.getGenerativeModel({ model: modelName });
 
     const systemPrompt = `You are a short-form video FORMAT CLASSIFIER.
 
@@ -114,27 +110,22 @@ Return JSON:
     console.log('Classifying video with:', { model: modelName, url: videoUrl });
 
     try {
-      const result = await model.generateContent({
-        contents: [{
-          role: 'user',
-          parts: [
-            { text: `${systemPrompt}\n\n${userPrompt}` },
-            {
-              fileData: {
-                fileUri: videoUrl,
-                mimeType: 'video/*'
-              }
-            }
-          ]
-        }],
-        generationConfig: {
+      // Build contents with video file
+      const contents = [
+        { text: `${systemPrompt}\n\n${userPrompt}` },
+        { fileData: { fileUri: videoUrl } },
+      ];
+
+      const response = await this.ai.models.generateContent({
+        model: modelName,
+        contents,
+        config: {
           temperature: 0.1,
           maxOutputTokens: 500,
         },
       });
 
-      const response = result.response;
-      const resultText = response.text();
+      const resultText = response.text;
 
       if (!resultText) {
         throw new Error('No classification result returned');
@@ -158,40 +149,32 @@ Return JSON:
 
   async analyzeVideo(videoUrl: string, prompt: string, config?: LLMConfig): Promise<LLMResponse> {
     const modelName = config?.model || 'gemini-2.5-flash';
-    const model = this.genAI.getGenerativeModel({ model: modelName });
 
     console.log('Analyzing video with:', { model: modelName, url: videoUrl });
 
     try {
-      const result = await model.generateContent({
-        contents: [{
-          role: 'user',
-          parts: [
-            { text: prompt },
-            {
-              fileData: {
-                fileUri: videoUrl,
-                mimeType: 'video/*'
-              }
-            }
-          ]
-        }],
-        generationConfig: {
+      // Build contents with video file
+      const contents = [
+        { text: prompt },
+        { fileData: { fileUri: videoUrl } },
+      ];
+
+      const response = await this.ai.models.generateContent({
+        model: modelName,
+        contents,
+        config: {
           temperature: config?.temperature ?? 0.7,
           maxOutputTokens: config?.maxTokens ?? 8192,
         },
       });
 
-      const response = result.response;
-
       // Handle safety blocks or empty responses
-      if (!response.text()) {
-        const blockReason = response.candidates?.[0]?.finishReason || 'UNKNOWN';
-        throw new Error(`Gemini response blocked or empty. Reason: ${blockReason}`);
+      if (!response.text) {
+        throw new Error('Gemini response blocked or empty');
       }
 
       return {
-        content: response.text(),
+        content: response.text,
         usage: {
           promptTokens: response.usageMetadata?.promptTokenCount || 0,
           completionTokens: response.usageMetadata?.candidatesTokenCount || 0,

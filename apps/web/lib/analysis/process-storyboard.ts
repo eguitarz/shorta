@@ -34,7 +34,15 @@ export async function processStoryboard(jobId: string) {
       throw new Error('Lint result not found. Run linting first.');
     }
 
-    console.log(`[Storyboard] Processing video: ${job.video_url}`);
+    // Use video_url for YouTube, or file_uri for uploaded files
+    const videoSource = job.video_url || job.file_uri;
+    const isUploadedFile = !job.video_url && !!job.file_uri;
+
+    if (!videoSource) {
+      throw new Error('No video source available (neither video_url nor file_uri)');
+    }
+
+    console.log(`[Storyboard] Processing video: ${videoSource}`);
 
     // Build storyboard prompt with lint violations
     const storyboardPrompt = buildStoryboardPrompt(job.lint_result.violations);
@@ -52,7 +60,7 @@ export async function processStoryboard(jobId: string) {
     }
 
     // Generate storyboard (60-90s)
-    const storyboardResponse = await client.analyzeVideo(job.video_url, storyboardPrompt, {
+    const storyboardResponse = await client.analyzeVideo(videoSource, storyboardPrompt, {
       temperature: 0.0, // Minimum temperature for maximum consistency in scoring
       maxTokens: 16384,
     });
@@ -73,8 +81,8 @@ export async function processStoryboard(jobId: string) {
 
     console.log(`[Storyboard] Score: ${finalScore} (base: ${baseScore}, bonus: ${bonusPoints})`);
 
-    // Fetch YouTube statistics
-    const videoStats = await fetchYouTubeStats(job.video_url);
+    // Fetch YouTube statistics (only for YouTube videos, not uploaded files)
+    const videoStats = isUploadedFile ? null : await fetchYouTubeStats(job.video_url);
 
     // Add videoStats to storyboard.performance
     if (storyboard?.performance && videoStats) {
@@ -84,7 +92,8 @@ export async function processStoryboard(jobId: string) {
 
     // Build final response structure
     const storyboardResult = {
-      url: job.video_url,
+      url: job.video_url || job.file_uri,
+      isUploadedFile,
       classification: job.classification_result,
       lintSummary: {
         totalRules: job.lint_result?.totalRules || 0,
@@ -143,11 +152,11 @@ function buildStoryboardPrompt(violations: any[]) {
   // Format violations for context
   const violationsContext = violations.length > 0
     ? `\n\nLINT VIOLATIONS DETECTED:\n${violations.map((v, idx) =>
-        `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName} (${v.ruleId})
+      `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName} (${v.ruleId})
    Timestamp: ${v.timestamp || 'N/A'}
    Message: ${v.message}
    Suggestion: ${v.suggestion || 'N/A'}`
-      ).join('\n\n')}`
+    ).join('\n\n')}`
     : '';
 
   return `You are an expert YouTube Shorts director. Analyze the provided YouTube Short and generate a structured JSON storyboard.

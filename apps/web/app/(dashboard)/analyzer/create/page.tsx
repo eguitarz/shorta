@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Sparkles, Link as LinkIcon } from "lucide-react";
+import { Loader2, Sparkles, Link as LinkIcon, Upload } from "lucide-react";
+import { VideoUpload } from "@/components/video-upload";
+
+type InputMode = "url" | "upload";
 
 export default function CreateAnalysisPage() {
   const router = useRouter();
+  const [inputMode, setInputMode] = useState<InputMode>("url");
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +50,25 @@ export default function CreateAnalysisPage() {
     router.push(`/analyzer/${analysisId}`);
   };
 
+  const handleUploadComplete = (fileUri: string, fileName: string) => {
+    // Generate unique analysis ID
+    const analysisId = crypto.randomUUID();
+
+    // Store fileUri in sessionStorage
+    sessionStorage.setItem(`analysis_${analysisId}`, JSON.stringify({
+      fileUri,
+      fileName,
+      status: "pending"
+    }));
+
+    // Navigate to results page where analysis will happen
+    router.push(`/analyzer/${analysisId}`);
+  };
+
+  const handleUploadError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
   return (
     <>
       {/* Top Bar */}
@@ -70,49 +93,86 @@ export default function CreateAnalysisPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Create Short Analysis</h1>
             <p className="text-gray-400">
-              Enter a URL to analyze a short-form video or content with AI
+              Enter a YouTube URL or upload a video to analyze with AI
             </p>
           </div>
 
           {/* Input Form */}
-          <form onSubmit={handleSubmit} className="mb-8">
-            <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6">
-              <label className="block mb-3">
-                <span className="text-sm text-gray-400 mb-2 block">
-                  Short URL
-                </span>
-                <div className="relative">
-                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://youtube.com/shorts/..."
-                    className="w-full bg-black border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
-                    disabled={loading}
-                  />
-                </div>
-              </label>
-
+          <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 mb-8">
+            {/* Tab Toggle */}
+            <div className="flex gap-1 p-1 bg-black/50 rounded-lg w-fit mb-6">
               <button
-                type="submit"
-                disabled={loading || !url.trim()}
-                className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                onClick={() => { setInputMode("url"); setError(null); }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${inputMode === "url"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-400 hover:text-white"
+                  }`}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Generating storyboard...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-5 h-5" />
-                    Analyze Short
-                  </>
-                )}
+                <LinkIcon className="w-4 h-4" />
+                URL
+              </button>
+              <button
+                onClick={() => { setInputMode("upload"); setError(null); }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${inputMode === "upload"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-400 hover:text-white"
+                  }`}
+              >
+                <Upload className="w-4 h-4" />
+                Upload
               </button>
             </div>
-          </form>
+
+            {inputMode === "url" ? (
+              <form onSubmit={handleSubmit}>
+                <label className="block mb-3">
+                  <span className="text-sm text-gray-400 mb-2 block">
+                    YouTube Short URL
+                  </span>
+                  <div className="relative">
+                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://youtube.com/shorts/..."
+                      className="w-full bg-black border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                      disabled={loading}
+                    />
+                  </div>
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={loading || !url.trim()}
+                  className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating storyboard...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Analyze Short
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <div>
+                <span className="text-sm text-gray-400 mb-3 block">
+                  Upload Video File
+                </span>
+                <VideoUpload
+                  onUploadComplete={handleUploadComplete}
+                  onError={handleUploadError}
+                  disabled={loading}
+                />
+              </div>
+            )}
+          </div>
 
           {/* Error Display */}
           {error && (
