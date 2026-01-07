@@ -3,11 +3,16 @@ import posthog from 'posthog-js';
 // Initialize PostHog
 export function initPostHog() {
   const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
+  // Use custom proxy endpoint to avoid ad blockers
+  // The proxy is at /api/posthog which forwards to PostHog's API
+  const posthogHost = typeof window !== 'undefined' 
+    ? `${window.location.origin}/api/posthog`
+    : process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
 
   if (posthogKey) {
     posthog.init(posthogKey, {
       api_host: posthogHost,
+      ui_host: 'https://us.i.posthog.com', // UI host remains the same
       person_profiles: 'identified_only', // Only create profiles for logged-in users
       capture_pageview: true, // Auto-capture page views
       capture_pageleave: true, // Track when users leave

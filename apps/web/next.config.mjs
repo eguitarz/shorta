@@ -19,11 +19,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://us.i.posthog.com https://us-assets.i.posthog.com https://www.youtube.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.youtube.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://us-assets.i.posthog.com https://generativelanguage.googleapis.com wss://*.supabase.co",
+              "connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com wss://*.supabase.co",
               "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
