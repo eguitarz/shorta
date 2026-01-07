@@ -36,7 +36,14 @@ export async function processLinting(jobId: string) {
       throw new Error('Classification result not found. Run classification first.');
     }
 
-    console.log(`[Linting] Processing video: ${job.video_url}`);
+    // Use video_url for YouTube, or file_uri for uploaded files
+    const videoSource = job.video_url || job.file_uri;
+
+    if (!videoSource) {
+      throw new Error('No video source available (neither video_url nor file_uri)');
+    }
+
+    console.log(`[Linting] Processing video: ${videoSource}`);
     console.log(`[Linting] Format: ${job.classification_result.format}`);
 
     // Create LLM client
@@ -50,7 +57,7 @@ export async function processLinting(jobId: string) {
     // Run linter (30-45s)
     const linter = new VideoLinter(client);
     const lintResult = await linter.lint(
-      job.video_url,
+      videoSource,
       job.classification_result.format as VideoFormat
     );
 

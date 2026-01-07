@@ -30,7 +30,14 @@ export async function processClassification(jobId: string) {
       throw new Error(`Failed to fetch job: ${fetchError?.message || 'Job not found'}`);
     }
 
-    console.log(`[Classification] Processing video: ${job.video_url}`);
+    // Use video_url for YouTube, or file_uri for uploaded files
+    const videoSource = job.video_url || job.file_uri;
+
+    if (!videoSource) {
+      throw new Error('No video source available (neither video_url nor file_uri)');
+    }
+
+    console.log(`[Classification] Processing video: ${videoSource}`);
 
     // Create LLM client
     const env: LLMEnv = {
@@ -45,7 +52,7 @@ export async function processClassification(jobId: string) {
     }
 
     // Run classification (5-10s)
-    const classification = await client.classifyVideo(job.video_url);
+    const classification = await client.classifyVideo(videoSource);
 
     console.log(`[Classification] Result:`, JSON.stringify(classification, null, 2));
 

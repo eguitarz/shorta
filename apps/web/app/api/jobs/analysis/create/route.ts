@@ -23,23 +23,27 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { url } = body;
+    const { url, fileUri } = body;
 
-    // Validate URL
-    if (!url || typeof url !== 'string') {
+    // Validate that either URL or fileUri is provided
+    if ((!url || typeof url !== 'string') && (!fileUri || typeof fileUri !== 'string')) {
       return NextResponse.json(
-        { error: 'Missing or invalid URL parameter' },
+        { error: 'Either URL or fileUri parameter is required' },
         { status: 400 }
       );
     }
 
-    // Validate it's a YouTube URL
-    if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+    // If URL provided, validate it's a YouTube URL
+    if (url && !url.includes('youtube.com') && !url.includes('youtu.be')) {
       return NextResponse.json(
         { error: 'Invalid YouTube URL. Must be a YouTube Shorts or video link.' },
         { status: 400 }
       );
     }
+
+    // Determine the video source
+    const videoUrl = url || null;
+    const videoFileUri = fileUri || null;
 
     // Create Supabase client
     const cookieStore = await cookies();
@@ -69,7 +73,8 @@ export async function POST(request: NextRequest) {
       .from('analysis_jobs')
       .insert({
         user_id: user.id,
-        video_url: url,
+        video_url: videoUrl,
+        file_uri: videoFileUri,
         status: 'pending',
         current_step: 0,
       })
@@ -84,7 +89,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[Job Created] ID: ${job.id}, User: ${user.id}, URL: ${url}`);
+    console.log(`[Job Created] ID: ${job.id}, User: ${user.id}, Source: ${videoUrl ? 'YouTube URL' : 'Uploaded file'}`);
 
     // Return job info
     return NextResponse.json({
