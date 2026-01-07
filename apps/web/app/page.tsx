@@ -189,14 +189,55 @@ export default function HomePage() {
           </div>
           <div className="space-y-5 text-lg text-muted-foreground">
             <p>
-              Hi, I'm Dale Ma. I built productivity tools and infra for developers at Meta, where speed and clarity matter. The best results didn't come from better prompts — they came from having the right context.
+              I used to work at Meta on improving developer productivity.
             </p>
             <p>
-              Context switching — jumping between examples, references, and half-formed ideas — was always the real cost. Content creation turned out to be the same problem.
+              Over the last few years, AI has dramatically boosted how efficient engineers can be. That made me think: what other industries could benefit from the same kind of productivity leap?
             </p>
             <p>
-              Shorta is my attempt to solve that by bringing the right examples together, extracting patterns automatically, and turning context into decisions you can act on before hitting record.
+              A while ago, I tried making YouTube videos myself. I filmed consistently for some time, then slowly lost momentum. Not because I ran out of ideas—but because no one cared about the videos.
             </p>
+            <p>
+              That's when I realized the real problem wasn't effort or execution.
+            </p>
+            <p>
+              It was about how ideas are translated into compelling content.
+            </p>
+            <p>
+              Today, the creator space is flooded with low-quality script generators and AI slop. I don't believe this is the future. AI shouldn't replace human thinking or creativity—it should help people express their ideas better.
+            </p>
+            <p>
+              That belief is why I decided to build something for creators.
+            </p>
+            <p>
+              Shorta is not just a script generator. It's a system that bridges the gap between ideas and filming. You bring a strong idea, and Shorta turns it into a clear, actionable storyboard—covering structure, pacing, and attention design. Filming becomes low-friction, and producing high-quality videos becomes repeatable.
+            </p>
+            <p>
+              In the past, YouTubers had to grind through hundreds of hours of trial and error to learn what works. With Shorta, those hours can be reinvested into ideation and filming instead.
+            </p>
+            <p>
+              This is the productivity system I wanted to build.
+            </p>
+            <p>
+              Not a faceless video generator.
+            </p>
+            <p>
+              Not a cheap AI script tool.
+            </p>
+            <p>
+              In the future, audiences will care more about creators with strong ideas—not AI-generated noise. And creators who use systems like Shorta will be able to move faster, learn faster, and win faster.
+            </p>
+          </div>
+          <div className="aspect-video bg-surface rounded-lg border border-border overflow-hidden mt-8">
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/3N6lS0y75rw"
+              title="What Shorta changed in my workflow"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
         </div>
       </Section>

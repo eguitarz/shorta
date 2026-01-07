@@ -68,8 +68,8 @@ export class GeminiClient implements LLMClient {
   }
 
   async classifyVideo(videoUrl: string, config?: LLMConfig): Promise<VideoClassification> {
-    // Use gemini-2.5-flash-lite for classification (faster and more reliable)
-    const modelName = config?.model || 'gemini-2.5-flash-lite';
+    // Use gemini-2.5-flash for classification
+    const modelName = config?.model || 'gemini-2.5-flash';
     const model = this.genAI.getGenerativeModel({ model: modelName });
 
     const systemPrompt = `You are a short-form video FORMAT CLASSIFIER.

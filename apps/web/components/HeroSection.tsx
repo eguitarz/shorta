@@ -26,15 +26,18 @@ export function HeroSection() {
               <span className="text-primary">lose viewers.</span>
             </p>
             <div className="aspect-video bg-surface rounded-lg border border-border overflow-hidden">
-              <iframe
+              <video
                 width="100%"
                 height="100%"
-                src="https://www.youtube.com/embed/3N6lS0y75rw"
-                title="What Shorta changed in my workflow"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="object-cover"
+              >
+                <source src="/Shorta analyzer demo.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
             <p className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-[1.2]">
               <span className="text-foreground">Get actionable feedback on your YouTube Shorts — see what </span>
