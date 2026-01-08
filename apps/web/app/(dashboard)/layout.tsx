@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 const ALLOWED_EMAIL = "dalema22@gmail.com";
 
@@ -26,11 +27,13 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0a0a] text-white">
-      <AppSidebar user={user} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {children}
+    <SidebarProvider>
+      <div className="flex h-screen bg-[#0a0a0a] text-white w-full">
+        <AppSidebar user={user} />
+        <SidebarInset className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a]">
+          {children}
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
