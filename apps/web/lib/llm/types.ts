@@ -34,6 +34,11 @@ export interface VideoClassification {
   };
 }
 
+export interface MetadataSuggestions {
+  titles: string[];
+  description: string;
+}
+
 export interface CachedContent {
   name: string;
   model: string;

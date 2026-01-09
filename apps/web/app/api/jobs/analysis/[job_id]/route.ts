@@ -167,6 +167,7 @@ function buildJobResponse(job: any) {
     // Full storyboard result (when completed)
     ...(job.status === 'completed' && job.storyboard_result ? {
       url: job.storyboard_result.url,
+      isUploadedFile: job.storyboard_result.isUploadedFile || false,
       classification: job.storyboard_result.classification,
       lintSummary: job.storyboard_result.lintSummary,
       storyboard: job.storyboard_result.storyboard,

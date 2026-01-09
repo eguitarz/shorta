@@ -121,7 +121,7 @@ Return JSON:
         contents,
         config: {
           temperature: 0.1,
-          maxOutputTokens: 500,
+          maxOutputTokens: 1500,
         },
       });
 
