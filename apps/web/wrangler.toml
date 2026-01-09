@@ -15,6 +15,7 @@ binding = "ASSETS"
 
 # Environment variables
 [vars]
+NEXT_PUBLIC_APP_URL = "https://shorta.ai"
 NEXT_PUBLIC_SUPABASE_URL = "https://dylimplqplexlbyqvhhk.supabase.co"
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_1Q0JmK2vk09_azKYuV6Xvg_Bl10k3u_"
 NEXT_PUBLIC_STRIPE_PAYMENT_LINK = "https://buy.stripe.com/28E5kk73g8lhc7f9P90kE00"

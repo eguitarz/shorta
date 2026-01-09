@@ -26,8 +26,11 @@ import {
   Eye,
   Heart,
   X,
-  Upload
+  Upload,
+  Copy,
+  Sparkles
 } from "lucide-react";
+import { ShareButton } from "@/components/ShareButton";
 
 interface Beat {
   beatNumber: number;
@@ -208,6 +211,14 @@ export default function AnalyzerResultsPage() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
 
+  // Metadata suggestions state
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<{
+    titles: string[];
+    description: string;
+  } | null>(null);
+  const [copiedItem, setCopiedItem] = useState<string | null>(null);
+
   const approvedChangesCount = approvedChanges.length;
 
   const toggleIssue = (beatNumber: number, issueIndex: number) => {
@@ -302,6 +313,46 @@ export default function AnalyzerResultsPage() {
       alert(`Generation failed: ${errorMessage}\n\nCheck browser console for details.`);
       setError(errorMessage);
       setGenerating(false);
+    }
+  };
+
+  const handleSuggestMetadata = async () => {
+    if (!jobId || suggestionsLoading) return;
+
+    try {
+      setSuggestionsLoading(true);
+      setSuggestions(null);
+
+      const response = await fetch('/api/suggest-metadata', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ jobId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate suggestions');
+      }
+
+      setSuggestions(data);
+    } catch (err) {
+      console.error('Suggestions error:', err);
+      alert(`Failed to generate suggestions: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string, itemId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedItem(itemId);
+      setTimeout(() => setCopiedItem(null), 2000);
+    } catch (err) {
+      console.error('Copy failed:', err);
     }
   };
 
@@ -725,10 +776,13 @@ export default function AnalyzerResultsPage() {
               <span className="text-sm text-orange-500 font-medium">Analyzing</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-green-500 font-medium">Analysis Complete</span>
-            </div>
+            <>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-green-500 font-medium">Analysis Complete</span>
+              </div>
+              {jobId && <ShareButton jobId={jobId} />}
+            </>
           )}
         </div>
       </header>
@@ -1549,6 +1603,104 @@ export default function AnalyzerResultsPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Title & Description Suggestions */}
+            {!loading && analysisData && (
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <h3 className="text-xl font-semibold">Title & Description</h3>
+                  {!suggestions && (
+                    <button
+                      onClick={handleSuggestMetadata}
+                      disabled={suggestionsLoading}
+                      className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg text-sm font-semibold transition-colors"
+                    >
+                      {suggestionsLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          Suggest Title & Description
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {suggestions && (
+                    <span className="px-2 py-1 bg-green-500/10 text-green-500 rounded text-xs font-semibold uppercase">
+                      Generated
+                    </span>
+                  )}
+                </div>
+
+                {suggestionsLoading && (
+                  <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 animate-pulse">
+                    <div className="space-y-4">
+                      <div className="h-12 bg-gray-800/50 rounded"></div>
+                      <div className="h-12 bg-gray-800/40 rounded"></div>
+                      <div className="h-12 bg-gray-800/30 rounded"></div>
+                      <div className="h-24 bg-gray-800/30 rounded mt-6"></div>
+                    </div>
+                  </div>
+                )}
+
+                {suggestions && (
+                  <div className="space-y-4">
+                    {/* Title Variants */}
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-4">Title Options</div>
+                      <div className="space-y-3">
+                        {suggestions.titles.map((title, idx) => (
+                          <div key={idx} className="flex items-start gap-3 p-3 bg-gray-900/50 rounded-lg group">
+                            <span className="flex-shrink-0 w-6 h-6 bg-orange-500/10 text-orange-500 rounded flex items-center justify-center text-xs font-bold">
+                              {idx + 1}
+                            </span>
+                            <p className="flex-1 text-sm text-gray-200">{title}</p>
+                            <button
+                              onClick={() => copyToClipboard(title, `title-${idx}`)}
+                              className="flex-shrink-0 p-1.5 text-gray-500 hover:text-white hover:bg-gray-800 rounded transition-colors opacity-0 group-hover:opacity-100"
+                              title="Copy to clipboard"
+                            >
+                              {copiedItem === `title-${idx}` ? (
+                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Description</div>
+                        <button
+                          onClick={() => copyToClipboard(suggestions.description, 'description')}
+                          className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 hover:text-white hover:bg-gray-800 rounded transition-colors"
+                        >
+                          {copiedItem === 'description' ? (
+                            <>
+                              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                              <span className="text-green-500">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{suggestions.description}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
