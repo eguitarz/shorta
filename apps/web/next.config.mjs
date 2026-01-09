@@ -25,14 +25,14 @@ const nextConfig = {
               "font-src 'self' data:",
               "connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com wss://*.supabase.co",
               "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
-              "frame-ancestors 'none'",
+              "frame-ancestors 'self' https://rankinpublic.xyz",
               "base-uri 'self'",
               "form-action 'self'",
             ].join('; '),
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN',
           },
           {
             key: 'X-Content-Type-Options',
