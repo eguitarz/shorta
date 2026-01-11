@@ -79,12 +79,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Paid users have unlimited analyses
+    // Paid users - credit system to be implemented
     if (profile.tier === 'founder' || profile.tier === 'lifetime') {
       return NextResponse.json({
         tier: profile.tier,
         analyses_used: profile.analyses_used,
-        analyses_limit: -1, // -1 indicates unlimited
+        analyses_limit: -1, // -1 indicates unlimited (will be replaced with credit system)
         analyses_remaining: -1,
         can_analyze: true,
       });

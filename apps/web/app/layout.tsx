@@ -177,7 +177,7 @@ export default function RootLayout({
             "name": "Is Shorta free to use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Shorta offers 1 free trial analysis without login. To unlock unlimited shorts analysis and premium features, upgrade to Pro for $99/year with pricing locked forever."
+              "text": "Shorta offers 1 free trial analysis without login. To unlock premium features including video uploads and advanced analysis, upgrade to Pro for $99/year with pricing locked forever."
             }
           },
           {

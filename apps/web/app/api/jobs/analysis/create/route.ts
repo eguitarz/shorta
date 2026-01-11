@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: 'Usage limit reached',
-            message: 'You have used your free trial. Upgrade to Pro for unlimited analyses!',
+            message: 'You have used your free trial. Upgrade to Pro for full access!',
             limitType: 'anonymous',
             upgradeRequired: true,
             analyses_used: existingUsage.analyses_used,
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Logged-in users get unlimited analyses - no tier checking needed
+      // Logged-in users - tier checking to be added when credit system is implemented
       const videoUrl = url || null;
       const videoFileUri = fileUri || null;
 

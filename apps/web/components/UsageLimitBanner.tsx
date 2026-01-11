@@ -17,14 +17,14 @@ export function UsageLimitBanner({ tier, remaining }: UsageLimitBannerProps) {
 
   const getMessage = () => {
     if (tier === 'anonymous') {
-      return 'This was your free trial. Upgrade to Pro for unlimited analyses!';
+      return 'This was your free trial. Upgrade to Pro for full access!';
     }
 
     // Free tier (logged-in users - though we don't use this anymore)
     if (remaining === 0) {
-      return 'Upgrade to Pro for unlimited analyses!';
+      return 'Upgrade to Pro for full access!';
     }
-    return `${remaining} free ${remaining === 1 ? 'analysis' : 'analyses'} remaining. Upgrade for unlimited!`;
+    return `${remaining} free ${remaining === 1 ? 'analysis' : 'analyses'} remaining. Upgrade for full access!`;
   };
 
   const action = { label: 'Upgrade', href: '/pricing' };
