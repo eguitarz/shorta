@@ -145,8 +145,11 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <link rel="icon" href="/shorta-logo.png" type="image/png" sizes="64x64" />
-        <link rel="apple-touch-icon" href="/shorta-logo.png" />
+        <link rel="icon" href="/icon-48x48.png" type="image/png" sizes="48x48" />
+        <link rel="icon" href="/icon-96x96.png" type="image/png" sizes="96x96" />
+        <link rel="icon" href="/icon-192x192.png" type="image/png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="manifest" href="/manifest.json" />
         <link rel="canonical" href="https://shorta.ai" />
         {/*
           SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
