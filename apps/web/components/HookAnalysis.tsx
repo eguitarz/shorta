@@ -214,7 +214,7 @@ export function HookAnalysis() {
 
         {/* CTA */}
         <div className="flex justify-center mt-12">
-          <Button variant="hero" size="lg" onClick={redirectToCheckout}>
+          <Button variant="hero" size="lg" onClick={() => redirectToCheckout()}>
             Join as a Founding Member
           </Button>
         </div>
