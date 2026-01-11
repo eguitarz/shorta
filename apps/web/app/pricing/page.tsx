@@ -71,15 +71,15 @@ export default function PricingPage() {
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-medium">Unlimited analyses</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
                 <span className="text-sm">Full performance insights</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
                 <span className="text-sm">AI-powered fix suggestions</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <span className="text-sm">Video upload support</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />

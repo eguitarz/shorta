@@ -63,7 +63,7 @@ export function UpgradeModal({ isOpen, onClose, feature, tier }: UpgradeModalPro
 
         {/* Message */}
         <p className="text-gray-300 mb-6">
-          Upgrade to unlock unlimited analyses and all premium features including detailed performance insights, AI-suggested fixes, and viral hook variants.
+          Upgrade to unlock all premium features including detailed performance insights, AI-suggested fixes, and viral hook variants.
         </p>
 
         {/* CTA button */}

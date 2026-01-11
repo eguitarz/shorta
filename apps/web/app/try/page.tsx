@@ -2,20 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Sparkles, Link as LinkIcon, Upload, Zap } from "lucide-react";
-import { VideoUpload } from "@/components/video-upload";
+import { Loader2, Sparkles, Link as LinkIcon, Upload, Zap, Lock } from "lucide-react";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
-
-type InputMode = "url" | "upload";
 
 export default function TryAnalyzerPage() {
   const router = useRouter();
-  const [inputMode, setInputMode] = useState<InputMode>("url");
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [showCaptcha, setShowCaptcha] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,46 +73,6 @@ export default function TryAnalyzerPage() {
     }
   };
 
-  const handleUploadComplete = async (fileUri: string, fileName: string) => {
-    if (!turnstileToken) {
-      setShowCaptcha(true);
-      setError("Please complete the verification");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Create analysis job via API
-      const response = await fetch('/api/jobs/analysis/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileUri,
-          fileName,
-          turnstileToken,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create analysis');
-      }
-
-      // Navigate to trial results page
-      router.push(`/try/${data.job_id}`);
-    } catch (err: any) {
-      setError(err.message || 'Failed to start analysis');
-      setLoading(false);
-      // Keep CAPTCHA token - user already verified
-    }
-  };
-
-  const handleError = (errorMessage: string) => {
-    setError(errorMessage);
-  };
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
@@ -155,7 +112,7 @@ export default function TryAnalyzerPage() {
                 </ul>
                 <div className="mt-4 pt-4 border-t border-gray-700">
                   <p className="text-xs text-gray-400">
-                    Want unlimited analyses and premium features?{' '}
+                    Want premium features?{' '}
                     <a href="/pricing" className="text-orange-400 hover:text-orange-300">
                       Upgrade to Pro
                     </a>
@@ -169,39 +126,32 @@ export default function TryAnalyzerPage() {
           <div className="mb-8">
             <h3 className="text-2xl font-bold mb-2">Analyze a YouTube Short</h3>
             <p className="text-gray-400">
-              Enter a YouTube URL or upload a video to get started
+              Enter a YouTube URL to get started. Video uploads available for Pro members.
             </p>
           </div>
 
           {/* Input Mode Tabs */}
           <div className="flex gap-4 mb-6">
             <button
-              onClick={() => setInputMode("url")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                inputMode === "url"
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-              }`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-orange-500 text-white"
             >
               <LinkIcon className="w-4 h-4" />
               YouTube URL
             </button>
             <button
-              onClick={() => setInputMode("upload")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                inputMode === "upload"
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-              }`}
+              onClick={() => setShowUpgradePrompt(true)}
+              className="relative flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-gray-800 text-gray-400 hover:bg-gray-700 opacity-60"
             >
-              <Upload className="w-4 h-4" />
+              <Lock className="w-4 h-4" />
               Upload Video
+              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] px-1.5 rounded-full font-semibold">
+                PRO
+              </span>
             </button>
           </div>
 
           {/* URL Input */}
-          {inputMode === "url" && (
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="url" className="block text-sm font-medium mb-2">
                   YouTube URL
@@ -260,44 +210,49 @@ export default function TryAnalyzerPage() {
                 )}
               </button>
             </form>
-          )}
-
-          {/* Upload Input */}
-          {inputMode === "upload" && (
-            <div className="space-y-6">
-              {/* CAPTCHA */}
-              {showCaptcha && !turnstileToken && (
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                  <p className="text-sm text-gray-400 mb-4">Complete verification to continue</p>
-                  <TurnstileWidget
-                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
-                    onVerify={(token) => {
-                      setTurnstileToken(token);
-                      setShowCaptcha(false);
-                      setError(null);
-                    }}
-                    onError={() => {
-                      setError('Verification failed. Please try again.');
-                      setTurnstileToken(null);
-                    }}
-                  />
-                </div>
-              )}
-
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-                  <p className="text-sm text-red-400">{error}</p>
-                </div>
-              )}
-
-              <VideoUpload
-                onUploadComplete={handleUploadComplete}
-                onError={handleError}
-              />
-            </div>
-          )}
         </div>
       </main>
+
+      {/* Upgrade Prompt Modal */}
+      {showUpgradePrompt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setShowUpgradePrompt(false)}
+          onKeyDown={(e) => e.key === "Escape" && setShowUpgradePrompt(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="upgrade-modal-title"
+        >
+          <div
+            className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center">
+                <Lock className="w-6 h-6 text-orange-500" />
+              </div>
+              <h3 id="upgrade-modal-title" className="text-2xl font-bold text-white">Upgrade to Pro</h3>
+            </div>
+            <p className="text-gray-300 mb-6">
+              Video upload is a Pro feature. Upgrade to unlock direct video uploads and premium features.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowUpgradePrompt(false)}
+                className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-colors"
+              >
+                Maybe Later
+              </button>
+              <a
+                href="/pricing"
+                className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-colors text-center"
+              >
+                View Pricing
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
