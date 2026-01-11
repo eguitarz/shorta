@@ -15,6 +15,20 @@ export async function middleware(request: NextRequest) {
     request,
   });
 
+  // Inject pathname for layout to access
+  supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
+
+  // Allow anonymous access to /try/* routes (public trial)
+  const isTryPage = request.nextUrl.pathname.startsWith('/try');
+  // Also allow /analyzer/* with ?trial=true query param
+  const isTrialAnalyzer = request.nextUrl.pathname.startsWith('/analyzer/') &&
+                          request.nextUrl.searchParams.get('trial') === 'true';
+
+  if (isTryPage || isTrialAnalyzer) {
+    // Public trial routes don't require authentication
+    supabaseResponse.headers.set('x-allow-anonymous', 'true');
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,

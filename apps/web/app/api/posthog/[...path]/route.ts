@@ -5,37 +5,37 @@ const POSTHOG_ASSET_HOST = 'https://us-assets.i.posthog.com';
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { path: string[] } }
+	{ params }: { params: Promise<{ path: string[] }> }
 ) {
-	return handleRequest(request, params);
+	return handleRequest(request, await params);
 }
 
 export async function POST(
 	request: NextRequest,
-	{ params }: { params: { path: string[] } }
+	{ params }: { params: Promise<{ path: string[] }> }
 ) {
-	return handleRequest(request, params);
+	return handleRequest(request, await params);
 }
 
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: { path: string[] } }
+	{ params }: { params: Promise<{ path: string[] }> }
 ) {
-	return handleRequest(request, params);
+	return handleRequest(request, await params);
 }
 
 export async function PATCH(
 	request: NextRequest,
-	{ params }: { params: { path: string[] } }
+	{ params }: { params: Promise<{ path: string[] }> }
 ) {
-	return handleRequest(request, params);
+	return handleRequest(request, await params);
 }
 
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: { path: string[] } }
+	{ params }: { params: Promise<{ path: string[] }> }
 ) {
-	return handleRequest(request, params);
+	return handleRequest(request, await params);
 }
 
 async function handleRequest(
@@ -57,13 +57,22 @@ async function handleRequest(
 		let body: BodyInit | null = null;
 		if (request.method !== 'GET' && request.method !== 'HEAD') {
 			try {
-				const contentType = request.headers.get('content-type') || '';
-				// Handle different content types appropriately
-				if (contentType.includes('application/json') || contentType.includes('text/')) {
-					body = await request.text();
-				} else {
-					// For binary data, use array buffer
+				// PostHog uses client-side compression (compression=gzip-js in URL)
+				// so we need to check the query string, not content-encoding header
+				const isCompressed = searchParams.includes('compression=gzip') ||
+				                     searchParams.includes('compression=base64');
+
+				// Always use binary for compressed data
+				if (isCompressed) {
 					body = await request.arrayBuffer();
+				} else {
+					// For uncompressed, check content type
+					const contentType = request.headers.get('content-type') || '';
+					if (contentType.includes('application/json') || contentType.includes('text/')) {
+						body = await request.text();
+					} else {
+						body = await request.arrayBuffer();
+					}
 				}
 			} catch {
 				// No body or body already consumed

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 // YouTube IFrame API types
 declare global {
@@ -31,6 +31,8 @@ import {
   Sparkles
 } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
+import { UpgradeModal } from "@/components/UpgradeModal";
+import { UsageLimitBanner } from "@/components/UsageLimitBanner";
 
 interface Beat {
   beatNumber: number;
@@ -185,6 +187,9 @@ const formatRelativeTime = (dateString: string): string => {
 export default function AnalyzerResultsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isTrialMode = searchParams.get('trial') === 'true';
+
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [fileUri, setFileUri] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -219,7 +224,20 @@ export default function AnalyzerResultsPage() {
   } | null>(null);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
 
+  // Tier and upgrade state
+  // If trial mode, force anonymous tier
+  const [userTier, setUserTier] = useState<'anonymous' | 'free' | 'founder' | 'lifetime'>(
+    isTrialMode ? 'anonymous' : 'free'
+  );
+  const [analysesRemaining, setAnalysesRemaining] = useState<number>(3);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState<string>('');
+
   const approvedChangesCount = approvedChanges.length;
+
+  // Blur and disable buttons only for anonymous trial users (not logged-in users)
+  const shouldBlur = userTier === 'anonymous';
+  const shouldDisableButtons = userTier === 'anonymous';
 
   const toggleIssue = (beatNumber: number, issueIndex: number) => {
     const key = `${beatNumber}-${issueIndex}`;
@@ -361,6 +379,13 @@ export default function AnalyzerResultsPage() {
     const id = params.id as string;
     const stored = sessionStorage.getItem(`analysis_${id}`);
 
+    // If trial mode, skip sessionStorage check - we'll fetch from API
+    if (isTrialMode) {
+      console.log('[Trial Mode] Skipping sessionStorage, will poll job API');
+      // The job polling effect will handle fetching the video URL
+      return;
+    }
+
     if (!stored) {
       router.push("/analyzer/create");
       return;
@@ -396,10 +421,22 @@ export default function AnalyzerResultsPage() {
       console.error("Error loading from sessionStorage:", err);
       router.push("/analyzer/create");
     }
-  }, [params.id, router]);
+  }, [params.id, router, isTrialMode]);
+
+  // For trial mode, set job_id from URL params immediately
+  useEffect(() => {
+    if (isTrialMode && !jobId) {
+      const id = params.id as string;
+      console.log('[Trial Mode] Using job_id from URL:', id);
+      setJobId(id);
+    }
+  }, [isTrialMode, jobId, params.id]);
 
   // Create analysis job if not already complete
   useEffect(() => {
+    // Skip if trial mode (job already created by API)
+    if (isTrialMode) return;
+
     // Need either videoUrl or fileUri, but not if already have job or analysis
     if ((!videoUrl && !fileUri) || analysisData || jobId) return;
 
@@ -437,7 +474,7 @@ export default function AnalyzerResultsPage() {
     };
 
     createJob();
-  }, [videoUrl, fileUri, fileName, analysisData, jobId, params.id]);
+  }, [videoUrl, fileUri, fileName, analysisData, jobId, params.id, isTrialMode]);
 
   // Poll job status every 3 seconds
   useEffect(() => {
@@ -455,6 +492,20 @@ export default function AnalyzerResultsPage() {
         setJobStatus(data.status);
         setCurrentStep(data.current_step);
         setProgressPercent(data.progress_percent);
+
+        // Extract tier info from response
+        if (data.tier) {
+          setUserTier(data.tier);
+        }
+        if (data.analyses_remaining !== undefined) {
+          setAnalysesRemaining(data.analyses_remaining);
+        }
+
+        // Extract video URL from job response for trial mode
+        if (isTrialMode && data.video_url && !videoUrl) {
+          console.log('[Trial Mode] Setting video URL from job:', data.video_url);
+          setVideoUrl(data.video_url);
+        }
 
         console.log('[Frontend] Poll:', data.status, `step ${data.current_step}/${data.total_steps}`);
 
@@ -926,6 +977,14 @@ export default function AnalyzerResultsPage() {
                   </>
                 ) : (
                   <>
+                    {/* Usage Limit Banner - Only shown for anonymous trial users */}
+                    {analysisData && userTier === 'anonymous' && (
+                      <UsageLimitBanner
+                        tier={userTier}
+                        remaining={analysesRemaining}
+                      />
+                    )}
+
                     {/* Overall Score */}
                     <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
                       <div className="flex items-center gap-1.5 mb-1">
@@ -1104,7 +1163,18 @@ export default function AnalyzerResultsPage() {
                             </div>
 
                             {/* Always show metrics */}
-                            <div className="space-y-2 text-xs mb-3">
+                            <div
+                              className={`space-y-2 text-xs mb-3 ${
+                                shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                              }`}
+                              onClick={() => {
+                                if (shouldBlur) {
+                                  setUpgradeFeature('performance-cards');
+                                  setShowUpgradeModal(true);
+                                }
+                              }}
+                              style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                            >
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Hook Duration</span>
                                 <span className="text-white font-semibold">{analysisData.storyboard.performance.hook.duration}s</span>
@@ -1135,7 +1205,18 @@ export default function AnalyzerResultsPage() {
 
                             {/* Only analysis is collapsible */}
                             {hookExpanded && (
-                              <div className="pt-3 border-t border-gray-800">
+                              <div
+                                className={`pt-3 border-t border-gray-800 ${
+                                  shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                }`}
+                                onClick={() => {
+                                  if (shouldBlur) {
+                                    setUpgradeFeature('performance-cards');
+                                    setShowUpgradeModal(true);
+                                  }
+                                }}
+                                style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                              >
                                 {renderAnalysis(analysisData.storyboard.performance.hook.analysis)}
                               </div>
                             )}
@@ -1176,7 +1257,18 @@ export default function AnalyzerResultsPage() {
                             </div>
 
                             {/* Always show metrics */}
-                            <div className="space-y-2 text-xs mb-3">
+                            <div
+                              className={`space-y-2 text-xs mb-3 ${
+                                shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                              }`}
+                              onClick={() => {
+                                if (shouldBlur) {
+                                  setUpgradeFeature('performance-cards');
+                                  setShowUpgradeModal(true);
+                                }
+                              }}
+                              style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                            >
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Video Length</span>
                                 <span className="text-white font-semibold">{analysisData.storyboard.performance.structure.videoLength}s</span>
@@ -1193,7 +1285,18 @@ export default function AnalyzerResultsPage() {
 
                             {/* Only analysis is collapsible */}
                             {structureExpanded && (
-                              <div className="pt-3 border-t border-gray-800">
+                              <div
+                                className={`pt-3 border-t border-gray-800 ${
+                                  shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                }`}
+                                onClick={() => {
+                                  if (shouldBlur) {
+                                    setUpgradeFeature('performance-cards');
+                                    setShowUpgradeModal(true);
+                                  }
+                                }}
+                                style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                              >
                                 {renderAnalysis(analysisData.storyboard.performance.structure.analysis)}
                               </div>
                             )}
@@ -1235,7 +1338,18 @@ export default function AnalyzerResultsPage() {
                             </div>
 
                             {/* Always show metrics */}
-                            <div className="space-y-2 text-xs mb-3">
+                            <div
+                              className={`space-y-2 text-xs mb-3 ${
+                                shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                              }`}
+                              onClick={() => {
+                                if (shouldBlur) {
+                                  setUpgradeFeature('performance-cards');
+                                  setShowUpgradeModal(true);
+                                }
+                              }}
+                              style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                            >
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Content Type</span>
                                 <span className="text-white font-semibold">{analysisData.storyboard.performance.content.contentType}</span>
@@ -1252,7 +1366,18 @@ export default function AnalyzerResultsPage() {
 
                             {/* Only analysis is collapsible */}
                             {contentExpanded && (
-                              <div className="pt-3 border-t border-gray-800">
+                              <div
+                                className={`pt-3 border-t border-gray-800 ${
+                                  shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                }`}
+                                onClick={() => {
+                                  if (shouldBlur) {
+                                    setUpgradeFeature('performance-cards');
+                                    setShowUpgradeModal(true);
+                                  }
+                                }}
+                                style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                              >
                                 {renderAnalysis(analysisData.storyboard.performance.content.analysis)}
                               </div>
                             )}
@@ -1293,7 +1418,18 @@ export default function AnalyzerResultsPage() {
                             </div>
 
                             {/* Always show metrics */}
-                            <div className="space-y-2 text-xs mb-3">
+                            <div
+                              className={`space-y-2 text-xs mb-3 ${
+                                shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                              }`}
+                              onClick={() => {
+                                if (shouldBlur) {
+                                  setUpgradeFeature('performance-cards');
+                                  setShowUpgradeModal(true);
+                                }
+                              }}
+                              style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                            >
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Energy Level</span>
                                 <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.energyLevel}/100</span>
@@ -1310,7 +1446,18 @@ export default function AnalyzerResultsPage() {
 
                             {/* Only analysis is collapsible */}
                             {deliveryExpanded && (
-                              <div className="pt-3 border-t border-gray-800">
+                              <div
+                                className={`pt-3 border-t border-gray-800 ${
+                                  shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                }`}
+                                onClick={() => {
+                                  if (shouldBlur) {
+                                    setUpgradeFeature('performance-cards');
+                                    setShowUpgradeModal(true);
+                                  }
+                                }}
+                                style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                              >
                                 {renderAnalysis(analysisData.storyboard.performance.delivery.analysis)}
                               </div>
                             )}
@@ -1451,7 +1598,18 @@ export default function AnalyzerResultsPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="mb-3">
+                      <div
+                        className={`mb-3 ${
+                          shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                        }`}
+                        onClick={() => {
+                          if (shouldBlur && beat.beatNumber > 1) {
+                            setUpgradeFeature('performance-cards');
+                            setShowUpgradeModal(true);
+                          }
+                        }}
+                        style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                      >
                         <div className="text-xs text-gray-500 mb-1">Retention Drop Estimate</div>
                         <div className={`text-sm font-semibold ${beat.retention?.issues?.some(i => i.severity === 'critical')
                           ? 'text-red-500'
@@ -1471,7 +1629,18 @@ export default function AnalyzerResultsPage() {
                         </div>
                       </div>
                       {(beat.retention?.issues?.length ?? 0) > 0 ? (
-                        <div className="space-y-2">
+                        <div
+                          className={`space-y-2 ${
+                            shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                          }`}
+                          onClick={() => {
+                            if (shouldBlur && beat.beatNumber > 1) {
+                              setUpgradeFeature('performance-cards');
+                              setShowUpgradeModal(true);
+                            }
+                          }}
+                          style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                        >
                           {beat.retention?.issues?.map((issue, idx) => {
                             const isExpanded = isIssueExpanded(beat.beatNumber, idx);
                             return (
@@ -1570,10 +1739,19 @@ export default function AnalyzerResultsPage() {
                                               );
                                               return (
                                                 <button
-                                                  onClick={() => !isAlreadyApproved && approveFix(beat.beatNumber, beat.title, issue)}
+                                                  onClick={() => {
+                                                    if (shouldDisableButtons) {
+                                                      setUpgradeFeature('apply-fix');
+                                                      setShowUpgradeModal(true);
+                                                      return;
+                                                    }
+                                                    if (!isAlreadyApproved) {
+                                                      approveFix(beat.beatNumber, beat.title, issue);
+                                                    }
+                                                  }}
                                                   disabled={isAlreadyApproved}
-                                                  className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${isAlreadyApproved
-                                                    ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed'
+                                                  className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${isAlreadyApproved || shouldDisableButtons
+                                                    ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed opacity-50'
                                                     : 'text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500'
                                                     }`}
                                                 >
@@ -1592,7 +1770,18 @@ export default function AnalyzerResultsPage() {
                           })}
                         </div>
                       ) : (
-                        <div className="flex items-start gap-3 bg-green-500/5 border border-green-500/20 rounded-lg p-4">
+                        <div
+                          className={`flex items-start gap-3 bg-green-500/5 border border-green-500/20 rounded-lg p-4 ${
+                            shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                          }`}
+                          onClick={() => {
+                            if (shouldBlur && beat.beatNumber > 1) {
+                              setUpgradeFeature('performance-cards');
+                              setShowUpgradeModal(true);
+                            }
+                          }}
+                          style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                        >
                           <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                           <div className="flex-1">
                             <div className="text-xs font-semibold text-green-500 uppercase mb-1">No Issues</div>
@@ -1613,9 +1802,20 @@ export default function AnalyzerResultsPage() {
                   <h3 className="text-xl font-semibold">Title & Description</h3>
                   {!suggestions && (
                     <button
-                      onClick={handleSuggestMetadata}
-                      disabled={suggestionsLoading}
-                      className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg text-sm font-semibold transition-colors"
+                      onClick={() => {
+                        if (shouldDisableButtons) {
+                          setUpgradeFeature('suggest-metadata');
+                          setShowUpgradeModal(true);
+                          return;
+                        }
+                        handleSuggestMetadata();
+                      }}
+                      disabled={suggestionsLoading || shouldDisableButtons}
+                      className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-semibold transition-colors ${
+                        shouldDisableButtons
+                          ? 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50'
+                          : 'bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500'
+                      }`}
                     >
                       {suggestionsLoading ? (
                         <>
@@ -1749,10 +1949,21 @@ export default function AnalyzerResultsPage() {
 
                         return (
                           <button
-                            onClick={() => approveVariant(idx, variant)}
-                            className={`w-full px-4 py-2 text-sm rounded-lg transition-colors flex items-center justify-center gap-2 ${isThisVariantApproved
-                              ? 'text-green-500 bg-green-500/10 border border-green-500/30 cursor-default'
-                              : 'text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600'
+                            onClick={() => {
+                              if (shouldDisableButtons) {
+                                setUpgradeFeature('re-hook');
+                                setShowUpgradeModal(true);
+                                return;
+                              }
+                              approveVariant(idx, variant);
+                            }}
+                            disabled={shouldDisableButtons}
+                            className={`w-full px-4 py-2 text-sm rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                              isThisVariantApproved
+                                ? 'text-green-500 bg-green-500/10 border border-green-500/30 cursor-default'
+                                : shouldDisableButtons
+                                ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed opacity-50'
+                                : 'text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600'
                               }`}
                           >
                             <CheckCircle2 className="w-4 h-4" />
@@ -1883,6 +2094,16 @@ export default function AnalyzerResultsPage() {
           </div>
         </div>
       </main>
+
+      {/* Upgrade Modal - Only shown for anonymous trial users */}
+      {userTier === 'anonymous' && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          feature={upgradeFeature}
+          tier={userTier}
+        />
+      )}
     </>
   );
 }

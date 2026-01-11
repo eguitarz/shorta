@@ -15,17 +15,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ job_id: string }> }
 ) {
-  // Require authentication
-  const authError = await requireAuth(request);
-  if (authError) return authError;
-
+  // Authentication is optional - allow anonymous access for trial jobs
   const user = await getAuthenticatedUser(request);
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
 
   try {
     const { job_id } = await params;
@@ -74,8 +65,12 @@ export async function GET(
       );
     }
 
-    // Verify job belongs to user
-    if (job.user_id !== user.id) {
+    // Verify ownership: either user owns job OR it's an anonymous job
+    if (job.is_anonymous) {
+      // Anonymous jobs are accessible to anyone with the job_id (trial mode)
+      console.log(`[Poll] Anonymous job ${job_id} accessed in trial mode`);
+    } else if (!user || job.user_id !== user.id) {
+      // Non-anonymous jobs require authentication and ownership
       return NextResponse.json(
         { error: 'Unauthorized - You do not own this job' },
         { status: 403 }
@@ -146,11 +141,18 @@ export async function GET(
 
 /**
  * Build standardized job response
+ * Tier logic: Anonymous = 1 trial, Logged-in = Unlimited (paid users only)
  */
 function buildJobResponse(job: any) {
   const progressPercent = job.total_steps > 0
     ? (job.current_step / job.total_steps) * 100
     : 0;
+
+  // Simple tier logic: anonymous trial OR paid unlimited
+  const isAnonymous = job.is_anonymous === true;
+  const tier = isAnonymous ? 'anonymous' : 'unlimited';
+  const analysesRemaining = isAnonymous ? 0 : -1; // -1 = unlimited
+  const isTrial = isAnonymous;
 
   return NextResponse.json({
     job_id: job.id,
@@ -172,6 +174,11 @@ function buildJobResponse(job: any) {
       lintSummary: job.storyboard_result.lintSummary,
       storyboard: job.storyboard_result.storyboard,
     } : {}),
+
+    // Tier information (for frontend)
+    tier,
+    analyses_remaining: analysesRemaining,
+    is_trial: isTrial,
 
     // Metadata
     video_url: job.video_url,

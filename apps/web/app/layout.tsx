@@ -6,22 +6,24 @@ import { PostHogProvider } from "@/components/PostHogProvider";
 export const metadata: Metadata = {
   metadataBase: new URL("https://shorta.ai"),
   title: {
-    default: "Shorta — YouTube Shorts Analysis & Storyboard System",
+    default: "Shorts Analyzer — AI-Powered YouTube Shorts Analysis Tool | Shorta",
     template: "%s | Shorta",
   },
-  description: "Turn every Short into a learning loop. AI-powered analysis shows what fails, why it fails, and exactly how to fix it. A Shorts linting & iteration system for creators, founders, and marketers.",
+  description: "The best shorts analyzer for YouTube creators. Analyze shorts for retention issues, hook performance, and viral potential. AI-powered shorts analyzer with beat-by-beat feedback and optimization suggestions.",
   keywords: [
+    "shorts analyzer",
+    "YouTube shorts analyzer",
+    "shorts analysis tool",
+    "analyze shorts",
+    "short form video analyzer",
     "YouTube Shorts",
     "video analysis",
-    "storyboard creator",
-    "content creation",
-    "AI feedback",
     "shorts optimization",
-    "video retention",
+    "video retention analyzer",
     "YouTube analytics",
-    "content strategy",
-    "viral shorts",
-    "short-form content",
+    "viral shorts analyzer",
+    "shorts performance analyzer",
+    "content analysis tool",
     "creator tools",
   ],
   authors: [{ name: "Dale Ma", url: "https://twitter.com/eguitarz" }],
@@ -33,25 +35,25 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Shorta — YouTube Shorts Analysis & Storyboard System",
-    description: "Turn every Short into a learning loop. AI-powered analysis shows what fails, why it fails, and exactly how to fix it.",
+    title: "Shorts Analyzer — AI-Powered YouTube Shorts Analysis Tool",
+    description: "The best shorts analyzer for YouTube creators. Analyze shorts for retention issues, hook performance, and viral potential with AI-powered beat-by-beat feedback.",
     type: "website",
     locale: "en_US",
     url: "https://shorta.ai",
-    siteName: "Shorta",
+    siteName: "Shorta - Shorts Analyzer",
     images: [
       {
         url: "https://shorta.ai/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "Shorta - YouTube Shorts Analysis System",
+        alt: "Shorts Analyzer - YouTube Shorts Analysis Tool",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shorta — YouTube Shorts Analysis & Storyboard System",
-    description: "Turn every Short into a learning loop. AI-powered analysis for YouTube Shorts.",
+    title: "Shorts Analyzer — AI-Powered YouTube Shorts Analysis Tool",
+    description: "The best shorts analyzer for YouTube creators. Analyze shorts for retention, hook performance, and viral potential.",
     site: "@eguitarz",
     creator: "@eguitarz",
     images: ["https://shorta.ai/og-image.svg"],
@@ -90,10 +92,18 @@ export default function RootLayout({
     "@graph": [
       {
         "@type": "SoftwareApplication",
-        "name": "Shorta",
+        "name": "Shorta - Shorts Analyzer",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
-        "description": "AI-powered YouTube Shorts analysis and storyboard system that turns every Short into a learning loop.",
+        "description": "AI-powered shorts analyzer for YouTube creators. Analyze shorts for retention issues, hook performance, and viral potential with beat-by-beat feedback and optimization suggestions.",
+        "featureList": [
+          "Shorts analyzer with AI-powered insights",
+          "Beat-by-beat retention analysis",
+          "Hook performance analyzer",
+          "Viral potential scoring",
+          "Automated shorts optimization suggestions",
+          "Real-time shorts analysis"
+        ],
         "offers": {
           "@type": "Offer",
           "price": "199",
@@ -130,14 +140,56 @@ export default function RootLayout({
       },
       {
         "@type": "WebSite",
-        "name": "Shorta",
+        "name": "Shorta - Shorts Analyzer",
         "url": "https://shorta.ai",
-        "description": "Turn every Short into a learning loop with AI-powered analysis",
+        "description": "AI-powered shorts analyzer tool for YouTube creators",
         "publisher": {
           "@type": "Organization",
           "name": "Shorta",
         },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://shorta.ai/?s={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
       },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a shorts analyzer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A shorts analyzer is an AI-powered tool that analyzes YouTube Shorts videos to identify retention issues, hook performance, content structure, and viral potential. Shorta's shorts analyzer provides beat-by-beat feedback showing exactly what works and what doesn't in your shorts."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the shorts analyzer work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The shorts analyzer uses AI to break down your YouTube Shorts into beats (segments), analyzing each section for retention drops, hook effectiveness, content clarity, and delivery performance. It provides specific, actionable feedback on how to improve each part of your short."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is Shorta free to use?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Shorta offers 1 free trial analysis without login. To unlock unlimited shorts analysis and premium features, upgrade to Pro for $99/year with pricing locked forever."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I analyze any YouTube Short?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, the shorts analyzer works with any public YouTube Short. Simply paste the URL and get instant AI-powered analysis with retention insights, hook scoring, and optimization suggestions."
+            }
+          }
+        ]
+      }
     ],
   };
 
