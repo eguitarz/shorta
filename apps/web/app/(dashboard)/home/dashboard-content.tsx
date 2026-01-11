@@ -95,7 +95,7 @@ export default function DashboardContent() {
           </div>
 
           {/* Action Cards */}
-          <div className="grid grid-cols-2 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
             {/* Analyze Short Card */}
             <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8">
               <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider mb-4">
