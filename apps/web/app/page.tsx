@@ -37,7 +37,7 @@ export default function HomePage() {
               <span className="text-lg md:text-2xl font-semibold text-foreground">Shorta AI</span>
             </div>
             <button
-              onClick={redirectToCheckout}
+              onClick={() => redirectToCheckout()}
               className="bg-primary text-primary-foreground px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg text-sm md:text-base whitespace-nowrap"
             >
               <span className="hidden sm:inline">Join as a Founding Member</span>
@@ -64,7 +64,7 @@ export default function HomePage() {
         <SectionTitle>Who uses Shorta</SectionTitle>
         <UseCases />
         <div className="flex justify-center mt-12">
-          <Button variant="hero" size="lg" onClick={redirectToCheckout}>
+          <Button variant="hero" size="lg" onClick={() => redirectToCheckout()}>
             Join as a Founding Member
           </Button>
         </div>
@@ -75,7 +75,7 @@ export default function HomePage() {
         <SectionTitle>Shorta vs ChatGPT</SectionTitle>
         <Differentiation />
         <div className="flex justify-center mt-12">
-          <Button variant="hero" size="lg" onClick={redirectToCheckout}>
+          <Button variant="hero" size="lg" onClick={() => redirectToCheckout()}>
             Join as a Founding Member
           </Button>
         </div>
@@ -150,7 +150,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="flex justify-center mt-8 md:mt-10 lg:mt-12">
-          <Button variant="hero" size="lg" onClick={redirectToCheckout}>
+          <Button variant="hero" size="lg" onClick={() => redirectToCheckout()}>
             Join as a Founding Member
           </Button>
         </div>
@@ -275,7 +275,7 @@ export default function HomePage() {
             badges={["Grandfathered", "Only 50 spots"]}
             finePrint={<>Public launch price: <strong>$399 / year</strong></>}
             ctaLabel="Join as a Founding Member"
-            onCtaClick={redirectToCheckout}
+            onCtaClick={() => redirectToCheckout()}
           />
         </SectionGrid>
       </Section>
