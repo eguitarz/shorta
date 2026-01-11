@@ -20,8 +20,13 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <div className="mb-6 md:mb-10 max-w-7xl space-y-4 md:space-y-6 font-heading">
-            <p className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold tracking-tight leading-[1.2]">
+          <div className="mb-10 max-w-7xl space-y-6 font-heading">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-[1.2]">
+              <span className="text-foreground">AI-Powered </span>
+              <span className="text-primary">Shorts Analyzer</span>
+              <span className="text-foreground"> for YouTube Creators</span>
+            </h1>
+            <p className="text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight leading-[1.3] text-muted-foreground">
               <span className="text-foreground">Stop guessing why your Shorts </span>
               <span className="text-primary">lose viewers.</span>
             </p>
@@ -39,16 +44,16 @@ export function HeroSection() {
                 Your browser does not support the video tag.
               </video>
             </div>
-            <p className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold tracking-tight leading-[1.2]">
-              <span className="text-foreground">Get actionable feedback on your YouTube Shorts — see what </span>
+            <p className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-[1.2]">
+              <span className="text-foreground">Analyze shorts with AI-powered insights — see what </span>
               <span className="text-primary">fails</span>
               <span className="text-foreground">, why it fails, and exactly how to </span>
               <span className="text-primary">fix it</span>
               <span className="text-foreground">.</span>
             </p>
-            <img src="/hero.png" alt="Shorta Hero" className="w-full rounded-lg" />
-            <p className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold tracking-tight leading-[1.2] text-muted-foreground">
-              A Shorts linting & iteration system — not another AI writer.
+            <img src="/hero.png" alt="Shorts Analyzer Dashboard - Analyze YouTube Shorts" className="w-full rounded-lg" />
+            <p className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-[1.2] text-muted-foreground -mt-2">
+              The most powerful shorts analyzer for creators — not another AI writer.
             </p>
             <p className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold tracking-tight leading-[1.2] text-muted-foreground">
               Built for <span className="bg-yellow-300 text-black px-1.5 py-0.5 md:px-2 md:py-1 rounded text-base md:text-lg lg:text-xl xl:text-2xl">creators</span>, <span className="bg-pink-300 text-black px-1.5 py-0.5 md:px-2 md:py-1 rounded text-base md:text-lg lg:text-xl xl:text-2xl">founders</span>, and <span className="bg-blue-400 text-black px-1.5 py-0.5 md:px-2 md:py-1 rounded text-base md:text-lg lg:text-xl xl:text-2xl">marketers</span> who already publish.<br />
