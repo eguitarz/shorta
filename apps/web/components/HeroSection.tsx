@@ -83,7 +83,7 @@ export function HeroSection() {
               <Button
                 variant="hero"
                 size="lg"
-                onClick={redirectToCheckout}
+                onClick={() => redirectToCheckout()}
               >
                 Join as a Founding Member
               </Button>
