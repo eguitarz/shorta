@@ -65,18 +65,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate duration if provided
-    if (duration) {
-      const durationSeconds = parseFloat(duration);
-      if (!isNaN(durationSeconds) && durationSeconds > MAX_DURATION_SECONDS) {
-        return NextResponse.json(
-          {
-            error: 'Video too long',
-            details: `Maximum duration is 3 minutes. Your video: ${Math.floor(durationSeconds / 60)}:${String(Math.floor(durationSeconds % 60)).padStart(2, '0')}`
-          },
-          { status: 400 }
-        );
-      }
+    // Validate duration (now required)
+    if (!duration) {
+      return NextResponse.json(
+        {
+          error: 'Video duration required',
+          details: 'Unable to determine video duration. Please use a standard video format (MP4 recommended).'
+        },
+        { status: 400 }
+      );
+    }
+
+    const durationSeconds = parseFloat(duration);
+    if (isNaN(durationSeconds)) {
+      return NextResponse.json(
+        {
+          error: 'Invalid duration value',
+          details: 'Unable to parse video duration.'
+        },
+        { status: 400 }
+      );
+    }
+
+    if (durationSeconds > MAX_DURATION_SECONDS) {
+      return NextResponse.json(
+        {
+          error: 'Video too long',
+          details: `Maximum duration is 3 minutes. Your video: ${Math.floor(durationSeconds / 60)}:${String(Math.floor(durationSeconds % 60)).padStart(2, '0')}`
+        },
+        { status: 400 }
+      );
     }
 
     // Check for API key
