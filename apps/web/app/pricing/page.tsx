@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, Zap, Crown, Infinity } from 'lucide-react';
+import { redirectToCheckout } from '@/lib/stripe';
 
 export default function PricingPage() {
   return (
@@ -99,12 +100,12 @@ export default function PricingPage() {
               </li>
             </ul>
 
-            <a
-              href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || '#'}
-              className="block w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors text-center"
+            <button
+              onClick={() => redirectToCheckout('pro')}
+              className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
             >
               Start Pro Plan
-            </a>
+            </button>
           </div>
 
           {/* Lifetime Tier - Limited */}
@@ -145,12 +146,12 @@ export default function PricingPage() {
               </li>
             </ul>
 
-            <a
-              href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || '#'}
-              className="block w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold transition-colors text-center"
+            <button
+              onClick={() => redirectToCheckout('lifetime')}
+              className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold transition-colors"
             >
               Get Lifetime Access
-            </a>
+            </button>
           </div>
         </div>
 
