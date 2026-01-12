@@ -4,8 +4,6 @@ import { headers } from "next/headers";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-const ALLOWED_EMAIL = "dalema22@gmail.com";
-
 export default async function DashboardLayout({
   children,
 }: {
@@ -26,9 +24,32 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Check if user email is allowed (only for authenticated users)
-  if (user && user.email !== ALLOWED_EMAIL) {
-    redirect("/launching-soon");
+  // Check access for authenticated users only
+  if (user) {
+    // Get user's tier from user_profiles
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('tier')
+      .eq('user_id', user.id)
+      .single();
+
+    // Founder/lifetime tier users always have access (bypass allowlist)
+    if (profile?.tier === 'founder' || profile?.tier === 'lifetime') {
+      // Allow access, no further checks needed
+    } else {
+      // Free tier: check if email is on allowlist
+      const { data: allowedEmail } = await supabase
+        .from('email_allowlist')
+        .select('email')
+        .eq('email', user.email)
+        .single();
+
+      if (!allowedEmail) {
+        // Free tier user not on allowlist -> block access
+        redirect("/launching-soon");
+      }
+      // If allowedEmail exists, user can access dashboard
+    }
   }
 
   return (
