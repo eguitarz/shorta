@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
+import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
 
 interface GeneratedBeat {
   beatNumber: number;
@@ -257,6 +259,20 @@ export default function StoryboardResultsPage() {
                     </p>
                   </div>
                 </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <ExportGeneratedSubtitleButton
+                  beats={storyboardData.beats}
+                  videoTitle={storyboardData.overview.title}
+                />
+                <ExportGeneratedStoryboardButton
+                  generatedData={{
+                    generated: {
+                      overview: storyboardData.overview,
+                      beats: storyboardData.beats
+                    }
+                  }}
+                />
               </div>
             </div>
           </div>

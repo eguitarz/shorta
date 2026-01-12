@@ -108,7 +108,6 @@ export default function TryAnalyzerPage() {
                 <ul className="text-sm text-gray-400 space-y-1">
                   <li>✓ Full video analysis with retention insights</li>
                   <li>✓ Beat-by-beat breakdown</li>
-                  <li>✓ Share your analysis</li>
                 </ul>
                 <div className="mt-4 pt-4 border-t border-gray-700">
                   <p className="text-xs text-gray-400">

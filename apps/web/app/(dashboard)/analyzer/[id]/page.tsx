@@ -31,6 +31,8 @@ import {
   Sparkles
 } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
+import { ExportSubtitleButton } from "@/components/ExportSubtitleButton";
+import { ExportStoryboardButton } from "@/components/ExportStoryboardButton";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { UsageLimitBanner } from "@/components/UsageLimitBanner";
 
@@ -841,6 +843,15 @@ export default function AnalyzerResultsPage() {
                 <span className="text-sm text-green-500 font-medium">Analysis Complete</span>
               </div>
               {jobId && <ShareButton jobId={jobId} />}
+              {analysisData && (
+                <>
+                  <ExportSubtitleButton
+                    beats={analysisData.storyboard.beats}
+                    videoTitle={analysisData.storyboard.overview.title}
+                  />
+                  <ExportStoryboardButton analysisData={analysisData} />
+                </>
+              )}
             </>
           )}
         </div>
