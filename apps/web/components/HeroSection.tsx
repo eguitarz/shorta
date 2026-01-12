@@ -4,13 +4,9 @@ import { Badge } from "@/components/Badge";
 import { Button } from "@/components/ui/button";
 import { TrustBadges } from "@/components/TrustBadges";
 import { WaitlistForm } from "@/components/WaitlistForm";
-import { redirectToCheckout } from "@/lib/stripe";
 import { motion } from "framer-motion";
 
 export function HeroSection() {
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
 
   return (
     <section className="pt-2 pb-8 md:pt-3 md:pb-10 lg:pt-4 lg:pb-16">
@@ -71,22 +67,27 @@ export function HeroSection() {
               </span>
             </div>
             <p className="text-2xl md:text-3xl lg:text-4xl text-foreground mb-2">
-              <strong>$199 / year</strong> — Founding Member (grandfathered)
+              <strong>$99/year</strong> or <strong>$199 lifetime</strong>
             </p>
             <p className="text-sm md:text-base text-muted-foreground mt-2 md:mt-3">
-              Public launch price: <strong>$399 / year</strong>
+              Limited seats available — join as a Founding Member
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
             <div className="flex flex-col gap-3 md:gap-4">
-              <Button
-                variant="hero"
-                size="lg"
-                onClick={() => redirectToCheckout()}
-              >
-                Join as a Founding Member
-              </Button>
+              <div className="flex flex-col gap-2">
+                <a href="/pricing">
+                  <Button
+                    variant="hero"
+                    size="lg"
+                    className="w-full"
+                  >
+                    Join as a Founding Member
+                  </Button>
+                </a>
+                <p className="text-sm text-muted-foreground text-center">$99/year or $199 lifetime · limited seats available</p>
+              </div>
               <div className="text-xs md:text-sm text-muted-foreground space-y-1">
                 <p>Limited Founding Member spots remaining</p>
                 <p>Ships by <strong>February 28, 2026</strong> or full refund</p>
