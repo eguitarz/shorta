@@ -27,16 +27,17 @@ export async function verifyTurnstile(
   token: string,
   remoteip?: string
 ): Promise<boolean> {
+  // Always bypass CAPTCHA in development
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('[Turnstile] Bypassing verification in development mode');
+    return true;
+  }
+
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
   if (!secretKey) {
     console.error('[Turnstile] TURNSTILE_SECRET_KEY not configured');
     console.error('[Turnstile] Set it with: wrangler secret put TURNSTILE_SECRET_KEY');
-    // In development, you might want to bypass verification
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[Turnstile] Bypassing verification in development mode');
-      return true;
-    }
     return false;
   }
 

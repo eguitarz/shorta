@@ -115,7 +115,9 @@ export async function POST(request: NextRequest) {
         .eq('ip_hash', ipHash)
         .single();
 
-      if (existingUsage && existingUsage.analyses_used >= 1) {
+      // Bypass limit check in development
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      if (!isDevelopment && existingUsage && existingUsage.analyses_used >= 1) {
         return NextResponse.json(
           {
             error: 'Usage limit reached',
@@ -127,6 +129,10 @@ export async function POST(request: NextRequest) {
           },
           { status: 429 }
         );
+      }
+
+      if (isDevelopment && existingUsage && existingUsage.analyses_used >= 1) {
+        console.warn('[Anonymous] Bypassing usage limit in development mode');
       }
 
       // 3. Create job with is_anonymous=true
@@ -157,10 +163,13 @@ export async function POST(request: NextRequest) {
 
       // 4. Track anonymous usage (use admin client to bypass RLS)
       if (existingUsage) {
-        // Increment existing
+        // Increment existing and store job_id
         const { error: updateError } = await supabaseAdmin
           .from('anonymous_usage')
-          .update({ analyses_used: existingUsage.analyses_used + 1 })
+          .update({
+            analyses_used: existingUsage.analyses_used + 1,
+            job_id: job.id, // Store the latest job_id for this anonymous user
+          })
           .eq('ip_hash', ipHash);
 
         if (updateError) {
@@ -173,6 +182,7 @@ export async function POST(request: NextRequest) {
           .insert({
             ip_hash: ipHash,
             analyses_used: 1,
+            job_id: job.id, // Store the job_id for this anonymous user
           });
 
         if (insertError) {
