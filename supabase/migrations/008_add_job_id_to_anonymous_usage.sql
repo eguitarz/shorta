@@ -10,4 +10,4 @@ ADD COLUMN IF NOT EXISTS job_id UUID REFERENCES public.analysis_jobs(id) ON DELE
 CREATE INDEX IF NOT EXISTS idx_anonymous_usage_job_id ON public.anonymous_usage(job_id);
 
 -- Comment on column for documentation
-COMMENT ON COLUMN public.anonymous_usage.job_id IS 'The analysis job created by this anonymous user. Used to generate short URL: /try/{job_id}';
+COMMENT ON COLUMN public.anonymous_usage.job_id IS 'The analysis job created by this anonymous user for internal tracking';

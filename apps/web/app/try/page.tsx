@@ -64,8 +64,8 @@ export default function TryAnalyzerPage() {
         throw new Error(data.error || 'Failed to create analysis');
       }
 
-      // Navigate to trial results page
-      router.push(`/try/${data.job_id}`);
+      // Navigate directly to analyzer with trial param
+      router.push(`/analyzer/${data.job_id}?trial=true`);
     } catch (err: any) {
       setError(err.message || 'Failed to start analysis');
       setLoading(false);
