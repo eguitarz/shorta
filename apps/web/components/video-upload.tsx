@@ -45,18 +45,17 @@ export function VideoUpload({ onUploadComplete, onError, disabled }: VideoUpload
         }
 
         // Try to check video duration (client-side)
-        // Block upload if we can't read metadata to enforce 3-minute limit
+        // If browser can't read the video, proceed anyway - server will validate
         return new Promise((resolve) => {
             const video = document.createElement("video");
             video.preload = "metadata";
 
-            // Timeout after 5 seconds - reject if metadata can't be read
+            // Timeout after 10 seconds - some videos take time to load metadata
             const timeout = setTimeout(() => {
-                console.log('[VideoUpload] Video metadata load timeout - blocking upload');
+                console.log('[VideoUpload] Video metadata load timeout - proceeding without duration check');
                 URL.revokeObjectURL(video.src);
-                handleError('Unable to read video metadata. Please try a different video file or format (MP4 recommended).');
-                resolve({ valid: false });
-            }, 5000);
+                resolve({ valid: true }); // Proceed without duration, server will check
+            }, 10000);
 
             video.onloadedmetadata = () => {
                 clearTimeout(timeout);
@@ -75,9 +74,9 @@ export function VideoUpload({ onUploadComplete, onError, disabled }: VideoUpload
             video.onerror = () => {
                 clearTimeout(timeout);
                 URL.revokeObjectURL(video.src);
-                console.log('[VideoUpload] Browser cannot read video - blocking upload');
-                handleError('Unable to read video file. Please try a different video or convert to MP4 format.');
-                resolve({ valid: false });
+                console.log('[VideoUpload] Browser cannot read video - proceeding with upload, server will validate');
+                // Don't block upload - some video formats work on server but not in browser preview
+                resolve({ valid: true });
             };
 
             video.src = URL.createObjectURL(file);
