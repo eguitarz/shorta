@@ -2,16 +2,11 @@
 
 import { HeroSection } from "@/components/HeroSection";
 import { Section, SectionTitle, SectionGrid } from "@/components/Section";
-import { Card, PricingCard } from "@/components/Card";
-import { BulletList, CheckList, CrossList, NumberedSteps } from "@/components/Lists";
 import { Callout } from "@/components/Callout";
 import { Footer } from "@/components/Footer";
 import { CTAForm } from "@/components/CTAForm";
 import { QuestionButton } from "@/components/QuestionButton";
-import { ComparisonExample } from "@/components/ComparisonExample";
-import { TrustBadges } from "@/components/TrustBadges";
 import { Button } from "@/components/ui/button";
-import { redirectToCheckout } from "@/lib/stripe";
 import { UseCases } from "@/components/UseCases";
 import { Differentiation } from "@/components/Differentiation";
 import { AIComparison } from "@/components/AIComparison";
@@ -22,10 +17,6 @@ const shortaLogo = "/shorta-logo.png";
 const daleHeadshot = "/dale-ma-headshot.jpg";
 
 export default function HomePage() {
-  const scrollToCta = () => {
-    document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -36,13 +27,16 @@ export default function HomePage() {
               <img src={shortaLogo} alt="Shorta" className="h-12 w-12 md:h-16 md:w-16" />
               <span className="text-lg md:text-2xl font-semibold text-foreground">Shorta AI</span>
             </div>
-            <button
-              onClick={() => redirectToCheckout()}
-              className="bg-primary text-primary-foreground px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg text-sm md:text-base whitespace-nowrap"
-            >
-              <span className="hidden sm:inline">Join as a Founding Member</span>
-              <span className="sm:hidden">Join Now</span>
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <a
+                href="/pricing"
+                className="bg-primary text-primary-foreground px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg text-sm md:text-base whitespace-nowrap"
+              >
+                <span className="hidden sm:inline">Join as a Founding Member</span>
+                <span className="sm:hidden">Join Now</span>
+              </a>
+              <p className="text-xs text-muted-foreground hidden sm:block">$99/year or $199 lifetime · limited seats available</p>
+            </div>
           </div>
         </div>
       </header>
@@ -63,10 +57,13 @@ export default function HomePage() {
       <Section id="use-cases">
         <SectionTitle>Who uses Shorta</SectionTitle>
         <UseCases />
-        <div className="flex justify-center mt-12">
-          <Button variant="hero" size="lg" onClick={() => redirectToCheckout()}>
-            Join as a Founding Member
-          </Button>
+        <div className="flex flex-col items-center gap-2 mt-12">
+          <a href="/pricing">
+            <Button variant="hero" size="lg">
+              Join as a Founding Member
+            </Button>
+          </a>
+          <p className="text-sm text-muted-foreground">$99/year or $199 lifetime · limited seats available</p>
         </div>
       </Section>
 
@@ -74,10 +71,13 @@ export default function HomePage() {
       <Section id="differentiation">
         <SectionTitle>Shorta vs ChatGPT</SectionTitle>
         <Differentiation />
-        <div className="flex justify-center mt-12">
-          <Button variant="hero" size="lg" onClick={() => redirectToCheckout()}>
-            Join as a Founding Member
-          </Button>
+        <div className="flex flex-col items-center gap-2 mt-12">
+          <a href="/pricing">
+            <Button variant="hero" size="lg">
+              Join as a Founding Member
+            </Button>
+          </a>
+          <p className="text-sm text-muted-foreground">$99/year or $199 lifetime · limited seats available</p>
         </div>
       </Section>
 
@@ -149,10 +149,13 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-        <div className="flex justify-center mt-8 md:mt-10 lg:mt-12">
-          <Button variant="hero" size="lg" onClick={() => redirectToCheckout()}>
-            Join as a Founding Member
-          </Button>
+        <div className="flex flex-col items-center gap-2 mt-8 md:mt-10 lg:mt-12">
+          <a href="/pricing">
+            <Button variant="hero" size="lg">
+              Join as a Founding Member
+            </Button>
+          </a>
+          <p className="text-sm text-muted-foreground">$99/year or $199 lifetime · limited seats available</p>
         </div>
       </Section>
 
@@ -243,55 +246,15 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* Pricing */}
-      <Section id="pricing">
-        <SectionGrid columns={2}>
-          <div>
-            <SectionTitle>Founding Member pricing</SectionTitle>
-            <p className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6">
-              One plan. One price. Keep it forever.
-            </p>
-            <BulletList
-              items={[
-                "Full access to Shorta V1",
-                "Grandfathered pricing (keep this price after launch)",
-                "Priority feedback & roadmap influence",
-                "Direct access to the founder",
-              ]}
-            />
-            <div className="mt-4 md:mt-6 p-4 md:p-5 bg-surface rounded-lg border border-border">
-              <p className="text-sm md:text-base text-muted-foreground mb-2 md:mb-3">Value breakdown:</p>
-              <ul className="text-sm md:text-base text-muted-foreground space-y-1 md:space-y-2">
-                <li>• $199/year = $16.58/month</li>
-                <li>• Less than one freelance script ($50-200 each)</li>
-                <li>• Replaces hours of manual research per video</li>
-              </ul>
-            </div>
-          </div>
-          <PricingCard
-            title="Founding Member"
-            price="$199"
-            period="year"
-            badges={["Grandfathered", "Only 50 spots"]}
-            finePrint={<>Public launch price: <strong>$399 / year</strong></>}
-            ctaLabel="Join as a Founding Member"
-            onCtaClick={() => redirectToCheckout()}
-          />
-        </SectionGrid>
-      </Section>
-
       {/* Plan */}
       <Section id="plan" maxWidth="narrow">
-        <SectionTitle>Kickoff, delivery, guarantee</SectionTitle>
+        <SectionTitle>Launch timeline</SectionTitle>
         <div className="space-y-3 md:space-y-4 text-base md:text-lg text-foreground mb-6 md:mb-8">
           <p>
             Development is <strong>underway</strong>.
           </p>
           <p>
             Launch: <strong>End of February 2026</strong>.
-          </p>
-          <p>
-            After launch: <strong>7-day money-back guarantee</strong> if you're not satisfied.
           </p>
         </div>
         <Callout
@@ -303,30 +266,9 @@ export default function HomePage() {
 
       {/* CTA */}
       <Section id="cta" background="surface" className="my-6 md:my-8">
-        <SectionGrid columns={2}>
-          <div>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-3 md:mb-4 tracking-tight">
-              Join as a Founding Member
-            </h2>
-            <p className="text-sm md:text-base text-muted-foreground mb-6 md:mb-8">
-              Only 50 Founding Member spots. Grandfathered price.
-            </p>
-            <div className="space-y-2 md:space-y-3 text-sm md:text-base text-foreground">
-              <p>
-                <strong>$199 / year</strong> (grandfathered)
-              </p>
-              <p>
-                Public launch: <strong>$399 / year</strong>
-              </p>
-              <p>
-                Launches <strong>February 2026</strong>. <strong>7-day money-back guarantee</strong>
-              </p>
-            </div>
-          </div>
-          <div>
-            <CTAForm />
-          </div>
-        </SectionGrid>
+        <div className="max-w-md mx-auto">
+          <CTAForm />
+        </div>
       </Section>
 
       {/* Footer */}
