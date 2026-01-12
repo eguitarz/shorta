@@ -18,9 +18,9 @@ export async function middleware(request: NextRequest) {
   // Inject pathname for layout to access
   supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
 
-  // Allow anonymous access to /try/* routes (public trial)
+  // Allow anonymous access to /try page (trial form)
   const isTryPage = request.nextUrl.pathname.startsWith('/try');
-  // Also allow /analyzer/* with ?trial=true query param
+  // Also allow /analyzer/* with ?trial=true query param (for viewing trial results)
   const isTrialAnalyzer = request.nextUrl.pathname.startsWith('/analyzer/') &&
                           request.nextUrl.searchParams.get('trial') === 'true';
 
