@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthWithCsrf } from '@/lib/auth-helpers';
 import { GoogleGenAI } from '@google/genai';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
 
 // Maximum video duration: 3 minutes
 const MAX_DURATION_SECONDS = 180;
@@ -28,8 +25,6 @@ export async function POST(request: NextRequest) {
   // Require authentication
   const authError = await requireAuthWithCsrf(request);
   if (authError) return authError;
-
-  let tempFilePath: string | null = null;
 
   try {
     const formData = await request.formData();
@@ -102,20 +97,15 @@ export async function POST(request: NextRequest) {
     // Initialize Gemini AI client
     const ai = new GoogleGenAI({ apiKey });
 
-    // Write file to temp directory (Gemini SDK needs file path)
+    // Convert File to Blob for upload (works in Cloudflare Workers)
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Create temp file with proper extension
-    const ext = path.extname(file.name) || '.mp4';
-    tempFilePath = path.join(os.tmpdir(), `upload-${Date.now()}${ext}`);
-    fs.writeFileSync(tempFilePath, buffer);
+    const fileBlob = new Blob([arrayBuffer], { type: file.type });
 
     console.log(`[Upload] Starting upload: ${file.name}, ${(file.size / (1024 * 1024)).toFixed(2)}MB, type: ${file.type}`);
 
-    // Upload to Gemini using the new SDK
+    // Upload to Gemini using Blob (no file system needed)
     const uploadedFile = await ai.files.upload({
-      file: tempFilePath,
+      file: fileBlob,
       config: {
         mimeType: file.type,
         displayName: file.name,
@@ -164,14 +154,5 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    // Clean up temp file
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      try {
-        fs.unlinkSync(tempFilePath);
-      } catch (e) {
-        console.error('Failed to delete temp file:', e);
-      }
-    }
   }
 }
