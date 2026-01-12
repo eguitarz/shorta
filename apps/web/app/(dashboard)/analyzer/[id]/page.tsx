@@ -669,8 +669,16 @@ export default function AnalyzerResultsPage() {
   }
 
   // Need either a URL or a fileUri to continue
+  // Show loading state while waiting for job API to return video URL
   if (!videoUrl && !fileUri) {
-    return null;
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 animate-spin text-orange-500" />
+          <p className="text-gray-400 animate-pulse">Loading video...</p>
+        </div>
+      </div>
+    );
   }
 
   const videoId = videoUrl ? extractYouTubeId(videoUrl) : null;
