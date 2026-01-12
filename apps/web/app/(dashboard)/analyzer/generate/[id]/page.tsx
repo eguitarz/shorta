@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Loader2, Play, Lightbulb, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
+import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
 
 interface GeneratedBeat {
   beatNumber: number;
@@ -124,8 +126,15 @@ export default function GenerateResultsPage() {
                 </p>
               </div>
             </div>
-            <div className="text-sm text-gray-400">
-              {generatedData.appliedChanges.length} change(s) applied
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-gray-400">
+                {generatedData.appliedChanges.length} change(s) applied
+              </div>
+              <ExportGeneratedSubtitleButton
+                beats={generatedData.generated.beats}
+                videoTitle={generatedData.generated.overview.title}
+              />
+              <ExportGeneratedStoryboardButton generatedData={generatedData} />
             </div>
           </div>
         </div>
