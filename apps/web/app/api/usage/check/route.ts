@@ -43,13 +43,15 @@ export async function GET(request: NextRequest) {
 
       const { data: anonUsage } = await supabase
         .from('anonymous_usage')
-        .select('analyses_used')
+        .select('analyses_used, job_id')
         .eq('ip_hash', ipHash)
         .single();
 
       const analysesUsed = anonUsage?.analyses_used || 0;
       const analysesLimit = 1; // Anonymous users get 1 analysis
       const analysesRemaining = Math.max(0, analysesLimit - analysesUsed);
+      const jobId = anonUsage?.job_id || null;
+      const shortUrl = jobId ? `/try/${jobId}` : null;
 
       return NextResponse.json({
         tier: 'anonymous',
@@ -57,6 +59,8 @@ export async function GET(request: NextRequest) {
         analyses_limit: analysesLimit,
         analyses_remaining: analysesRemaining,
         can_analyze: analysesUsed < analysesLimit,
+        job_id: jobId,
+        short_url: shortUrl,
       });
     }
 
