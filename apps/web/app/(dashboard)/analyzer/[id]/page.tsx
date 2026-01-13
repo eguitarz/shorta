@@ -865,10 +865,15 @@ export default function AnalyzerResultsPage() {
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-bold">Video Analysis</h1>
+                <h1 className="text-3xl font-bold">
+                  {isUploadedFile
+                    ? 'Analysis: Uploaded video'
+                    : `Analysis: ${analysisData?.storyboard?.overview?.title || 'Video'}`
+                  }
+                </h1>
               </div>
               <p className="text-sm text-gray-400">
-                Based on retention data from similar viral shorts.
+                Insights are generated using patterns learned from high-retention Shorts in similar topic categories.
               </p>
             </div>
 

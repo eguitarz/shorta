@@ -324,9 +324,14 @@ export default function SharedAnalysisPage() {
       <main className="flex-1 overflow-y-auto p-8 max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{analysis.storyboard.overview.title}</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {analysis.isUploadedFile
+              ? 'Analysis: Uploaded video'
+              : `Analysis: ${analysis.storyboard.overview.title}`
+            }
+          </h1>
           <p className="text-sm text-gray-400">
-            Based on retention data from similar viral shorts.
+            Insights are generated using patterns learned from high-retention Shorts in similar topic categories.
           </p>
         </div>
 
