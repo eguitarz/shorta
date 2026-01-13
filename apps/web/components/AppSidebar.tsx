@@ -3,6 +3,7 @@
 import { Home, BarChart3, Hammer, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import SignOutButton from "@/app/(dashboard)/home/sign-out-button";
 import {
   Sidebar,
@@ -21,6 +22,12 @@ const shortaLogo = "/shorta-logo.png";
 
 interface AppSidebarProps {
   user: any;
+}
+
+interface UsageData {
+  tier: 'anonymous' | 'free' | 'founder' | 'lifetime';
+  analyses_remaining: number;
+  analyses_limit: number;
 }
 
 function CollapseButton() {
@@ -44,8 +51,17 @@ function CollapseButton() {
 
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
+  const [usageData, setUsageData] = useState<UsageData | null>(null);
 
   const initials = user.email?.split("@")[0].slice(0, 2).toUpperCase() || "JD";
+
+  // Fetch usage data
+  useEffect(() => {
+    fetch('/api/usage/check')
+      .then(res => res.json())
+      .then(data => setUsageData(data))
+      .catch(console.error);
+  }, []);
 
   const navItems = [
     { name: "Home", icon: Home, path: "/home" },
@@ -100,24 +116,33 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
       {/* Footer - Credits + User Profile */}
       <SidebarFooter className="p-4 border-t border-gray-800">
-        {/* Credits section - hidden when collapsed */}
-        <div className="mb-4 group-data-[collapsible=icon]:hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500 uppercase tracking-wider">
-              Credits
-            </span>
-            <span className="text-sm font-semibold text-white">450 left</span>
+        {/* Credits section - only show for free/anonymous tiers, hidden when collapsed */}
+        {usageData && (usageData.tier === 'free' || usageData.tier === 'anonymous') && (
+          <div className="mb-4 group-data-[collapsible=icon]:hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-gray-500 uppercase tracking-wider">
+                Analyses
+              </span>
+              <span className="text-sm font-semibold text-white">
+                {usageData.analyses_remaining} of {usageData.analyses_limit} left
+              </span>
+            </div>
+            <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-orange-500 rounded-full"
+                style={{
+                  width: `${(usageData.analyses_remaining / usageData.analyses_limit) * 100}%`
+                }}
+              />
+            </div>
+            <Link
+              href="/pricing"
+              className="block text-sm text-orange-500 hover:text-orange-400 font-medium mt-2"
+            >
+              Upgrade Plan
+            </Link>
           </div>
-          <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-orange-500 rounded-full"
-              style={{ width: "75%" }}
-            />
-          </div>
-          <button className="text-sm text-orange-500 hover:text-orange-400 font-medium mt-2">
-            Upgrade Plan
-          </button>
-        </div>
+        )}
 
         {/* User Profile */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-800 group-data-[collapsible=icon]:pt-0 group-data-[collapsible=icon]:border-t-0 group-data-[collapsible=icon]:justify-center">
@@ -130,14 +155,26 @@ export function AppSidebar({ user }: AppSidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right" className="group-data-[state=expanded]:hidden">
                 <p>{user.email?.split("@")[0]}</p>
-                <p className="text-xs text-gray-400">Founding Member</p>
+                {usageData && (
+                  <p className="text-xs text-gray-400 capitalize">
+                    {usageData.tier === 'founder' ? 'Founding Member' :
+                     usageData.tier === 'lifetime' ? 'Lifetime' :
+                     usageData.tier === 'free' ? 'Free' : 'Trial'}
+                  </p>
+                )}
               </TooltipContent>
             </Tooltip>
             <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
               <div className="text-sm font-medium text-white truncate">
                 {user.email?.split("@")[0]}
               </div>
-              <div className="text-xs text-gray-500">Founding Member</div>
+              {usageData && (
+                <div className="text-xs text-gray-500 capitalize">
+                  {usageData.tier === 'founder' ? 'Founding Member' :
+                   usageData.tier === 'lifetime' ? 'Lifetime' :
+                   usageData.tier === 'free' ? 'Free' : 'Trial'}
+                </div>
+              )}
             </div>
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
