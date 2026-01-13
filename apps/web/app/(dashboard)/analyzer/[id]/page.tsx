@@ -777,55 +777,22 @@ export default function AnalyzerResultsPage() {
     return { label: 'Captivating', color: 'pink' };
   };
 
-  // Render analysis text with bullet points and AI-emphasized text
+  // Render analysis text with bullet points (clean, no bold)
   const renderAnalysis = (text: string) => {
-    // Split by bullet points or newlines
-    const lines = text.split(/\n|•/).filter(line => line.trim());
+    // Split by newlines and filter empty lines
+    const lines = text.split('\n').filter(line => line.trim().length > 0);
 
     return (
       <ul className="space-y-1.5 text-xs text-gray-400">
         {lines.map((line, idx) => {
-          // Parse line into segments, looking for **text** markers from AI
-          const segments: Array<{ text: string; bold: boolean }> = [];
           const trimmedLine = line.trim();
-
-          // Match **text** patterns for emphasis
-          const emphasisPattern = /\*\*([^*]+)\*\*/g;
-          let lastIndex = 0;
-          let match;
-
-          while ((match = emphasisPattern.exec(trimmedLine)) !== null) {
-            // Add text before match
-            if (match.index > lastIndex) {
-              segments.push({ text: trimmedLine.substring(lastIndex, match.index), bold: false });
-            }
-            // Add emphasized text (without the ** markers)
-            segments.push({ text: match[1], bold: true });
-            lastIndex = match.index + match[0].length;
-          }
-
-          // Add remaining text
-          if (lastIndex < trimmedLine.length) {
-            segments.push({ text: trimmedLine.substring(lastIndex), bold: false });
-          }
-
-          // If no segments were found (no ** markers), just add the whole line
-          if (segments.length === 0) {
-            segments.push({ text: trimmedLine, bold: false });
-          }
+          // Remove bullet character if present
+          const content = trimmedLine.startsWith('•') ? trimmedLine.substring(1).trim() : trimmedLine;
 
           return (
             <li key={idx} className="flex gap-2">
               <span className="text-gray-600 mt-0.5">•</span>
-              <span>
-                {segments.map((seg, segIdx) =>
-                  seg.bold ? (
-                    <strong key={segIdx} className="text-gray-200 font-medium">{seg.text}</strong>
-                  ) : (
-                    <span key={segIdx}>{seg.text}</span>
-                  )
-                )}
-              </span>
+              <span>{content}</span>
             </li>
           );
         })}
@@ -1097,43 +1064,32 @@ export default function AnalyzerResultsPage() {
                       )}
                       <div className="pt-3 border-t border-gray-800">
                         <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Director's Take</div>
-                        <div className="text-xs text-gray-400 leading-relaxed">
+                        <div className="text-xs text-gray-400 leading-relaxed space-y-2">
                           {(() => {
                             if (!analysisData) return null;
-                            // Parse director assessment for **emphasis**
                             const text = analysisData.storyboard.performance.directorAssessment;
-                            const segments: Array<{ text: string; bold: boolean }> = [];
-                            const emphasisPattern = /\*\*([^*]+)\*\*/g;
-                            let lastIndex = 0;
-                            let match;
+                            const lines = text.split('\n').filter(line => line.trim().length > 0);
 
-                            while ((match = emphasisPattern.exec(text)) !== null) {
-                              if (match.index > lastIndex) {
-                                segments.push({ text: text.substring(lastIndex, match.index), bold: false });
+                            return lines.map((line, idx) => {
+                              const trimmedLine = line.trim();
+
+                              // Bullet point (starts with •)
+                              if (trimmedLine.startsWith('•')) {
+                                return (
+                                  <div key={idx} className="flex gap-2 ml-2">
+                                    <span className="text-gray-600 mt-0.5">•</span>
+                                    <span className="text-gray-400">{trimmedLine.substring(1).trim()}</span>
+                                  </div>
+                                );
                               }
-                              segments.push({ text: match[1], bold: true });
-                              lastIndex = match.index + match[0].length;
-                            }
 
-                            if (lastIndex < text.length) {
-                              segments.push({ text: text.substring(lastIndex), bold: false });
-                            }
-
-                            if (segments.length === 0) {
-                              segments.push({ text, bold: false });
-                            }
-
-                            return (
-                              <>
-                                {segments.map((seg, idx) =>
-                                  seg.bold ? (
-                                    <strong key={idx} className="text-gray-200 font-medium">{seg.text}</strong>
-                                  ) : (
-                                    <span key={idx}>{seg.text}</span>
-                                  )
-                                )}
-                              </>
-                            );
+                              // Main diagnosis line (not a bullet)
+                              return (
+                                <div key={idx} className="text-gray-300 font-medium">
+                                  {trimmedLine}
+                                </div>
+                              );
+                            });
                           })()}
                         </div>
                       </div>
