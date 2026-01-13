@@ -217,6 +217,8 @@ export default function AnalyzerResultsPage() {
   const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number; publishedAt: string } | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [beatBreakdownCollapsed, setBeatBreakdownCollapsed] = useState(true);
+  const beatRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   // Metadata suggestions state
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
@@ -256,6 +258,26 @@ export default function AnalyzerResultsPage() {
 
   const isIssueExpanded = (beatNumber: number, issueIndex: number) => {
     return expandedIssues.has(`${beatNumber}-${issueIndex}`);
+  };
+
+  const scrollToBeat = (beatNumber: number) => {
+    // Expand beat breakdown if collapsed
+    if (beatBreakdownCollapsed) {
+      setBeatBreakdownCollapsed(false);
+    }
+
+    // Scroll to beat after a brief delay to allow expansion animation
+    setTimeout(() => {
+      const beatElement = beatRefs.current[beatNumber];
+      if (beatElement) {
+        beatElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Flash highlight effect
+        beatElement.style.backgroundColor = 'rgba(251, 146, 60, 0.1)';
+        setTimeout(() => {
+          beatElement.style.backgroundColor = '';
+        }, 1000);
+      }
+    }, beatBreakdownCollapsed ? 300 : 0);
   };
 
   const approveFix = (beatNumber: number, beatTitle: string, issue: any) => {
@@ -1494,6 +1516,149 @@ export default function AnalyzerResultsPage() {
               </div>
             </div>
 
+            {/* Prioritized Action List */}
+            {!loading && analysisData && (criticalCount > 0 || moderateCount > 0 || minorCount > 0) && (
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-6">🎯 Prioritized Actions</h3>
+
+                {/* Critical Fixes */}
+                {criticalCount > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <XCircle className="w-5 h-5 text-red-500" />
+                      <h4 className="text-base font-semibold text-red-500">CRITICAL FIXES</h4>
+                      <span className="text-sm text-gray-500">(Do these first)</span>
+                    </div>
+                    <div className="space-y-2">
+                      {allIssues
+                        .filter(i => i.severity === 'critical')
+                        .map((issue, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => scrollToBeat(issue.beatNumber)}
+                            className="w-full text-left bg-red-500/5 border border-red-500/20 rounded-lg p-4 hover:bg-red-500/10 transition-colors group"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 mt-0.5">
+                                <XCircle className="w-4 h-4 text-red-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-mono text-gray-500">Beat {issue.beatNumber}</span>
+                                  <span className="text-xs text-gray-600">•</span>
+                                  <span className="text-xs text-gray-500">{issue.beatTitle}</span>
+                                </div>
+                                <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
+                                {issue.suggestion && (
+                                  <p className="text-xs text-gray-400 mt-2">
+                                    💡 {issue.suggestion}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex-shrink-0">
+                                <span className="text-xs text-gray-600 group-hover:text-orange-500 transition-colors">
+                                  View →
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Secondary Improvements */}
+                {moderateCount > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-5 h-5 text-orange-500" />
+                      <h4 className="text-base font-semibold text-orange-500">SECONDARY IMPROVEMENTS</h4>
+                    </div>
+                    <div className="space-y-2">
+                      {allIssues
+                        .filter(i => i.severity === 'moderate')
+                        .map((issue, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => scrollToBeat(issue.beatNumber)}
+                            className="w-full text-left bg-orange-500/5 border border-orange-500/20 rounded-lg p-4 hover:bg-orange-500/10 transition-colors group"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 mt-0.5">
+                                <AlertTriangle className="w-4 h-4 text-orange-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-mono text-gray-500">Beat {issue.beatNumber}</span>
+                                  <span className="text-xs text-gray-600">•</span>
+                                  <span className="text-xs text-gray-500">{issue.beatTitle}</span>
+                                </div>
+                                <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
+                                {issue.suggestion && (
+                                  <p className="text-xs text-gray-400 mt-2">
+                                    💡 {issue.suggestion}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex-shrink-0">
+                                <span className="text-xs text-gray-600 group-hover:text-orange-500 transition-colors">
+                                  View →
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Optional Polish */}
+                {minorCount > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="w-5 h-5 text-blue-500" />
+                      <h4 className="text-base font-semibold text-blue-500">OPTIONAL POLISH</h4>
+                    </div>
+                    <div className="space-y-2">
+                      {allIssues
+                        .filter(i => i.severity === 'minor')
+                        .map((issue, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => scrollToBeat(issue.beatNumber)}
+                            className="w-full text-left bg-blue-500/5 border border-blue-500/20 rounded-lg p-4 hover:bg-blue-500/10 transition-colors group"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 mt-0.5">
+                                <InfoIcon className="w-4 h-4 text-blue-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-mono text-gray-500">Beat {issue.beatNumber}</span>
+                                  <span className="text-xs text-gray-600">•</span>
+                                  <span className="text-xs text-gray-500">{issue.beatTitle}</span>
+                                </div>
+                                <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
+                                {issue.suggestion && (
+                                  <p className="text-xs text-gray-400 mt-2">
+                                    💡 {issue.suggestion}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex-shrink-0">
+                                <span className="text-xs text-gray-600 group-hover:text-orange-500 transition-colors">
+                                  View →
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Beat-by-Beat Breakdown */}
             {loading ? (
               <div className="mb-8">
@@ -1583,12 +1748,33 @@ export default function AnalyzerResultsPage() {
                         <span className="text-sm font-semibold text-green-500">No issues</span>
                       </div>
                     )}
+                    <button
+                      onClick={() => setBeatBreakdownCollapsed(!beatBreakdownCollapsed)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 hover:bg-gray-800 rounded-lg transition-colors text-sm text-gray-400 hover:text-gray-300"
+                    >
+                      {beatBreakdownCollapsed ? (
+                        <>
+                          <span>Show Details</span>
+                          <ChevronDown className="w-4 h-4" />
+                        </>
+                      ) : (
+                        <>
+                          <span>Hide Details</span>
+                          <ChevronUp className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  {analysisData?.storyboard.beats.map((beat) => (
-                    <div key={beat.beatNumber} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
+                {!beatBreakdownCollapsed && (
+                  <div className="space-y-4">
+                    {analysisData?.storyboard.beats.map((beat) => (
+                      <div
+                        key={beat.beatNumber}
+                        ref={(el) => { beatRefs.current[beat.beatNumber] = el; }}
+                        className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5 transition-colors duration-300"
+                      >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -1815,7 +2001,8 @@ export default function AnalyzerResultsPage() {
                       )}
                     </div>
                   ))}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
