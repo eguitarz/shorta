@@ -135,6 +135,7 @@ export default async function BlogPostPage({ params }: Props) {
           items={[
             { text: "© Shorta", variant: "muted" },
             { text: "Blog", href: "/blog" },
+            { text: "Pricing", href: "/pricing" },
             { text: "Privacy", href: "/privacy" },
             { text: "Terms", href: "/terms" },
             { text: "Contact", href: "mailto:support@shorta.ai" },
