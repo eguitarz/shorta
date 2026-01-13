@@ -66,7 +66,7 @@ export const otherRules: RuleSet = {
       description: 'Should deliver on the hook promise',
       severity: 'critical',
       category: 'retention',
-      check: 'Does the video deliver on what the hook promises?',
+      check: 'Does the video truly deliver on what the hook promises? Is there ANY payoff provided at all? This is CRITICAL - only flag if NO payoff is delivered. If payoff is shown but clarity/impact comes later, this is less severe.',
     },
     {
       id: 'ot_length',

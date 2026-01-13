@@ -154,9 +154,19 @@ export const talkingHeadRules: RuleSet = {
       description: 'Video ends without delivering the promised answer or result',
       severity: 'critical',
       category: 'structure',
-      check: 'Does the video deliver on its promise? Is there a clear final takeaway, step, list, or conclusion?',
+      check: 'Does the video truly deliver on its promise? Is there ANY answer or takeaway provided at all? This is CRITICAL - only flag if NO answer is given. If answer is stated but clarity comes later, use gen_delayed_payoff_clarity instead.',
       goodExample: 'Add a clear final takeaway: a concrete step, list, or explicit conclusion',
       badExample: 'Video ends abruptly without answering the question posed in the hook',
+    },
+    {
+      id: 'gen_delayed_payoff_clarity',
+      name: 'Delayed Payoff Clarity',
+      description: 'The answer is stated early, but the payoff clarity arrives later',
+      severity: 'moderate',
+      category: 'structure',
+      check: 'Is the answer stated early in the video (within first 30-40%), but the full clarity, impact, or demonstration arrives later? This is for videos that DO provide an answer, but the viewer doesn\'t feel the full payoff until later in the video.',
+      goodExample: 'Move the demonstration or concrete example closer to when the answer is stated (within 5-10 seconds)',
+      badExample: 'Answer stated at 0:10, but concrete example/proof only shown at 0:45',
     },
 
     // CTA RULES

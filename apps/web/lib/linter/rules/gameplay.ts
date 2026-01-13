@@ -106,7 +106,7 @@ export const gameplayRules: RuleSet = {
       description: 'The promised moment or outcome should be shown',
       severity: 'critical',
       category: 'structure',
-      check: 'Does the video deliver on the hook promise? Is there a satisfying payoff?',
+      check: 'Does the video truly deliver on the hook promise? Is there ANY payoff shown at all? This is CRITICAL - only flag if NO payoff is delivered. If payoff is shown but clarity/impact comes later, this is less severe.',
     },
     {
       id: 'gp_duration',

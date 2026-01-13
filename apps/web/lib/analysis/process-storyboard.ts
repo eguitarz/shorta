@@ -283,6 +283,11 @@ CRITICAL INSTRUCTIONS:
    - Life / Psychology: Self-improvement, Psychology, Habits, Rational motivation
    - Design / Creative: UI/UX design, Design critique, Creative process
    - Other: Mixed or uncategorized content
+10. PAYOFF CLARITY DISTINCTION - Critical for avoiding false positives on mature creators:
+   - "No Payoff / No Answer" (CRITICAL): Video truly delivers NO answer at all. The promise is never fulfilled.
+   - "Delayed Payoff Clarity" (MODERATE): Answer IS stated, but full clarity/demonstration/impact comes later. The viewer gets the answer early but doesn't feel the full value until later in the video.
+   - Example of delayed clarity: "Here's the trick: use keywords" (answer stated at 0:10) but demonstration of how to actually use keywords doesn't appear until 0:45.
+   - When mapping lint violations, respect this distinction. Don't mark mature creators with critical violations when they're intentionally pacing their content.
 
 VISUAL & AUDIO ANALYSIS - Director's Perspective:
 - Don't just describe what you see/hear - explain what WORKS or what's MISSING
