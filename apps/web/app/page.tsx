@@ -31,10 +31,10 @@ export default function HomePage() {
               <div className="flex items-center gap-2 md:gap-3">
                 <a
                   href="/try"
-                  className="border border-border bg-background text-foreground px-3 py-2 md:px-4 md:py-2.5 rounded-lg font-medium hover:bg-surface transition-all duration-200 text-sm md:text-base whitespace-nowrap"
+                  className="flex flex-col items-center gap-0.5 border-2 border-primary/40 bg-primary/10 text-foreground px-3 py-2 md:px-5 md:py-2.5 rounded-lg font-semibold hover:bg-primary/20 hover:border-primary/60 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
-                  <span className="hidden sm:inline">Try Free</span>
-                  <span className="sm:hidden">Try</span>
+                  <span className="text-sm md:text-base whitespace-nowrap">Try Free</span>
+                  <span className="text-[10px] md:text-xs text-muted-foreground font-normal">No credit card · No login</span>
                 </a>
                 <a
                   href="/pricing"
