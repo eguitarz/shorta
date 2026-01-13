@@ -211,7 +211,7 @@ Return ONLY valid JSON in this exact format:
     "hookStrength": number - 0-100 score for hook quality,
     "structurePacing": number - 0-100 score for structure and pacing,
     "deliveryPerformance": number - 0-100 score for delivery quality,
-    "directorAssessment": "string - 2-3 sentence director's perspective on current performance and viral potential. Use filmmaker language. Assess what's working, what's holding it back, and realistic viral potential. Wrap key terms in **double asterisks** (e.g., 'Solid fundamentals but **weak hook** limits viral ceiling to **50K views**', '**Strong retention mechanics** with **high viral potential** - could hit **500K+** with right promotion')",
+    "directorAssessment": "string - Professional director's review in bullet point format. Start each category with ONE main diagnosis line (no bold), followed by 2-3 supporting bullet points. Use newlines (\\n) to separate lines. Format:\n\nMain diagnosis for hook/opening\n• Supporting detail 1\n• Supporting detail 2\n\nMain diagnosis for structure/pacing\n• Supporting detail 1\n• Supporting detail 2\n\nViral potential: realistic range (e.g., '50-150K views' or '300K-1M views')\n\nUse filmmaker language. Be direct and professional. No excessive formatting.",
     "retentionDrivers": ["string - key element 1", "string - key element 2", "..."],
     "pacingStrategy": "string - how video maintains momentum",
     "visualEngagementTactics": "string - text overlays, cuts, B-roll, etc.",
@@ -219,25 +219,25 @@ Return ONLY valid JSON in this exact format:
       "duration": number - seconds of hook (0-5),
       "viralPattern": number - 0-100 how well it matches viral patterns,
       "loopStrength": number - 0-100 re-watch potential,
-      "analysis": "string - 2-3 bullet points with actionable insights. Wrap important terms in **double asterisks** for emphasis (e.g., 'Opens with **strong hook** at **0:02s**', 'Increase **loop potential** by **15%**')"
+      "analysis": "string - One main diagnosis followed by 2-3 supporting bullet points. Use newlines (\\n) to separate. Format: Main diagnosis\\nSupporting point 1\\nSupporting point 2. No bold formatting."
     },
     "structure": {
       "videoLength": number - total seconds,
       "pacingConsistency": number - 0-100 how consistent the pacing is,
       "payoffTiming": number - 0-100 how well-timed the payoff is,
-      "analysis": "string - 2-3 bullet points with actionable insights. Wrap important terms in **double asterisks** for emphasis (e.g., '**Well-paced** throughout with **consistent** energy', 'Add **payoff** at **0:35s**')"
+      "analysis": "string - One main diagnosis followed by 2-3 supporting bullet points. Use newlines (\\n) to separate. Format: Main diagnosis\\nSupporting point 1\\nSupporting point 2. No bold formatting."
     },
     "content": {
       "contentType": "string - Educational/Entertainment/Tutorial/Story/etc",
       "valueClarity": number - 0-100 how clear the value proposition is,
       "uniqueness": number - 0-100 how unique the angle/perspective is,
-      "analysis": "string - 2-3 bullet points with actionable insights. Wrap important terms in **double asterisks** for emphasis (e.g., '**High value** proposition is **clear** from start', 'Improve **uniqueness** with different angle')"
+      "analysis": "string - One main diagnosis followed by 2-3 supporting bullet points. Use newlines (\\n) to separate. Format: Main diagnosis\\nSupporting point 1\\nSupporting point 2. No bold formatting."
     },
     "delivery": {
       "energyLevel": number - 0-100 vocal energy and enthusiasm,
       "vocalClarity": number - 0-100 how clear and understandable speech is,
       "presence": number - 0-100 camera presence and charisma,
-      "analysis": "string - 2-3 bullet points with actionable insights. Wrap important terms in **double asterisks** for emphasis (e.g., '**Excellent energy** at **85%**', 'Increase **vocal clarity** in middle section')"
+      "analysis": "string - One main diagnosis followed by 2-3 supporting bullet points. Use newlines (\\n) to separate. Format: Main diagnosis\\nSupporting point 1\\nSupporting point 2. No bold formatting."
     }
   },
   "replicationBlueprint": {
@@ -256,7 +256,7 @@ CRITICAL INSTRUCTIONS:
 5. Be specific with timestamps - use actual seconds from the video
 6. Return ONLY the JSON object, no additional text or explanation
 7. Ensure all JSON is properly formatted and escaped
-7. FORMAT ANALYSIS AS BULLET POINTS: In the hook, structure, content, and delivery analysis fields, use newlines (\\n) to separate each bullet point. Start each line with the content directly (no bullet character needed). Example: "Strong hook opens at 0:02s\\nViral pattern matches proven format\\nIncrease loop potential by adding callback"
+7. FORMAT ANALYSIS WITH HIERARCHY: In the hook, structure, content, delivery, and directorAssessment fields, start with ONE main diagnosis, followed by 2-3 supporting bullet points. Use newlines (\\n) to separate lines. No bold formatting. Example: "Hook shows strong pattern-matching\\nOpening grabs attention at 0:02s\\nCould benefit from more direct promise"
 8. HOOK CATEGORY SELECTION: Choose the MOST DOMINANT hook type from the predefined list. Context for each:
    - Outcome-first: Promises result/benefit upfront
    - Relatable pain: Surfaces unspoken viewer struggle
