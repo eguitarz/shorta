@@ -1457,7 +1457,7 @@ export default function AnalyzerResultsPage() {
             {/* Prioritized Action List */}
             {!loading && analysisData && (criticalCount > 0 || moderateCount > 0 || minorCount > 0) && (
               <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-6">🎯 Prioritized Actions</h3>
+                <h3 className="text-xl font-semibold mb-6">🎯 What to Fix</h3>
 
                 {/* Critical Fixes */}
                 {criticalCount > 0 && (
