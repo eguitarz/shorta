@@ -29,22 +29,27 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col items-end gap-2">
               <div className="flex items-center gap-2 md:gap-3">
-                <a
-                  href="/try"
-                  className="flex flex-col items-center gap-0.5 border-2 border-primary/40 bg-primary/10 text-foreground px-3 py-2 md:px-5 md:py-2.5 rounded-lg font-semibold hover:bg-primary/20 hover:border-primary/60 transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                  <span className="text-sm md:text-base whitespace-nowrap">Try Free</span>
-                  <span className="text-[10px] md:text-xs text-muted-foreground font-normal">No credit card · No login</span>
-                </a>
-                <a
-                  href="/pricing"
-                  className="bg-primary text-primary-foreground px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg text-sm md:text-base whitespace-nowrap"
-                >
-                  <span className="hidden sm:inline">Join as a Founding Member</span>
-                  <span className="sm:hidden">Join Now</span>
-                </a>
+                <div className="flex flex-col items-center gap-1">
+                  <a
+                    href="/try"
+                    className="border border-border bg-background text-foreground px-3 py-2 md:px-4 md:py-2.5 rounded-lg font-medium hover:bg-surface transition-all duration-200 text-sm md:text-base whitespace-nowrap"
+                  >
+                    <span className="hidden sm:inline">Try Free</span>
+                    <span className="sm:hidden">Try</span>
+                  </a>
+                  <p className="text-xs text-muted-foreground hidden sm:block">No credit card · No login</p>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <a
+                    href="/pricing"
+                    className="bg-primary text-primary-foreground px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg text-sm md:text-base whitespace-nowrap"
+                  >
+                    <span className="hidden sm:inline">Join as a Founding Member</span>
+                    <span className="sm:hidden">Join Now</span>
+                  </a>
+                  <p className="text-xs text-muted-foreground hidden sm:block">$99/year or $199 lifetime</p>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground hidden sm:block">$99/year or $199 lifetime · limited seats available</p>
             </div>
           </div>
         </div>
