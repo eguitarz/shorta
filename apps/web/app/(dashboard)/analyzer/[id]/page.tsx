@@ -211,7 +211,6 @@ export default function AnalyzerResultsPage() {
 
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
-  const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set());
   const [approvedChangesCollapsed, setApprovedChangesCollapsed] = useState(true);
   const [approvedChanges, setApprovedChanges] = useState<ApprovedChange[]>([]);
   const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number; publishedAt: string } | null>(null);
@@ -242,23 +241,6 @@ export default function AnalyzerResultsPage() {
   // Blur and disable buttons only for anonymous trial users (not logged-in users)
   const shouldBlur = userTier === 'anonymous';
   const shouldDisableButtons = userTier === 'anonymous';
-
-  const toggleIssue = (beatNumber: number, issueIndex: number) => {
-    const key = `${beatNumber}-${issueIndex}`;
-    setExpandedIssues(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
-      return newSet;
-    });
-  };
-
-  const isIssueExpanded = (beatNumber: number, issueIndex: number) => {
-    return expandedIssues.has(`${beatNumber}-${issueIndex}`);
-  };
 
   const scrollToBeat = (beatNumber: number) => {
     // Expand beat breakdown if collapsed
@@ -1808,27 +1790,36 @@ export default function AnalyzerResultsPage() {
                           style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
                         >
                           {beat.retention?.issues?.map((issue, idx) => {
-                            const isExpanded = isIssueExpanded(beat.beatNumber, idx);
+                            const isAlreadyApproved = approvedChanges.some(
+                              change =>
+                                change.type === 'fix' &&
+                                change.beatNumber === beat.beatNumber &&
+                                change.issue?.suggestion === issue.suggestion
+                            );
+
                             return (
                               <div
                                 key={idx}
-                                className={`border border-gray-800 rounded-lg overflow-hidden transition-all ${isExpanded ? 'bg-[#0d0d0d]' : 'bg-[#1a1a1a] hover:bg-[#1e1e1e]'
-                                  }`}
+                                className={`border rounded-lg p-4 ${
+                                  issue.severity === 'critical' ? 'border-red-500/20 bg-red-500/5' :
+                                  issue.severity === 'moderate' ? 'border-orange-500/20 bg-orange-500/5' :
+                                  'border-blue-500/20 bg-blue-500/5'
+                                }`}
                               >
-                                {/* Collapsed View */}
-                                <button
-                                  onClick={() => toggleIssue(beat.beatNumber, idx)}
-                                  className="w-full px-3 py-2.5 flex items-center gap-3 text-left"
-                                >
-                                  <div className="flex-shrink-0">
+                                <div className="flex items-start gap-3">
+                                  {/* Severity Icon */}
+                                  <div className="flex-shrink-0 mt-0.5">
                                     {getSeverityIcon(issue.severity, "w-4 h-4")}
                                   </div>
+
                                   <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                      <span className={`text-[10px] font-bold uppercase ${issue.severity === 'critical' ? 'text-red-500' :
+                                    {/* Header: Severity + Timestamp + Rule Badge */}
+                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                      <span className={`text-[10px] font-bold uppercase ${
+                                        issue.severity === 'critical' ? 'text-red-500' :
                                         issue.severity === 'moderate' ? 'text-orange-500' :
-                                          'text-blue-500'
-                                        }`}>
+                                        'text-blue-500'
+                                      }`}>
                                         {issue.severity}
                                       </span>
                                       <button
@@ -1844,93 +1835,50 @@ export default function AnalyzerResultsPage() {
                                           {issue.timestamp || `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`}
                                         </span>
                                       </button>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      {(issue as any).ruleId && (
-                                        <div className="mb-1">
-                                          <span className="inline-block px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium">
-                                            {(issue as any).ruleName || (issue as any).ruleId}
-                                          </span>
-                                        </div>
+                                      {(issue as any).ruleId ? (
+                                        <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium">
+                                          {(issue as any).ruleName || (issue as any).ruleId}
+                                        </span>
+                                      ) : (
+                                        <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-medium">
+                                          AI Analysis
+                                        </span>
                                       )}
-                                      <p className={`text-xs text-gray-400 ${!isExpanded && 'truncate'}`}>
-                                        {issue.message}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex-shrink-0">
-                                    {isExpanded ? (
-                                      <ChevronUp className="w-4 h-4 text-gray-500" />
-                                    ) : (
-                                      <ChevronDown className="w-4 h-4 text-gray-500" />
-                                    )}
-                                  </div>
-                                </button>
-
-                                {/* Expanded View */}
-                                {isExpanded && (
-                                  <div className="px-3 pb-3 pt-1 space-y-3 border-t border-gray-800">
-                                    {/* Full Message */}
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <div className="text-[10px] text-gray-500 uppercase font-semibold">Issue</div>
-                                        {(issue as any).ruleId && (
-                                          <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium">
-                                            Rule: {(issue as any).ruleName || (issue as any).ruleId}
-                                          </span>
-                                        )}
-                                        {!(issue as any).ruleId && (
-                                          <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-medium">
-                                            AI Analysis
-                                          </span>
-                                        )}
-                                      </div>
-                                      <p className="text-sm text-gray-300 leading-relaxed">{issue.message}</p>
                                     </div>
 
-                                    {/* Solution */}
+                                    {/* Issue Message */}
+                                    <p className="text-sm text-gray-200 mb-3">{issue.message}</p>
+
+                                    {/* Suggestion + Apply Fix Button */}
                                     {issue.suggestion && (
-                                      <div className="border-l-2 border-green-500/30 bg-green-500/5 rounded-r-lg pl-3 pr-2 py-2">
-                                        <div className="flex items-start gap-2">
-                                          <Lightbulb className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                                          <div className="flex-1">
-                                            <div className="text-[10px] font-semibold text-green-500 uppercase mb-1">Solution</div>
-                                            <p className="text-xs text-gray-300 leading-relaxed mb-2">{issue.suggestion}</p>
-                                            {(() => {
-                                              const isAlreadyApproved = approvedChanges.some(
-                                                change =>
-                                                  change.type === 'fix' &&
-                                                  change.beatNumber === beat.beatNumber &&
-                                                  change.issue?.suggestion === issue.suggestion
-                                              );
-                                              return (
-                                                <button
-                                                  onClick={() => {
-                                                    if (shouldDisableButtons) {
-                                                      setUpgradeFeature('apply-fix');
-                                                      setShowUpgradeModal(true);
-                                                      return;
-                                                    }
-                                                    if (!isAlreadyApproved) {
-                                                      approveFix(beat.beatNumber, beat.title, issue);
-                                                    }
-                                                  }}
-                                                  disabled={isAlreadyApproved}
-                                                  className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${isAlreadyApproved || shouldDisableButtons
-                                                    ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed opacity-50'
-                                                    : 'text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500'
-                                                    }`}
-                                                >
-                                                  {isAlreadyApproved ? 'Applied' : 'Apply Fix'}
-                                                </button>
-                                              );
-                                            })()}
-                                          </div>
-                                        </div>
+                                      <div className="space-y-2">
+                                        <p className="text-xs text-gray-400">
+                                          💡 {issue.suggestion}
+                                        </p>
+                                        <button
+                                          onClick={() => {
+                                            if (shouldDisableButtons) {
+                                              setUpgradeFeature('apply-fix');
+                                              setShowUpgradeModal(true);
+                                              return;
+                                            }
+                                            if (!isAlreadyApproved) {
+                                              approveFix(beat.beatNumber, beat.title, issue);
+                                            }
+                                          }}
+                                          disabled={isAlreadyApproved}
+                                          className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${
+                                            isAlreadyApproved || shouldDisableButtons
+                                              ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed opacity-50'
+                                              : 'text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500'
+                                          }`}
+                                        >
+                                          {isAlreadyApproved ? 'Applied' : 'Apply Fix'}
+                                        </button>
                                       </div>
                                     )}
                                   </div>
-                                )}
+                                </div>
                               </div>
                             );
                           })}
