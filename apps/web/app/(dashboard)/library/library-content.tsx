@@ -11,11 +11,28 @@ import {
   MoreVertical,
   Calendar,
   TrendingUp,
+  Lock,
 } from "lucide-react";
 
 export default function LibraryContent() {
   return (
-    <>
+    <div className="relative flex flex-col h-full">
+      {/* Lock Overlay */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8 max-w-md mx-4 text-center">
+          <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-orange-500" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Library Coming Soon</h2>
+          <p className="text-gray-400 mb-4">
+            We're building a powerful project management system to organize and track all your video analyses.
+          </p>
+          <p className="text-sm text-gray-500">
+            Currently in development
+          </p>
+        </div>
+      </div>
+
       {/* Top Bar */}
       <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
         <h1 className="text-xl font-semibold">Library</h1>
@@ -267,6 +284,6 @@ export default function LibraryContent() {
           </div>
         </div>
       </main>
-    </>
+    </div>
   );
 }
