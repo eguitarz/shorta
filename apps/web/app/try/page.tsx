@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Sparkles, Link as LinkIcon, Upload, Zap, Lock } from "lucide-react";
+import { Loader2, Sparkles, Link as LinkIcon, Upload, Lock } from "lucide-react";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 
 export default function TryAnalyzerPage() {
@@ -95,32 +95,6 @@ export default function TryAnalyzerPage() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto py-8">
         <div className="max-w-4xl mx-auto px-6">
-          {/* Trial Banner */}
-          <div className="bg-gradient-to-r from-orange-500/10 to-purple-500/10 border border-orange-500/30 rounded-xl p-6 mb-8">
-            <div className="flex items-start gap-4">
-              <Zap className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
-              <div>
-                <h2 className="text-lg font-semibold mb-2">Try Shorta AI Free</h2>
-                <p className="text-gray-300 text-sm mb-3">
-                  Get 1 free analysis without signing up. See how viral YouTube Shorts are structured
-                  with AI-powered beat-by-beat breakdowns.
-                </p>
-                <ul className="text-sm text-gray-400 space-y-1">
-                  <li>✓ Full video analysis with retention insights</li>
-                  <li>✓ Beat-by-beat breakdown</li>
-                </ul>
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                  <p className="text-xs text-gray-400">
-                    Want premium features?{' '}
-                    <a href="/pricing" className="text-orange-400 hover:text-orange-300">
-                      Upgrade to Pro
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Header */}
           <div className="mb-8">
             <h3 className="text-2xl font-bold mb-2">Analyze a YouTube Short</h3>
