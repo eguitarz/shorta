@@ -296,6 +296,7 @@ IMPORTANT GUIDELINES:
 - HIGHLIGHT CRITICAL NOTES: Wrap the 1-2 MOST IMPORTANT notes in **double asterisks** for emphasis
 - Example: "• **Start with direct eye contact - this is crucial**\n• Use high energy throughout\n• Cut to B-roll at 0:03"
 - Only highlight notes that are truly critical to the beat's success
+- LANGUAGE ALIGNMENT (CRITICAL): ALL output (directorNotes, script, visual, audio) MUST be in the SAME language as the original transcript. If the original script is in English, output ONLY in English. Do NOT switch to Hindi or any other language.
 
 VISUAL FORMATTING:
 - 2-3 concise bullet points maximum

@@ -111,6 +111,18 @@ export function VideoUpload({ onUploadComplete, onError, disabled }: VideoUpload
             console.log('[VideoUpload] response status:', response.status);
 
             if (!response.ok) {
+                // Check if response is HTML (common error case)
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('text/html')) {
+                    console.error('[VideoUpload] Server returned HTML instead of JSON');
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error('Session expired. Please refresh the page and try again.');
+                    } else if (response.status === 404) {
+                        throw new Error('Upload service not found. Please try again.');
+                    } else {
+                        throw new Error(`Upload failed (${response.status}). Please try again.`);
+                    }
+                }
                 const data = await response.json();
                 console.log('[VideoUpload] error response:', data);
                 throw new Error(data.details || data.error || "Upload failed");

@@ -288,6 +288,13 @@ CRITICAL INSTRUCTIONS:
    - "Delayed Payoff Clarity" (MODERATE): Answer IS stated, but full clarity/demonstration/impact comes later. The viewer gets the answer early but doesn't feel the full value until later in the video.
    - Example of delayed clarity: "Here's the trick: use keywords" (answer stated at 0:10) but demonstration of how to actually use keywords doesn't appear until 0:45.
    - When mapping lint violations, respect this distinction. Don't mark mature creators with critical violations when they're intentionally pacing their content.
+11. LANGUAGE ALIGNMENT - CRITICAL:
+   - Detect the primary language spoken in the video
+   - ALL output text (transcripts, analysis, suggestions, director's assessment) MUST be in the SAME language as the video
+   - If the video is in English, output ONLY in English
+   - If the video is in Hindi, output ONLY in Hindi
+   - Do NOT mix languages. Do NOT let reference videos or viral examples influence the output language
+   - The output language MUST match the input video's spoken language, regardless of any other context
 
 VISUAL & AUDIO ANALYSIS - Director's Perspective:
 - Don't just describe what you see/hear - explain what WORKS or what's MISSING

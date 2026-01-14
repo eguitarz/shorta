@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthWithCsrf } from '@/lib/auth-helpers';
 import { GoogleGenAI } from '@google/genai';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';  // Required for file uploads
+
 // Maximum video duration: 3 minutes
 const MAX_DURATION_SECONDS = 180;
 // Maximum file size: 500MB
@@ -97,15 +100,13 @@ export async function POST(request: NextRequest) {
     // Initialize Gemini AI client
     const ai = new GoogleGenAI({ apiKey });
 
-    // Convert File to Blob for upload (works in Cloudflare Workers)
-    const arrayBuffer = await file.arrayBuffer();
-    const fileBlob = new Blob([arrayBuffer], { type: file.type });
-
     console.log(`[Upload] Starting upload: ${file.name}, ${(file.size / (1024 * 1024)).toFixed(2)}MB, type: ${file.type}`);
 
-    // Upload to Gemini using Blob (no file system needed)
+    // Pass the File object directly - it implements Blob interface
+    // This avoids loading the entire file into memory with arrayBuffer()
+    // which causes "Worker exceeded memory limit" on Cloudflare Workers
     const uploadedFile = await ai.files.upload({
-      file: fileBlob,
+      file: file,  // File extends Blob, can be passed directly
       config: {
         mimeType: file.type,
         displayName: file.name,
