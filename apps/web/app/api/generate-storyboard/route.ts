@@ -1,7 +1,9 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
-import { requireAuth } from '@/lib/auth-helpers';
+import { requireAuth, getAuthenticatedUser } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +55,17 @@ export async function POST(request: NextRequest) {
     return authError;
   }
 
+  // Get authenticated user for database save
+  const user = await getAuthenticatedUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
-    const { storyboard, approvedChanges, url } = await request.json();
+    const { storyboard, approvedChanges, url, analysisJobId } = await request.json();
 
     if (!storyboard || !approvedChanges) {
       return NextResponse.json(
@@ -129,7 +140,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Save to database
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // API route - ignore cookie setting errors
+            }
+          },
+        },
+      }
+    );
+
+    // Extract searchable metadata from overview
+    const overview = storyboard.overview || {};
+    const title = overview.title || 'Untitled Storyboard';
+
+    const { data: savedStoryboard, error: saveError } = await supabase
+      .from('generated_storyboards')
+      .insert({
+        user_id: user.id,
+        analysis_job_id: analysisJobId,
+        title,
+        original_overview: storyboard.overview,
+        original_beats: storyboard.beats,
+        generated_overview: storyboard.overview,
+        generated_beats: generatedStoryboard.beats,
+        applied_changes: approvedChanges,
+        // Searchable metadata for AI
+        niche_category: overview.nicheCategory || null,
+        content_type: overview.contentType || null,
+        hook_pattern: overview.hookPattern || null,
+        video_length_seconds: overview.length || null,
+        changes_count: approvedChanges.length,
+      })
+      .select('id')
+      .single();
+
+    if (saveError) {
+      console.error('Failed to save storyboard:', saveError);
+      // Continue without failing - still return the generated data
+      // This way the user can see the result even if DB save fails
+    }
+
+    const storyboardId = savedStoryboard?.id;
+    console.log('Saved storyboard with ID:', storyboardId);
+
     return NextResponse.json({
+      storyboard_id: storyboardId,
       url,
       original: {
         overview: storyboard.overview,

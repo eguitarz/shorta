@@ -35,6 +35,10 @@ import { ExportSubtitleButton } from "@/components/ExportSubtitleButton";
 import { ExportStoryboardButton } from "@/components/ExportStoryboardButton";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { UsageLimitBanner } from "@/components/UsageLimitBanner";
+import { SeverityVoteButtons } from "@/components/SeverityVoteButtons";
+import { LearningIndicator } from "@/components/LearningIndicator";
+import { useIssuePreferences } from "@/hooks/useIssuePreferences";
+import { getSeverityColor } from "@/lib/preferences/issue-key";
 
 interface Beat {
   beatNumber: number;
@@ -242,6 +246,17 @@ export default function AnalyzerResultsPage() {
   const shouldBlur = userTier === 'anonymous';
   const shouldDisableButtons = userTier === 'anonymous';
 
+  // Issue severity preferences (for logged-in users)
+  const isLoggedIn = userTier !== 'anonymous';
+  const {
+    isLearning,
+    getEffectiveSeverity,
+    voteUp,
+    voteDown,
+    resetPreference,
+    hasPreference,
+  } = useIssuePreferences(isLoggedIn);
+
   const scrollToBeat = (beatNumber: number) => {
     // Expand beat breakdown if collapsed
     if (beatBreakdownCollapsed) {
@@ -315,6 +330,7 @@ export default function AnalyzerResultsPage() {
           storyboard: analysisData.storyboard,
           approvedChanges,
           url: videoUrl,
+          analysisJobId: jobId, // Pass job ID for database link
         }),
       });
 
@@ -325,12 +341,16 @@ export default function AnalyzerResultsPage() {
         throw new Error(errorMsg || 'Failed to generate storyboard');
       }
 
-      // Store generated data in sessionStorage
-      const generatedId = `gen_${Date.now()}`;
-      sessionStorage.setItem(`generated_${generatedId}`, JSON.stringify(data));
-
-      // Navigate to generated results page
-      router.push(`/analyzer/generate/${generatedId}`);
+      // Navigate using the database storyboard ID if available
+      // Fall back to sessionStorage for backward compatibility
+      if (data.storyboard_id) {
+        router.push(`/analyzer/generate/${data.storyboard_id}`);
+      } else {
+        // Fallback: Store in sessionStorage (if DB save failed)
+        const generatedId = `gen_${Date.now()}`;
+        sessionStorage.setItem(`generated_${generatedId}`, JSON.stringify(data));
+        router.push(`/analyzer/generate/${generatedId}`);
+      }
     } catch (err) {
       console.error('Generation error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate storyboard';
@@ -392,41 +412,107 @@ export default function AnalyzerResultsPage() {
       return;
     }
 
-    if (!stored) {
-      router.push("/analyzer/create");
+    // If sessionStorage exists, use it (old flow)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+
+        // Extract URL or fileUri - either one is valid
+        const url = parsed.url;
+        const storedFileUri = parsed.fileUri;
+        const storedFileName = parsed.fileName;
+
+        if (!url && !storedFileUri) {
+          router.push("/analyzer/create");
+          return;
+        }
+
+        if (url) {
+          setVideoUrl(url);
+        }
+        if (storedFileUri) {
+          setFileUri(storedFileUri);
+          setFileName(storedFileName || 'Uploaded video');
+        }
+
+        // If analysis is already complete, just display it
+        if (parsed.status === "complete" && parsed.storyboard) {
+          setAnalysisData(parsed);
+          setLoading(false);
+        }
+
+        // If job_id is stored, use it
+        if (parsed.job_id) {
+          setJobId(parsed.job_id);
+        }
+      } catch (err) {
+        console.error("Error loading from sessionStorage:", err);
+        router.push("/analyzer/create");
+      }
       return;
     }
 
-    try {
-      const parsed = JSON.parse(stored);
+    // No sessionStorage - check if ID is a job ID from database
+    // UUID format: 8-4-4-4-12 hex characters
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(id)) {
+      console.log('[Analyzer] ID looks like a job ID, fetching from API:', id);
+      // Set jobId - the polling effect will handle fetching the job
+      setJobId(id);
 
-      // Extract URL or fileUri - either one is valid
-      const url = parsed.url;
-      const storedFileUri = parsed.fileUri;
-      const storedFileName = parsed.fileName;
+      // Try to fetch job immediately to get video URL
+      const fetchJob = async () => {
+        try {
+          const response = await fetch(`/api/jobs/analysis/${id}`);
+          const data = await response.json();
 
-      if (!url && !storedFileUri) {
-        router.push("/analyzer/create");
-        return;
-      }
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch job');
+          }
 
-      if (url) {
-        setVideoUrl(url);
-      }
-      if (storedFileUri) {
-        setFileUri(storedFileUri);
-        setFileName(storedFileName || 'Uploaded video');
-      }
+          // Set job status and video URL
+          setJobStatus(data.status);
+          setCurrentStep(data.current_step);
+          setProgressPercent(data.progress_percent);
 
-      // If analysis is already complete, just display it
-      if (parsed.status === "complete" && parsed.storyboard) {
-        setAnalysisData(parsed);
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error("Error loading from sessionStorage:", err);
-      router.push("/analyzer/create");
+          if (data.video_url) {
+            setVideoUrl(data.video_url);
+          }
+
+          // Handle uploaded videos with file_uri
+          if (data.file_uri) {
+            setFileUri(data.file_uri);
+          }
+
+          // If job is completed, load the analysis data
+          if (data.status === 'completed' && data.storyboard) {
+            const completeData = {
+              url: data.url,
+              classification: data.classification,
+              lintSummary: data.lintSummary,
+              storyboard: data.storyboard,
+              analyzedAt: data.completed_at,
+              status: 'complete',
+            };
+            setAnalysisData(completeData);
+            setLoading(false);
+          } else {
+            // Job is still in progress, polling will handle updates
+            setLoading(false);
+          }
+        } catch (err) {
+          console.error('Failed to fetch job:', err);
+          setError(err instanceof Error ? err.message : 'Failed to load analysis');
+          setLoading(false);
+        }
+      };
+
+      fetchJob();
+      return;
     }
+
+    // Not a UUID and no sessionStorage - redirect to create
+    router.push("/analyzer/create");
   }, [params.id, router, isTrialMode]);
 
   // For trial mode, set job_id from URL params immediately
@@ -507,10 +593,14 @@ export default function AnalyzerResultsPage() {
           setAnalysesRemaining(data.analyses_remaining);
         }
 
-        // Extract video URL from job response for trial mode
+        // Extract video URL or file_uri from job response for trial mode
         if (isTrialMode && data.video_url && !videoUrl) {
           console.log('[Trial Mode] Setting video URL from job:', data.video_url);
           setVideoUrl(data.video_url);
+        }
+        if (isTrialMode && data.file_uri && !fileUri) {
+          console.log('[Trial Mode] Setting file URI from job:', data.file_uri);
+          setFileUri(data.file_uri);
         }
 
         console.log('[Frontend] Poll:', data.status, `step ${data.current_step}/${data.total_steps}`);
@@ -713,9 +803,18 @@ export default function AnalyzerResultsPage() {
       timestamp: `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`
     }))
   ) : [];
-  const criticalCount = allIssues.filter(i => i.severity === 'critical').length;
-  const moderateCount = allIssues.filter(i => i.severity === 'moderate').length;
-  const minorCount = allIssues.filter(i => i.severity === 'minor').length;
+  // Calculate effective severity counts (respecting user preferences)
+  const getIssueEffectiveSeverity = (issue: any) => {
+    return getEffectiveSeverity({
+      ruleId: issue.ruleId,
+      message: issue.message,
+      severity: issue.severity,
+    });
+  };
+  const criticalCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'critical').length;
+  const moderateCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'moderate').length;
+  const minorCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'minor').length;
+  const ignoredCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'ignored').length;
 
   const getSeverityIcon = (severity: string, className: string = "w-4 h-4") => {
     switch (severity) {
@@ -725,6 +824,8 @@ export default function AnalyzerResultsPage() {
         return <AlertTriangle className={`${className} text-orange-500`} />;
       case 'minor':
         return <InfoIcon className={`${className} text-blue-500`} />;
+      case 'ignored':
+        return <Eye className={`${className} text-gray-500`} />;
       default:
         return <CheckCircle2 className={`${className} text-green-500`} />;
     }
@@ -1148,9 +1249,8 @@ export default function AnalyzerResultsPage() {
 
                             {/* Always show metrics */}
                             <div
-                              className={`space-y-2 text-xs mb-3 ${
-                                shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                              }`}
+                              className={`space-y-2 text-xs mb-3 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                }`}
                               onClick={() => {
                                 if (shouldBlur) {
                                   setUpgradeFeature('performance-cards');
@@ -1190,9 +1290,8 @@ export default function AnalyzerResultsPage() {
                             {/* Only analysis is collapsible */}
                             {hookExpanded && (
                               <div
-                                className={`pt-3 border-t border-gray-800 ${
-                                  shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                }`}
+                                className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                  }`}
                                 onClick={() => {
                                   if (shouldBlur) {
                                     setUpgradeFeature('performance-cards');
@@ -1242,9 +1341,8 @@ export default function AnalyzerResultsPage() {
 
                             {/* Always show metrics */}
                             <div
-                              className={`space-y-2 text-xs mb-3 ${
-                                shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                              }`}
+                              className={`space-y-2 text-xs mb-3 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                }`}
                               onClick={() => {
                                 if (shouldBlur) {
                                   setUpgradeFeature('performance-cards');
@@ -1270,9 +1368,8 @@ export default function AnalyzerResultsPage() {
                             {/* Only analysis is collapsible */}
                             {structureExpanded && (
                               <div
-                                className={`pt-3 border-t border-gray-800 ${
-                                  shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                }`}
+                                className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                  }`}
                                 onClick={() => {
                                   if (shouldBlur) {
                                     setUpgradeFeature('performance-cards');
@@ -1323,9 +1420,8 @@ export default function AnalyzerResultsPage() {
 
                             {/* Always show metrics */}
                             <div
-                              className={`space-y-2 text-xs mb-3 ${
-                                shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                              }`}
+                              className={`space-y-2 text-xs mb-3 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                }`}
                               onClick={() => {
                                 if (shouldBlur) {
                                   setUpgradeFeature('performance-cards');
@@ -1351,9 +1447,8 @@ export default function AnalyzerResultsPage() {
                             {/* Only analysis is collapsible */}
                             {contentExpanded && (
                               <div
-                                className={`pt-3 border-t border-gray-800 ${
-                                  shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                }`}
+                                className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                  }`}
                                 onClick={() => {
                                   if (shouldBlur) {
                                     setUpgradeFeature('performance-cards');
@@ -1403,9 +1498,8 @@ export default function AnalyzerResultsPage() {
 
                             {/* Always show metrics */}
                             <div
-                              className={`space-y-2 text-xs mb-3 ${
-                                shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                              }`}
+                              className={`space-y-2 text-xs mb-3 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                }`}
                               onClick={() => {
                                 if (shouldBlur) {
                                   setUpgradeFeature('performance-cards');
@@ -1431,9 +1525,8 @@ export default function AnalyzerResultsPage() {
                             {/* Only analysis is collapsible */}
                             {deliveryExpanded && (
                               <div
-                                className={`pt-3 border-t border-gray-800 ${
-                                  shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                }`}
+                                className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
+                                  }`}
                                 onClick={() => {
                                   if (shouldBlur) {
                                     setUpgradeFeature('performance-cards');
@@ -1713,74 +1806,42 @@ export default function AnalyzerResultsPage() {
                         ref={(el) => { beatRefs.current[beat.beatNumber] = el; }}
                         className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5 transition-colors duration-300"
                       >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs text-gray-500 font-semibold">Beat {beat.beatNumber}</span>
-                            <button
-                              onClick={() => seekToTimestamp(beat.startTime)}
-                              className="text-xs font-mono text-gray-500 hover:text-orange-500 transition-colors hover:underline cursor-pointer"
-                              title="Click to jump to this beat"
-                            >
-                              {formatTime(beat.startTime)} - {formatTime(beat.endTime)}
-                            </button>
-                            <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs font-semibold">
-                              {beat.type}
-                            </span>
-                          </div>
-                          <h4 className="font-medium text-white mb-3">{beat.title}</h4>
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs text-gray-500 font-semibold">Beat {beat.beatNumber}</span>
+                              <button
+                                onClick={() => seekToTimestamp(beat.startTime)}
+                                className="text-xs font-mono text-gray-500 hover:text-orange-500 transition-colors hover:underline cursor-pointer"
+                                title="Click to jump to this beat"
+                              >
+                                {formatTime(beat.startTime)} - {formatTime(beat.endTime)}
+                              </button>
+                              <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs font-semibold">
+                                {beat.type}
+                              </span>
+                            </div>
+                            <h4 className="font-medium text-white mb-3">{beat.title}</h4>
 
-                          <div className="space-y-2 mb-3">
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Transcript</div>
-                              <p className="text-sm text-gray-300">"{beat.transcript}"</p>
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Visual</div>
-                              <p className="text-sm text-gray-300">{beat.visual}</p>
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Audio</div>
-                              <p className="text-sm text-gray-300">{beat.audio}</p>
+                            <div className="space-y-2 mb-3">
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Transcript</div>
+                                <p className="text-sm text-gray-300">"{beat.transcript}"</p>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Visual</div>
+                                <p className="text-sm text-gray-300">{beat.visual}</p>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Audio</div>
+                                <p className="text-sm text-gray-300">{beat.audio}</p>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <div
-                        className={`mb-3 ${
-                          shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
-                        }`}
-                        onClick={() => {
-                          if (shouldBlur && beat.beatNumber > 1) {
-                            setUpgradeFeature('performance-cards');
-                            setShowUpgradeModal(true);
-                          }
-                        }}
-                        style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                      >
-                        <div className="text-xs text-gray-500 mb-1">Retention Drop Estimate</div>
-                        <div className={`text-sm font-semibold ${beat.retention?.issues?.some(i => i.severity === 'critical')
-                          ? 'text-red-500'
-                          : beat.retention?.issues?.some(i => i.severity === 'moderate')
-                            ? 'text-orange-500'
-                            : beat.retention?.issues?.some(i => i.severity === 'minor')
-                              ? 'text-blue-500'
-                              : 'text-green-500'
-                          }`}>
-                          {beat.retention?.issues?.some(i => i.severity === 'critical')
-                            ? 'High Drop Risk'
-                            : beat.retention?.issues?.some(i => i.severity === 'moderate')
-                              ? 'Moderate Drop'
-                              : beat.retention?.issues?.some(i => i.severity === 'minor')
-                                ? 'Minor Drop'
-                                : 'Strong Retention'}
-                        </div>
-                      </div>
-                      {(beat.retention?.issues?.length ?? 0) > 0 ? (
                         <div
-                          className={`space-y-2 ${
-                            shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
-                          }`}
+                          className={`mb-3 ${shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                            }`}
                           onClick={() => {
                             if (shouldBlur && beat.beatNumber > 1) {
                               setUpgradeFeature('performance-cards');
@@ -1789,122 +1850,179 @@ export default function AnalyzerResultsPage() {
                           }}
                           style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
                         >
-                          {beat.retention?.issues?.map((issue, idx) => {
-                            const isAlreadyApproved = approvedChanges.some(
-                              change =>
-                                change.type === 'fix' &&
-                                change.beatNumber === beat.beatNumber &&
-                                change.issue?.suggestion === issue.suggestion
-                            );
+                          <div className="text-xs text-gray-500 mb-1">Retention Drop Estimate</div>
+                          <div className={`text-sm font-semibold ${beat.retention?.issues?.some(i => i.severity === 'critical')
+                            ? 'text-red-500'
+                            : beat.retention?.issues?.some(i => i.severity === 'moderate')
+                              ? 'text-orange-500'
+                              : beat.retention?.issues?.some(i => i.severity === 'minor')
+                                ? 'text-blue-500'
+                                : 'text-green-500'
+                            }`}>
+                            {beat.retention?.issues?.some(i => i.severity === 'critical')
+                              ? 'High Drop Risk'
+                              : beat.retention?.issues?.some(i => i.severity === 'moderate')
+                                ? 'Moderate Drop'
+                                : beat.retention?.issues?.some(i => i.severity === 'minor')
+                                  ? 'Minor Drop'
+                                  : 'Strong Retention'}
+                          </div>
+                        </div>
+                        {(beat.retention?.issues?.length ?? 0) > 0 ? (
+                          <div
+                            className={`space-y-2 ${shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                              }`}
+                            onClick={() => {
+                              if (shouldBlur && beat.beatNumber > 1) {
+                                setUpgradeFeature('performance-cards');
+                                setShowUpgradeModal(true);
+                              }
+                            }}
+                            style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                          >
+                            {beat.retention?.issues?.map((issue, idx) => {
+                              // Get effective severity (respecting user preferences)
+                              const effectiveSeverity = getEffectiveSeverity({
+                                ruleId: (issue as any).ruleId,
+                                message: issue.message,
+                                severity: issue.severity,
+                              });
 
-                            return (
-                              <div
-                                key={idx}
-                                className={`border rounded-lg p-4 ${
-                                  issue.severity === 'critical' ? 'border-red-500/20 bg-red-500/5' :
-                                  issue.severity === 'moderate' ? 'border-orange-500/20 bg-orange-500/5' :
-                                  'border-blue-500/20 bg-blue-500/5'
-                                }`}
-                              >
-                                <div className="flex items-start gap-3">
-                                  {/* Severity Icon */}
-                                  <div className="flex-shrink-0 mt-0.5">
-                                    {getSeverityIcon(issue.severity, "w-4 h-4")}
-                                  </div>
+                              const isAlreadyApproved = approvedChanges.some(
+                                change =>
+                                  change.type === 'fix' &&
+                                  change.beatNumber === beat.beatNumber &&
+                                  change.issue?.suggestion === issue.suggestion
+                              );
 
-                                  <div className="flex-1 min-w-0">
-                                    {/* Header: Severity + Timestamp + Rule Badge */}
-                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                      <span className={`text-[10px] font-bold uppercase ${
-                                        issue.severity === 'critical' ? 'text-red-500' :
-                                        issue.severity === 'moderate' ? 'text-orange-500' :
-                                        'text-blue-500'
-                                      }`}>
-                                        {issue.severity}
-                                      </span>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          seekToTimestamp(issue.timestamp ? parseTimestamp(issue.timestamp) : beat.startTime);
-                                        }}
-                                        className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-orange-500 transition-colors group"
-                                        title="Click to jump to this moment in the video"
-                                      >
-                                        <Clock className="w-2.5 h-2.5 group-hover:text-orange-500" />
-                                        <span className="group-hover:underline font-mono">
-                                          {issue.timestamp || `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`}
-                                        </span>
-                                      </button>
-                                      {(issue as any).ruleId ? (
-                                        <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium">
-                                          {(issue as any).ruleName || (issue as any).ruleId}
-                                        </span>
-                                      ) : (
-                                        <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-medium">
-                                          AI Analysis
-                                        </span>
-                                      )}
+                              const issueHasPreference = hasPreference({
+                                ruleId: (issue as any).ruleId,
+                                message: issue.message,
+                              });
+
+                              const severityColors = getSeverityColor(effectiveSeverity);
+                              const isIgnored = effectiveSeverity === 'ignored';
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`border rounded-lg p-4 ${severityColors.border} ${severityColors.bg} ${issueHasPreference ? 'ring-1 ring-purple-500/40' : ''
+                                    } ${isIgnored ? 'opacity-60 grayscale' : ''}`}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    {/* Severity Icon */}
+                                    <div className="flex-shrink-0 mt-0.5">
+                                      {getSeverityIcon(effectiveSeverity, "w-4 h-4")}
                                     </div>
 
-                                    {/* Issue Message */}
-                                    <p className="text-sm text-gray-200 mb-3">{issue.message}</p>
-
-                                    {/* Suggestion + Apply Fix Button */}
-                                    {issue.suggestion && (
-                                      <div className="space-y-2">
-                                        <p className="text-xs text-gray-400">
-                                          💡 {issue.suggestion}
-                                        </p>
+                                    <div className="flex-1 min-w-0">
+                                      {/* Header: Severity + Vote Buttons + Timestamp + Rule Badge */}
+                                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                        <span className={`text-[10px] font-bold uppercase ${severityColors.text}`}>
+                                          {effectiveSeverity}
+                                        </span>
+                                        {/* Severity Vote Buttons */}
+                                        <SeverityVoteButtons
+                                          currentSeverity={effectiveSeverity}
+                                          originalSeverity={issue.severity}
+                                          isLoggedIn={isLoggedIn}
+                                          onVoteUp={() => voteUp({
+                                            ruleId: (issue as any).ruleId,
+                                            message: issue.message,
+                                            severity: issue.severity,
+                                          })}
+                                          onVoteDown={() => voteDown({
+                                            ruleId: (issue as any).ruleId,
+                                            message: issue.message,
+                                            severity: issue.severity,
+                                          })}
+                                          onReset={() => resetPreference({
+                                            ruleId: (issue as any).ruleId,
+                                            message: issue.message,
+                                          })}
+                                          disabled={shouldDisableButtons}
+                                        />
                                         <button
-                                          onClick={() => {
-                                            if (shouldDisableButtons) {
-                                              setUpgradeFeature('apply-fix');
-                                              setShowUpgradeModal(true);
-                                              return;
-                                            }
-                                            if (!isAlreadyApproved) {
-                                              approveFix(beat.beatNumber, beat.title, issue);
-                                            }
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            seekToTimestamp(issue.timestamp ? parseTimestamp(issue.timestamp) : beat.startTime);
                                           }}
-                                          disabled={isAlreadyApproved}
-                                          className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${
-                                            isAlreadyApproved || shouldDisableButtons
+                                          className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-orange-500 transition-colors group"
+                                          title="Click to jump to this moment in the video"
+                                        >
+                                          <Clock className="w-2.5 h-2.5 group-hover:text-orange-500" />
+                                          <span className="group-hover:underline font-mono">
+                                            {issue.timestamp || `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`}
+                                          </span>
+                                        </button>
+                                        {(issue as any).ruleId ? (
+                                          <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium">
+                                            {(issue as any).ruleName || (issue as any).ruleId}
+                                          </span>
+                                        ) : (
+                                          <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-medium">
+                                            AI Analysis
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      {/* Issue Message */}
+                                      <p className={`text-sm mb-3 ${isIgnored ? 'text-gray-500' : 'text-gray-200'}`}>{issue.message}</p>
+
+                                      {/* Suggestion + Apply Fix Button */}
+                                      {issue.suggestion && (
+                                        <div className="space-y-2">
+                                          <p className={`text-xs ${isIgnored ? 'text-gray-600' : 'text-gray-400'}`}>
+                                            💡 {issue.suggestion}
+                                          </p>
+                                          <button
+                                            onClick={() => {
+                                              if (shouldDisableButtons) {
+                                                setUpgradeFeature('apply-fix');
+                                                setShowUpgradeModal(true);
+                                                return;
+                                              }
+                                              if (!isAlreadyApproved) {
+                                                approveFix(beat.beatNumber, beat.title, issue);
+                                              }
+                                            }}
+                                            disabled={isAlreadyApproved}
+                                            className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${isAlreadyApproved || shouldDisableButtons
                                               ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed opacity-50'
                                               : 'text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500'
-                                          }`}
-                                        >
-                                          {isAlreadyApproved ? 'Applied' : 'Apply Fix'}
-                                        </button>
-                                      </div>
-                                    )}
+                                              }`}
+                                          >
+                                            {isAlreadyApproved ? 'Applied' : 'Apply Fix'}
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div
-                          className={`flex items-start gap-3 bg-green-500/5 border border-green-500/20 rounded-lg p-4 ${
-                            shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
-                          }`}
-                          onClick={() => {
-                            if (shouldBlur && beat.beatNumber > 1) {
-                              setUpgradeFeature('performance-cards');
-                              setShowUpgradeModal(true);
-                            }
-                          }}
-                          style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                        >
-                          <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
-                            <div className="text-xs font-semibold text-green-500 uppercase mb-1">No Issues</div>
-                            <p className="text-sm text-gray-400 leading-relaxed">{beat.retention?.analysis || 'No analysis available'}</p>
+                              );
+                            })}
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        ) : (
+                          <div
+                            className={`flex items-start gap-3 bg-green-500/5 border border-green-500/20 rounded-lg p-4 ${shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                              }`}
+                            onClick={() => {
+                              if (shouldBlur && beat.beatNumber > 1) {
+                                setUpgradeFeature('performance-cards');
+                                setShowUpgradeModal(true);
+                              }
+                            }}
+                            style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                          >
+                            <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="text-xs font-semibold text-green-500 uppercase mb-1">No Issues</div>
+                              <p className="text-sm text-gray-400 leading-relaxed">{beat.retention?.analysis || 'No analysis available'}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -1926,11 +2044,10 @@ export default function AnalyzerResultsPage() {
                         handleSuggestMetadata();
                       }}
                       disabled={suggestionsLoading || shouldDisableButtons}
-                      className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-semibold transition-colors ${
-                        shouldDisableButtons
-                          ? 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50'
-                          : 'bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500'
-                      }`}
+                      className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-semibold transition-colors ${shouldDisableButtons
+                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50'
+                        : 'bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-500'
+                        }`}
                     >
                       {suggestionsLoading ? (
                         <>
@@ -2073,10 +2190,9 @@ export default function AnalyzerResultsPage() {
                               approveVariant(idx, variant);
                             }}
                             disabled={shouldDisableButtons}
-                            className={`w-full px-4 py-2 text-sm rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                              isThisVariantApproved
-                                ? 'text-green-500 bg-green-500/10 border border-green-500/30 cursor-default'
-                                : shouldDisableButtons
+                            className={`w-full px-4 py-2 text-sm rounded-lg transition-colors flex items-center justify-center gap-2 ${isThisVariantApproved
+                              ? 'text-green-500 bg-green-500/10 border border-green-500/30 cursor-default'
+                              : shouldDisableButtons
                                 ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed opacity-50'
                                 : 'text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600'
                               }`}
@@ -2219,6 +2335,9 @@ export default function AnalyzerResultsPage() {
           tier={userTier}
         />
       )}
+
+      {/* Learning Indicator - Shows when saving preferences */}
+      <LearningIndicator isVisible={isLearning} />
     </>
   );
 }

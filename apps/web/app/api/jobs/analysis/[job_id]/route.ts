@@ -182,6 +182,7 @@ function buildJobResponse(job: any) {
 
     // Metadata
     video_url: job.video_url,
+    file_uri: job.file_uri,
     created_at: job.created_at,
     updated_at: job.updated_at,
     completed_at: job.completed_at,
