@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,22 @@ import { VideoUpload } from "@/components/video-upload";
 
 type AnalyzeMode = "url" | "upload";
 
+interface Activity {
+  id: string;
+  title: string;
+  type: string;
+  timeAgo: string;
+  status: string;
+  activityType?: 'analysis' | 'generated';
+}
+
 export default function DashboardContent() {
   const router = useRouter();
   const [analyzeUrl, setAnalyzeUrl] = useState("");
   const [analyzeMode, setAnalyzeMode] = useState<AnalyzeMode>("url");
   const [topicInput, setTopicInput] = useState("");
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
 
   const handleAnalyze = () => {
     if (!analyzeUrl.trim()) return;
@@ -52,6 +63,38 @@ export default function DashboardContent() {
       router.push(`/storyboard/create?topic=${encodeURIComponent(topicInput.trim())}`);
     } else {
       router.push("/storyboard/create");
+    }
+  };
+
+  // Fetch recent activities
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setActivitiesLoading(true);
+        const response = await fetch('/api/activities/recent');
+        if (response.ok) {
+          const data = await response.json();
+          setActivities(data.activities || []);
+        } else {
+          console.error('Failed to fetch activities');
+          setActivities([]);
+        }
+      } catch (error) {
+        console.error('Error fetching activities:', error);
+        setActivities([]);
+      } finally {
+        setActivitiesLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  const handleActivityClick = (activity: Activity) => {
+    if (activity.activityType === 'generated') {
+      router.push(`/analyzer/generate/${activity.id}`);
+    } else {
+      router.push(`/analyzer/${activity.id}`);
     }
   };
 
@@ -114,8 +157,8 @@ export default function DashboardContent() {
                 <button
                   onClick={() => setAnalyzeMode("url")}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${analyzeMode === "url"
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:text-white"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-400 hover:text-white"
                     }`}
                 >
                   <Link2 className="w-3.5 h-3.5" />
@@ -124,8 +167,8 @@ export default function DashboardContent() {
                 <button
                   onClick={() => setAnalyzeMode("upload")}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${analyzeMode === "upload"
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:text-white"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-400 hover:text-white"
                     }`}
                 >
                   <Upload className="w-3.5 h-3.5" />
@@ -215,41 +258,37 @@ export default function DashboardContent() {
             </div>
 
             <div className="space-y-1">
-              {/* Activity Item 1 */}
-              <button className="w-full flex items-center gap-4 p-4 hover:bg-gray-800/50 rounded-lg transition-colors group">
-                <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <BarChart3 className="w-5 h-5 text-orange-500" />
+              {activitiesLoading ? (
+                <div className="text-center py-8 text-gray-500">
+                  Loading activities...
                 </div>
-                <div className="flex-1 text-left">
-                  <div className="font-medium mb-1">How to edit 10x faster</div>
-                  <div className="text-sm text-gray-500">Analysis • 2 hours ago</div>
+              ) : activities.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No recent activities. Start by analyzing a video!
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-gray-400" />
-              </button>
-
-              {/* Activity Item 2 */}
-              <button className="w-full flex items-center gap-4 p-4 hover:bg-gray-800/50 rounded-lg transition-colors group">
-                <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Hammer className="w-5 h-5 text-purple-500" />
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="font-medium mb-1">Crypto News Weekly</div>
-                  <div className="text-sm text-gray-500">Draft • Yesterday</div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-gray-400" />
-              </button>
-
-              {/* Activity Item 3 */}
-              <button className="w-full flex items-center gap-4 p-4 hover:bg-gray-800/50 rounded-lg transition-colors group">
-                <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <BarChart3 className="w-5 h-5 text-orange-500" />
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="font-medium mb-1">My desk setup tour 2024</div>
-                  <div className="text-sm text-gray-500">Analysis • 2 days ago</div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-gray-400" />
-              </button>
+              ) : (
+                activities.map((activity) => (
+                  <button
+                    key={activity.id}
+                    onClick={() => handleActivityClick(activity)}
+                    className="w-full flex items-center gap-4 p-4 hover:bg-gray-800/50 rounded-lg transition-colors group"
+                  >
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${activity.activityType === 'generated' ? 'bg-purple-500/10' : 'bg-orange-500/10'
+                      }`}>
+                      {activity.activityType === 'generated' ? (
+                        <Hammer className="w-5 h-5 text-purple-500" />
+                      ) : (
+                        <BarChart3 className="w-5 h-5 text-orange-500" />
+                      )}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-medium mb-1">{activity.title}</div>
+                      <div className="text-sm text-gray-500">{activity.type} • {activity.timeAgo}</div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-gray-400" />
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>

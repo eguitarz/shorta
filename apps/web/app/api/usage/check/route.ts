@@ -4,6 +4,9 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { hashIP, getClientIp } from '@/lib/ip-hash';
 
+// Force dynamic rendering since this route uses cookies
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/usage/check
  * Check current usage limits for a user or anonymous IP
