@@ -204,7 +204,7 @@ export default function AnalyzerResultsPage() {
   const [error, setError] = useState<string | null>(null);
   const [hookExpanded, setHookExpanded] = useState(false);
   const [structureExpanded, setStructureExpanded] = useState(false);
-  const [contentExpanded, setContentExpanded] = useState(false);
+  const [clarityExpanded, setClarityExpanded] = useState(false);
   const [deliveryExpanded, setDeliveryExpanded] = useState(false);
 
   // Async job state
@@ -816,6 +816,23 @@ export default function AnalyzerResultsPage() {
   const minorCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'minor').length;
   const ignoredCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'ignored').length;
 
+  // Group issues by message to deduplicate same rules across beats
+  const groupedIssues = allIssues.reduce((acc, issue) => {
+    const key = issue.message?.toLowerCase().trim() || '';
+    if (!acc[key]) {
+      acc[key] = {
+        ...issue,
+        beatNumbers: [issue.beatNumber],
+        firstBeatNumber: issue.beatNumber,
+      };
+    } else {
+      acc[key].beatNumbers.push(issue.beatNumber);
+    }
+    return acc;
+  }, {} as Record<string, any>);
+
+  const groupedIssuesList = Object.values(groupedIssues);
+
   const getSeverityIcon = (severity: string, className: string = "w-4 h-4") => {
     switch (severity) {
       case 'critical':
@@ -831,33 +848,22 @@ export default function AnalyzerResultsPage() {
     }
   };
 
-  // Badge helpers for dynamic labels based on scores
-  const getHookBadge = (score: number) => {
-    if (score <= 25) return { label: 'Weak', color: 'red' };
-    if (score <= 50) return { label: 'Moderate', color: 'yellow' };
-    if (score <= 75) return { label: 'Good', color: 'orange' };
-    return { label: 'Strong', color: 'green' };
+  // Letter grade helpers for scores
+  // S: 100+, A: 80-99, B: 70-79, C: 60-69, D: 50-59, F: <50
+  const getLetterGrade = (score: number) => {
+    if (score >= 100) return { label: 'S', color: 'purple', comment: 'Viral Ready' };
+    if (score >= 80) return { label: 'A', color: 'green', comment: 'Strong Performance' };
+    if (score >= 70) return { label: 'B', color: 'blue', comment: 'Solid Foundation' };
+    if (score >= 60) return { label: 'C', color: 'yellow', comment: 'Room to Improve' };
+    if (score >= 50) return { label: 'D', color: 'orange', comment: 'Needs Attention' };
+    return { label: 'F', color: 'red', comment: 'Major Rework Needed' };
   };
 
-  const getStructureBadge = (score: number) => {
-    if (score <= 25) return { label: 'Choppy', color: 'red' };
-    if (score <= 50) return { label: 'Uneven', color: 'yellow' };
-    if (score <= 75) return { label: 'Well-Paced', color: 'blue' };
-    return { label: 'Excellent', color: 'green' };
-  };
-
-  const getContentBadge = (score: number) => {
-    if (score <= 25) return { label: 'Low Value', color: 'red' };
-    if (score <= 50) return { label: 'Some Value', color: 'yellow' };
-    if (score <= 75) return { label: 'High Value', color: 'green' };
-    return { label: 'Exceptional', color: 'emerald' };
-  };
-
-  const getDeliveryBadge = (score: number) => {
-    if (score <= 25) return { label: 'Flat', color: 'red' };
-    if (score <= 50) return { label: 'Adequate', color: 'yellow' };
-    if (score <= 75) return { label: 'Engaging', color: 'purple' };
-    return { label: 'Captivating', color: 'pink' };
+  // Special clarity grading: Clear (≥75), Somewhat (50-74), Unclear (<50)
+  const getClarityGrade = (score: number) => {
+    if (score >= 75) return { label: 'Clear', color: 'green' };
+    if (score >= 50) return { label: 'Somewhat', color: 'yellow' };
+    return { label: 'Unclear', color: 'red' };
   };
 
   // Render analysis text with bullet points (clean, no bold)
@@ -1122,19 +1128,23 @@ export default function AnalyzerResultsPage() {
                                 </ul>
                               </div>
                               <p className="pt-2 border-t border-gray-800 text-[11px]">
-                                The 4 performance cards below (<span className="text-orange-400">Hook</span>, <span className="text-green-400">Structure</span>, <span className="text-purple-400">Content</span>, <span className="text-blue-400">Delivery</span>) are separate AI-evaluated metrics based on video analysis.
+                                The 4 performance cards below (<span className="text-orange-400">Hook</span>, <span className="text-green-400">Structure</span>, <span className="text-purple-400">Clarity</span>, <span className="text-blue-400">Delivery</span>) are AI-evaluated grades: <span className="text-purple-500">S</span> (100+), <span className="text-green-500">A</span> (80-99), <span className="text-blue-500">B</span> (70-79), <span className="text-yellow-500">C</span> (60-69), <span className="text-orange-500">D</span> (50-59), <span className="text-red-500">F</span> (&lt;50).
                               </p>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-baseline gap-2 mb-3">
-                        <span className="text-3xl font-bold">{analysisData ? Math.round(analysisData.lintSummary.score) : 0}</span>
-                        <span className="text-lg text-gray-500">/100</span>
-                        {analysisData && (analysisData.lintSummary as any).bonusPoints > 0 && (
-                          <span className="text-sm text-green-400 font-medium">+{(analysisData.lintSummary as any).bonusPoints}</span>
-                        )}
-                      </div>
+                      {(() => {
+                        if (!analysisData) return null;
+                        const score = Math.round(analysisData.lintSummary.score);
+                        const grade = getLetterGrade(score);
+                        return (
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className={`text-4xl font-bold text-${grade.color}-500`}>{grade.label}</span>
+                            <span className={`text-sm text-${grade.color}-400`}>{grade.comment}</span>
+                          </div>
+                        );
+                      })()}
                       {analysisData && (analysisData.lintSummary as any).bonusPoints > 0 && (analysisData.lintSummary as any).bonusDetails && (
                         <div className="mb-3 p-2 bg-green-500/5 border border-green-500/20 rounded-lg">
                           <div className="text-[10px] text-green-500 uppercase tracking-wider font-semibold mb-1">Bonus Points</div>
@@ -1233,18 +1243,11 @@ export default function AnalyzerResultsPage() {
                       {(() => {
                         if (!analysisData) return null;
                         const hookScore = Math.min(Math.round(analysisData.storyboard.performance.hookStrength), 100);
-                        const badge = getHookBadge(hookScore);
+                        const grade = getLetterGrade(hookScore);
                         return (
                           <>
-                            <div className="flex items-baseline gap-1 mb-2">
-                              <span className="text-2xl font-bold">{hookScore}</span>
-                              <span className="text-sm text-gray-500">/100</span>
-                              <span className={`ml-auto px-1.5 py-0.5 bg-${badge.color}-500/10 text-${badge.color}-500 rounded text-[9px] font-semibold uppercase`}>
-                                {badge.label}
-                              </span>
-                            </div>
-                            <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
-                              <div className="h-full bg-orange-500 rounded-full" style={{ width: `${hookScore}%` }}></div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</span>
                             </div>
 
                             {/* Always show metrics */}
@@ -1325,18 +1328,11 @@ export default function AnalyzerResultsPage() {
                       {(() => {
                         if (!analysisData) return null;
                         const structureScore = Math.min(Math.round(analysisData.storyboard.performance.structurePacing), 100);
-                        const badge = getStructureBadge(structureScore);
+                        const grade = getLetterGrade(structureScore);
                         return (
                           <>
-                            <div className="flex items-baseline gap-1 mb-2">
-                              <span className="text-2xl font-bold">{structureScore}</span>
-                              <span className="text-sm text-gray-500">/100</span>
-                              <span className={`ml-auto px-1.5 py-0.5 bg-${badge.color}-500/10 text-${badge.color}-500 rounded text-[9px] font-semibold uppercase`}>
-                                {badge.label}
-                              </span>
-                            </div>
-                            <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
-                              <div className="h-full bg-orange-500 rounded-full" style={{ width: `${structureScore}%` }}></div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</span>
                             </div>
 
                             {/* Always show metrics */}
@@ -1386,36 +1382,29 @@ export default function AnalyzerResultsPage() {
                       })()}
                     </div>
 
-                    {/* Content Card */}
+                    {/* Clarity Card */}
                     <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
                       <div className="flex items-center gap-1.5 mb-2">
                         <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Content</span>
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Clarity</span>
                         <button
-                          onClick={() => setContentExpanded(!contentExpanded)}
+                          onClick={() => setClarityExpanded(!clarityExpanded)}
                           className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
                         >
-                          {contentExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
+                          {clarityExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                         </button>
                       </div>
                       {(() => {
                         if (!analysisData) return null;
-                        // Calculate content score from average of valueClarity and uniqueness
-                        const contentScore = Math.min(Math.round((analysisData.storyboard.performance.content.valueClarity + analysisData.storyboard.performance.content.uniqueness) / 2), 100);
-                        const badge = getContentBadge(contentScore);
+                        // Use valueClarity for the clarity grade
+                        const clarityScore = analysisData.storyboard.performance.content.valueClarity;
+                        const grade = getClarityGrade(clarityScore);
                         return (
                           <>
-                            <div className="flex items-baseline gap-1 mb-2">
-                              <span className="text-2xl font-bold">{contentScore}</span>
-                              <span className="text-sm text-gray-500">/100</span>
-                              <span className={`ml-auto px-1.5 py-0.5 bg-${badge.color}-500/10 text-${badge.color}-500 rounded text-[9px] font-semibold uppercase`}>
-                                {badge.label}
-                              </span>
-                            </div>
-                            <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
-                              <div className="h-full bg-orange-500 rounded-full" style={{ width: `${contentScore}%` }}></div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className={`text-xl font-bold text-${grade.color}-500`}>{grade.label}</span>
                             </div>
 
                             {/* Always show metrics */}
@@ -1434,18 +1423,10 @@ export default function AnalyzerResultsPage() {
                                 <span className="text-gray-500">Content Type</span>
                                 <span className="text-white font-semibold">{analysisData.storyboard.performance.content.contentType}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Value Clarity</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.content.valueClarity}/100</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Uniqueness</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.content.uniqueness}/100</span>
-                              </div>
                             </div>
 
                             {/* Only analysis is collapsible */}
-                            {contentExpanded && (
+                            {clarityExpanded && (
                               <div
                                 className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
                                   }`}
@@ -1482,18 +1463,11 @@ export default function AnalyzerResultsPage() {
                       {(() => {
                         if (!analysisData) return null;
                         const deliveryScore = Math.min(Math.round(analysisData.storyboard.performance.deliveryPerformance), 100);
-                        const badge = getDeliveryBadge(deliveryScore);
+                        const grade = getLetterGrade(deliveryScore);
                         return (
                           <>
-                            <div className="flex items-baseline gap-1 mb-2">
-                              <span className="text-2xl font-bold">{deliveryScore}</span>
-                              <span className="text-sm text-gray-500">/100</span>
-                              <span className={`ml-auto px-1.5 py-0.5 bg-${badge.color}-500/10 text-${badge.color}-500 rounded text-[9px] font-semibold uppercase`}>
-                                {badge.label}
-                              </span>
-                            </div>
-                            <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-3">
-                              <div className="h-full bg-orange-500 rounded-full" style={{ width: `${deliveryScore}%` }}></div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</span>
                             </div>
 
                             {/* Always show metrics */}
@@ -1561,12 +1535,12 @@ export default function AnalyzerResultsPage() {
                       <span className="text-sm text-gray-500">(Do these first)</span>
                     </div>
                     <div className="space-y-2">
-                      {allIssues
+                      {groupedIssuesList
                         .filter(i => i.severity === 'critical')
                         .map((issue, idx) => (
                           <button
                             key={idx}
-                            onClick={() => scrollToBeat(issue.beatNumber)}
+                            onClick={() => scrollToBeat(issue.firstBeatNumber)}
                             className="w-full text-left bg-red-500/5 border border-red-500/20 rounded-lg p-4 hover:bg-red-500/10 transition-colors group"
                           >
                             <div className="flex items-start gap-3">
@@ -1575,9 +1549,11 @@ export default function AnalyzerResultsPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs font-mono text-gray-500">Beat {issue.beatNumber}</span>
-                                  <span className="text-xs text-gray-600">•</span>
-                                  <span className="text-xs text-gray-500">{issue.beatTitle}</span>
+                                  <span className="text-xs font-mono text-gray-500">
+                                    {issue.beatNumbers.length > 1
+                                      ? `Beats ${issue.beatNumbers.join(', ')}`
+                                      : `Beat ${issue.beatNumbers[0]}`}
+                                  </span>
                                 </div>
                                 <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
                                 {issue.suggestion && (
@@ -1606,12 +1582,12 @@ export default function AnalyzerResultsPage() {
                       <h4 className="text-base font-semibold text-orange-500">SECONDARY IMPROVEMENTS</h4>
                     </div>
                     <div className="space-y-2">
-                      {allIssues
+                      {groupedIssuesList
                         .filter(i => i.severity === 'moderate')
                         .map((issue, idx) => (
                           <button
                             key={idx}
-                            onClick={() => scrollToBeat(issue.beatNumber)}
+                            onClick={() => scrollToBeat(issue.firstBeatNumber)}
                             className="w-full text-left bg-orange-500/5 border border-orange-500/20 rounded-lg p-4 hover:bg-orange-500/10 transition-colors group"
                           >
                             <div className="flex items-start gap-3">
@@ -1620,9 +1596,11 @@ export default function AnalyzerResultsPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs font-mono text-gray-500">Beat {issue.beatNumber}</span>
-                                  <span className="text-xs text-gray-600">•</span>
-                                  <span className="text-xs text-gray-500">{issue.beatTitle}</span>
+                                  <span className="text-xs font-mono text-gray-500">
+                                    {issue.beatNumbers.length > 1
+                                      ? `Beats ${issue.beatNumbers.join(', ')}`
+                                      : `Beat ${issue.beatNumbers[0]}`}
+                                  </span>
                                 </div>
                                 <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
                                 {issue.suggestion && (
@@ -1651,12 +1629,12 @@ export default function AnalyzerResultsPage() {
                       <h4 className="text-base font-semibold text-blue-500">OPTIONAL POLISH</h4>
                     </div>
                     <div className="space-y-2">
-                      {allIssues
+                      {groupedIssuesList
                         .filter(i => i.severity === 'minor')
                         .map((issue, idx) => (
                           <button
                             key={idx}
-                            onClick={() => scrollToBeat(issue.beatNumber)}
+                            onClick={() => scrollToBeat(issue.firstBeatNumber)}
                             className="w-full text-left bg-blue-500/5 border border-blue-500/20 rounded-lg p-4 hover:bg-blue-500/10 transition-colors group"
                           >
                             <div className="flex items-start gap-3">
@@ -1665,9 +1643,11 @@ export default function AnalyzerResultsPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs font-mono text-gray-500">Beat {issue.beatNumber}</span>
-                                  <span className="text-xs text-gray-600">•</span>
-                                  <span className="text-xs text-gray-500">{issue.beatTitle}</span>
+                                  <span className="text-xs font-mono text-gray-500">
+                                    {issue.beatNumbers.length > 1
+                                      ? `Beats ${issue.beatNumbers.join(', ')}`
+                                      : `Beat ${issue.beatNumbers[0]}`}
+                                  </span>
                                 </div>
                                 <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
                                 {issue.suggestion && (
