@@ -119,12 +119,20 @@ export async function POST(request: NextRequest) {
         throw new Error('Invalid classification result');
       }
     } catch (error) {
-      console.error('Classification error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to classify video format';
-      return NextResponse.json(
-        { error: `Classification failed: ${errorMessage}` },
-        { status: 500 }
-      );
+      console.error('Classification error, using fallback:', error);
+      
+      // Fallback to 'other' format with generic rules - don't block analysis
+      classification = {
+        format: 'other' as const,
+        confidence: 0,
+        evidence: ['Classification failed - using generic rules'],
+        fallback: {
+          format: 'other' as const,
+          confidence: 0,
+        },
+      };
+      
+      console.log('Using fallback classification:', JSON.stringify(classification, null, 2));
     }
 
     // Step 2: Run linter based on format

@@ -30,7 +30,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily' as const,
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/tools`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    },
   ]
+
+  // SEO landing pages under /tools
+  const seoPages = [
+    'youtube-shorts-analytics-tool',
+    'grammarly-for-youtube-shorts',
+    'why-my-youtube-shorts-get-low-views',
+    'youtube-shorts-retention-analysis',
+    'youtube-shorts-hook-analysis',
+    'improve-youtube-shorts-retention',
+    'youtube-shorts-feedback-tool',
+    'ai-tool-for-youtube-shorts',
+    'youtube-shorts-script-optimization',
+    'analyze-youtube-shorts',
+  ].map(slug => ({
+    url: `${baseUrl}/tools/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }))
 
   // Blog posts
   const posts = getAllPosts()
@@ -50,5 +75,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }))
 
-  return [...staticPages, ...blogPosts, ...categoryPages]
+  return [...staticPages, ...seoPages, ...blogPosts, ...categoryPages]
 }
