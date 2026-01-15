@@ -63,11 +63,17 @@ export async function POST(request: NextRequest) {
       try {
         classification = await (client as any).classifyVideo(url, undefined, cachedContent?.name);
       } catch (error) {
-        console.error('Classification error:', error);
-        return NextResponse.json(
-          { error: 'Failed to classify video format' },
-          { status: 500 }
-        );
+        console.error('Classification error, using fallback:', error);
+        // Fallback to 'other' format - don't block analysis
+        classification = {
+          format: 'other' as const,
+          confidence: 0,
+          evidence: ['Classification failed - using generic rules'],
+          fallback: {
+            format: 'other' as const,
+            confidence: 0,
+          },
+        };
       }
     }
 

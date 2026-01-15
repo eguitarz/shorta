@@ -45,6 +45,11 @@ export async function processLinting(jobId: string) {
 
     console.log(`[Linting] Processing video: ${videoSource}`);
     console.log(`[Linting] Format: ${job.classification_result.format}`);
+    
+    // Log if using fallback format (from classification failure)
+    if (job.classification_result.confidence === 0 && job.classification_result.evidence?.includes('Classification failed')) {
+      console.log(`[Linting] Using generic rules due to classification failure`);
+    }
 
     // Create LLM client
     const env: LLMEnv = {

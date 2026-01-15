@@ -52,12 +52,29 @@ export async function processClassification(jobId: string) {
     }
 
     // Run classification (5-10s)
-    const classification = await client.classifyVideo(videoSource);
+    let classification;
+    try {
+      classification = await client.classifyVideo(videoSource);
+      console.log(`[Classification] Result:`, JSON.stringify(classification, null, 2));
 
-    console.log(`[Classification] Result:`, JSON.stringify(classification, null, 2));
-
-    if (!classification || !classification.format) {
-      throw new Error('Invalid classification result: missing format');
+      if (!classification || !classification.format) {
+        throw new Error('Invalid classification result: missing format');
+      }
+    } catch (error) {
+      console.error(`[Classification] Classification failed for job ${jobId}, using fallback:`, error);
+      
+      // Fallback to 'other' format with generic rules - don't block analysis
+      classification = {
+        format: 'other' as const,
+        confidence: 0,
+        evidence: ['Classification failed - using generic rules'],
+        fallback: {
+          format: 'other' as const,
+          confidence: 0,
+        },
+      };
+      
+      console.log(`[Classification] Using fallback classification:`, JSON.stringify(classification, null, 2));
     }
 
     // Store result and advance to step 1
@@ -80,7 +97,8 @@ export async function processClassification(jobId: string) {
   } catch (error) {
     console.error(`[Classification] Error for job ${jobId}:`, error);
 
-    // Update job with error status
+    // Only fail if it's not a classification error (e.g., database error)
+    // Classification errors should have been handled above with fallback
     const errorMessage = error instanceof Error ? error.message : 'Classification failed';
 
     await supabase

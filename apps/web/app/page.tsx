@@ -289,6 +289,7 @@ export default function HomePage() {
       <Footer
         items={[
           { text: "© Shorta", variant: "muted" },
+          { text: "Tools", href: "/tools" },
           { text: "Blog", href: "/blog" },
           { text: "Pricing", href: "/pricing" },
           { text: "Privacy", href: "/privacy" },
