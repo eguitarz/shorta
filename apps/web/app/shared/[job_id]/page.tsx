@@ -308,6 +308,24 @@ export default function SharedAnalysisPage() {
     }
   };
 
+  // Letter grade helpers for scores
+  // S: 100+, A: 80-99, B: 70-79, C: 60-69, D: 50-59, F: <50
+  const getLetterGrade = (score: number) => {
+    if (score >= 100) return { label: 'S', color: 'purple', comment: 'Viral Ready' };
+    if (score >= 80) return { label: 'A', color: 'green', comment: 'Strong Performance' };
+    if (score >= 70) return { label: 'B', color: 'blue', comment: 'Solid Foundation' };
+    if (score >= 60) return { label: 'C', color: 'yellow', comment: 'Room to Improve' };
+    if (score >= 50) return { label: 'D', color: 'orange', comment: 'Needs Attention' };
+    return { label: 'F', color: 'red', comment: 'Major Rework Needed' };
+  };
+
+  // Special clarity grading: Clear (≥75), Somewhat (50-74), Unclear (<50)
+  const getClarityGrade = (score: number) => {
+    if (score >= 75) return { label: 'Clear', color: 'green' };
+    if (score >= 50) return { label: 'Somewhat', color: 'yellow' };
+    return { label: 'Unclear', color: 'red' };
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
       {/* Read-Only Banner */}
@@ -362,10 +380,16 @@ export default function SharedAnalysisPage() {
               <h3 className="text-lg font-semibold">Overall Score</h3>
               <InfoIcon className="w-4 h-4 text-gray-500" />
             </div>
-            <div className="text-6xl font-bold text-orange-500 mb-2">
-              {analysis.lintSummary.score}
-              <span className="text-2xl text-gray-500">/100</span>
-            </div>
+            {(() => {
+              const score = Math.round(analysis.lintSummary.score);
+              const grade = getLetterGrade(score);
+              return (
+                <div className="flex items-center gap-3 mb-2">
+                  <span className={`text-5xl font-bold text-${grade.color}-500`}>{grade.label}</span>
+                  <span className={`text-sm text-${grade.color}-400`}>{grade.comment}</span>
+                </div>
+              );
+            })()}
             <p className="text-sm text-gray-400 mb-6">
               {analysis.lintSummary.totalIssues || 0} issues found across{' '}
               {analysis.storyboard.beats.length} beats
@@ -429,36 +453,62 @@ export default function SharedAnalysisPage() {
 
         {/* Performance Cards */}
         <div className="grid grid-cols-4 gap-4 mb-8">
-          {[
-            {
-              title: 'Hook',
-              score: analysis.storyboard.performance.hookStrength,
-              icon: Lightbulb,
-            },
-            {
-              title: 'Structure',
-              score: analysis.storyboard.performance.structurePacing,
-              icon: Clock,
-            },
-            {
-              title: 'Content',
-              score: analysis.storyboard.performance.content.valueClarity,
-              icon: CheckCircle2,
-            },
-            {
-              title: 'Delivery',
-              score: analysis.storyboard.performance.deliveryPerformance,
-              icon: Heart,
-            },
-          ].map((card) => (
-            <div key={card.title} className="bg-gray-900 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <card.icon className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-400">{card.title}</span>
+          {/* Hook Card */}
+          {(() => {
+            const score = Math.round(analysis.storyboard.performance.hookStrength);
+            const grade = getLetterGrade(score);
+            return (
+              <div className="bg-gray-900 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Lightbulb className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-400">Hook</span>
+                </div>
+                <div className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</div>
               </div>
-              <div className="text-2xl font-bold">{card.score}%</div>
-            </div>
-          ))}
+            );
+          })()}
+          {/* Structure Card */}
+          {(() => {
+            const score = Math.round(analysis.storyboard.performance.structurePacing);
+            const grade = getLetterGrade(score);
+            return (
+              <div className="bg-gray-900 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-400">Structure</span>
+                </div>
+                <div className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</div>
+              </div>
+            );
+          })()}
+          {/* Clarity Card */}
+          {(() => {
+            const score = analysis.storyboard.performance.content.valueClarity;
+            const grade = getClarityGrade(score);
+            return (
+              <div className="bg-gray-900 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-400">Clarity</span>
+                </div>
+                <div className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</div>
+              </div>
+            );
+          })()}
+          {/* Delivery Card */}
+          {(() => {
+            const score = Math.round(analysis.storyboard.performance.deliveryPerformance);
+            const grade = getLetterGrade(score);
+            return (
+              <div className="bg-gray-900 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-400">Delivery</span>
+                </div>
+                <div className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Video Metadata */}
@@ -521,11 +571,10 @@ export default function SharedAnalysisPage() {
                     </p>
                   </div>
                   <div
-                    className={`px-3 py-1 rounded-lg text-sm ${
-                      beat.retention.level === 'minimal_drop'
-                        ? 'bg-green-500/10 text-green-500'
-                        : 'bg-red-500/10 text-red-500'
-                    }`}
+                    className={`px-3 py-1 rounded-lg text-sm ${beat.retention.level === 'minimal_drop'
+                      ? 'bg-green-500/10 text-green-500'
+                      : 'bg-red-500/10 text-red-500'
+                      }`}
                   >
                     {beat.retention.level.replace('_', ' ')}
                   </div>
