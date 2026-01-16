@@ -866,6 +866,15 @@ export default function AnalyzerResultsPage() {
     return { label: 'Unclear', color: 'red' };
   };
 
+  // Convert metric scores to descriptive words
+  const getMetricLabel = (score: number) => {
+    if (score >= 80) return { label: 'Excellent', color: 'green' };
+    if (score >= 60) return { label: 'Good', color: 'blue' };
+    if (score >= 40) return { label: 'Fair', color: 'yellow' };
+    if (score >= 20) return { label: 'Weak', color: 'orange' };
+    return { label: 'Poor', color: 'red' };
+  };
+
   // Render analysis text with bullet points (clean, no bold)
   const renderAnalysis = (text: string) => {
     // Split by newlines and filter empty lines
@@ -1100,33 +1109,20 @@ export default function AnalyzerResultsPage() {
                               <ul className="space-y-1 pl-3">
                                 <li className="flex items-start gap-1.5">
                                   <span className="text-red-500 mt-0.5">•</span>
-                                  <span><span className="text-red-500 font-medium">Critical</span> violations: -10 points each</span>
+                                  <span><span className="text-red-500 font-medium">Critical</span> violations lower your grade significantly</span>
                                 </li>
                                 <li className="flex items-start gap-1.5">
                                   <span className="text-orange-500 mt-0.5">•</span>
-                                  <span><span className="text-orange-500 font-medium">Moderate</span> violations: -5 points each</span>
+                                  <span><span className="text-orange-500 font-medium">Moderate</span> violations have a medium impact</span>
                                 </li>
                                 <li className="flex items-start gap-1.5">
                                   <span className="text-blue-500 mt-0.5">•</span>
-                                  <span><span className="text-blue-500 font-medium">Minor</span> violations: -2 points each</span>
+                                  <span><span className="text-blue-500 font-medium">Minor</span> violations have a small impact</span>
                                 </li>
                               </ul>
                               <p className="pt-2 border-t border-gray-800 text-[11px] text-gray-400">
-                                <span className="font-medium text-gray-300">Note:</span> Each rule type only counts once for scoring, even if it appears in multiple beats.
+                                <span className="font-medium text-gray-300">Note:</span> Each rule type only counts once, even if it appears in multiple beats.
                               </p>
-                              <div className="pt-2 border-t border-gray-800">
-                                <p className="text-[11px] font-medium text-green-400 mb-1">Bonus Points (can exceed 100):</p>
-                                <ul className="space-y-1 pl-3 text-[11px]">
-                                  <li className="flex items-start gap-1.5">
-                                    <span className="text-green-400 mt-0.5">+</span>
-                                    <span className="text-gray-400">Perfect beat (no issues): <span className="text-green-400">+2 points</span></span>
-                                  </li>
-                                  <li className="flex items-start gap-1.5">
-                                    <span className="text-green-400 mt-0.5">+</span>
-                                    <span className="text-gray-400">Strong hook (≥80%): <span className="text-green-400">+5 points</span></span>
-                                  </li>
-                                </ul>
-                              </div>
                               <p className="pt-2 border-t border-gray-800 text-[11px]">
                                 The 4 performance cards below (<span className="text-orange-400">Hook</span>, <span className="text-green-400">Structure</span>, <span className="text-purple-400">Clarity</span>, <span className="text-blue-400">Delivery</span>) are AI-evaluated grades: <span className="text-purple-500">S</span> (100+), <span className="text-green-500">A</span> (80-99), <span className="text-blue-500">B</span> (70-79), <span className="text-yellow-500">C</span> (60-69), <span className="text-orange-500">D</span> (50-59), <span className="text-red-500">F</span> (&lt;50).
                               </p>
@@ -1145,16 +1141,27 @@ export default function AnalyzerResultsPage() {
                           </div>
                         );
                       })()}
-                      {analysisData && (analysisData.lintSummary as any).bonusPoints > 0 && (analysisData.lintSummary as any).bonusDetails && (
-                        <div className="mb-3 p-2 bg-green-500/5 border border-green-500/20 rounded-lg">
-                          <div className="text-[10px] text-green-500 uppercase tracking-wider font-semibold mb-1">Bonus Points</div>
-                          <div className="space-y-0.5">
-                            {(analysisData.lintSummary as any).bonusDetails.map((detail: string, idx: number) => (
-                              <div key={idx} className="text-xs text-green-400">+{detail}</div>
-                            ))}
+                      {(() => {
+                        if (!analysisData) return null;
+                        // Count perfect beats (no issues)
+                        const perfectBeats = analysisData.storyboard.beats.filter(
+                          (beat: any) => !beat.retention?.issues || beat.retention.issues.length === 0
+                        ).length;
+                        const totalBeats = analysisData.storyboard.beats.length;
+
+                        if (perfectBeats === 0) return null;
+
+                        return (
+                          <div className="mb-3 p-2 bg-green-500/5 border border-green-500/20 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <span className="text-green-500 text-lg">✓</span>
+                              <span className="text-sm text-green-400">
+                                {perfectBeats} of {totalBeats} beats perfect
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
                       <div className="pt-3 border-t border-gray-800">
                         <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Director's Take</div>
                         <div className="text-xs text-gray-400 leading-relaxed space-y-2">
@@ -1268,11 +1275,11 @@ export default function AnalyzerResultsPage() {
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Viral Pattern</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.viralPattern}/100</span>
+                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).label}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Loop Strength</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.hook.loopStrength}/100</span>
+                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).label}</span>
                               </div>
                             </div>
 
@@ -1353,11 +1360,11 @@ export default function AnalyzerResultsPage() {
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Pacing Consistency</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.structure.pacingConsistency}/100</span>
+                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).label}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Payoff Timing</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.structure.payoffTiming}/100</span>
+                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).label}</span>
                               </div>
                             </div>
 
@@ -1484,15 +1491,15 @@ export default function AnalyzerResultsPage() {
                             >
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Energy Level</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.energyLevel}/100</span>
+                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.energyLevel).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.energyLevel).label}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Vocal Clarity</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.vocalClarity}/100</span>
+                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.vocalClarity).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.vocalClarity).label}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">Presence</span>
-                                <span className="text-gray-300 font-semibold">{analysisData.storyboard.performance.delivery.presence}/100</span>
+                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.presence).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.presence).label}</span>
                               </div>
                             </div>
 
