@@ -69,9 +69,27 @@ export async function GET(request: NextRequest) {
 		);
 
 		// Fetch recent analysis jobs (up to 5)
+		// Include generated score columns for fast access without JSONB extraction
 		const { data: jobs, error: jobsError } = await supabase
 			.from('analysis_jobs')
-			.select('id, status, video_url, file_uri, created_at, storyboard_result, classification_result')
+			.select(`
+				id,
+				status,
+				video_url,
+				file_uri,
+				created_at,
+				storyboard_result,
+				classification_result,
+				deterministic_score,
+				hook_strength,
+				structure_pacing,
+				delivery_performance,
+				value_clarity,
+				video_format,
+				hook_category,
+				niche_category,
+				content_type
+			`)
 			.eq('user_id', user.id)
 			.order('created_at', { ascending: false })
 			.limit(5);
@@ -120,6 +138,20 @@ export async function GET(request: NextRequest) {
 				status: job.status,
 				activityType: 'analysis' as const,
 				createdAt: job.created_at,
+				// Include score metrics (from generated columns)
+				scores: job.status === 'completed' ? {
+					overall: job.deterministic_score,
+					hook: job.hook_strength,
+					structure: job.structure_pacing,
+					delivery: job.delivery_performance,
+					clarity: job.value_clarity,
+				} : undefined,
+				metadata: {
+					format: job.video_format,
+					hookCategory: job.hook_category,
+					niche: job.niche_category,
+					contentType: job.content_type,
+				},
 			};
 		});
 
