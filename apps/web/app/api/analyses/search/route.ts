@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth-helpers';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { isValidHookCategory } from '@/lib/scoring/hook-types';
 
 // Force dynamic rendering since this route uses cookies
 export const dynamic = 'force-dynamic';
@@ -57,7 +58,12 @@ export async function GET(request: NextRequest) {
 
 		// Metadata filters
 		const format = searchParams.get('format');
-		const hookCategory = searchParams.get('hookCategory');
+		const hookCategoryParam = searchParams.get('hookCategory');
+		// Validate hook category if provided
+		const hookCategory = hookCategoryParam && isValidHookCategory(hookCategoryParam) ? hookCategoryParam : null;
+		if (hookCategoryParam && !hookCategory) {
+			console.warn(`[Search] Invalid hook category filter: ${hookCategoryParam}`);
+		}
 		const niche = searchParams.get('niche');
 		const contentType = searchParams.get('contentType');
 

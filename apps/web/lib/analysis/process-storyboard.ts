@@ -9,6 +9,7 @@ import {
   type SignalExtractionResult,
   type VideoFormat,
 } from '@/lib/scoring';
+import { HOOK_TYPE_VALUES } from '@/lib/scoring/hook-types';
 
 /**
  * Step 3: Generate comprehensive storyboard analysis
@@ -241,7 +242,7 @@ Return ONLY valid JSON in this exact format:
   "overview": {
     "title": "string - video title if detectable",
     "length": number - total duration in seconds,
-    "hookCategory": "string - MUST be one of: 'Outcome-first', 'Relatable pain', 'Contradiction / Myth-busting', 'Shock / Bold claim', 'Curiosity gap', 'Authority / Credibility', 'Specific number / specificity', 'Direct call-out', 'Pattern interrupt (verbal)', 'Before / After contrast', 'Time-bound promise', 'Negative framing', 'Question hook', 'Other'",
+    "hookCategory": "string - MUST be one of: ${HOOK_TYPE_VALUES.map(t => `'${t}'`).join(', ')}",
     "hookPattern": "string - specific description of the hook approach used (e.g., 'Quick win promise with timeframe', 'Personal pain point revealed')",
     "nicheCategory": "string - MUST be one of: 'Creator / Personal Brand', 'Business / Career', 'Tech / AI', 'Productivity / Mindset', 'Money / Growth', 'Marketing / Growth', 'Education / Explainer', 'Life / Psychology', 'Design / Creative', 'Other'",
     "nicheDescription": "string - specific subcategory (e.g., 'AI tools', 'YouTube growth / Shorts growth', 'Copywriting', 'Mental models')",
