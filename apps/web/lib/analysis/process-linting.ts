@@ -63,7 +63,8 @@ export async function processLinting(jobId: string) {
     const linter = new VideoLinter(client);
     const lintResult = await linter.lint(
       videoSource,
-      job.classification_result.format as VideoFormat
+      job.classification_result.format as VideoFormat,
+      job.video_duration || undefined // Pass duration for FPS optimization
     );
 
     console.log(`[Linting] Found ${lintResult.violations.length} violations`);
