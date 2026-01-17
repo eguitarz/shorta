@@ -1,6 +1,14 @@
 import { createServiceClient } from '@/lib/supabase-service';
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
+import {
+  calculateDeterministicScores,
+  SIGNAL_EXTRACTION_PROMPT,
+  buildAnalysisPrompt,
+  type VideoSignals,
+  type SignalExtractionResult,
+  type VideoFormat,
+} from '@/lib/scoring';
 
 /**
  * Step 3: Generate comprehensive storyboard analysis
@@ -44,9 +52,6 @@ export async function processStoryboard(jobId: string) {
 
     console.log(`[Storyboard] Processing video: ${videoSource}`);
 
-    // Build storyboard prompt with lint violations
-    const storyboardPrompt = buildStoryboardPrompt(job.lint_result.violations);
-
     // Create LLM client
     const env: LLMEnv = {
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
@@ -59,27 +64,87 @@ export async function processStoryboard(jobId: string) {
       throw new Error('Client does not support video analysis');
     }
 
-    // Generate storyboard (60-90s)
-    const storyboardResponse = await client.analyzeVideo(videoSource, storyboardPrompt, {
-      temperature: 0.0, // Minimum temperature for maximum consistency in scoring
+    // ============================================
+    // STEP 1: Extract signals from video
+    // ============================================
+    console.log('[Storyboard] Step 1: Extracting signals...');
+    const signalResponse = await client.analyzeVideo(videoSource, SIGNAL_EXTRACTION_PROMPT, {
+      temperature: 0.0, // Maximum consistency for signal extraction
+      maxTokens: 8192,
+    });
+
+    console.log('[Storyboard] Signal extraction complete, parsing...');
+    const signalData = parseSignalJSON(signalResponse.content);
+
+    // ============================================
+    // STEP 2: Calculate deterministic scores
+    // ============================================
+    console.log('[Storyboard] Step 2: Calculating deterministic scores...');
+
+    // Use format from signal extraction, fallback to classification result, then default
+    const videoFormat: VideoFormat =
+      signalData.format ||
+      job.classification_result?.format ||
+      'talking_head';
+
+    console.log('[Storyboard] Video format:', videoFormat);
+
+    const scoreResult = calculateDeterministicScores(signalData.signals, videoFormat);
+
+    console.log('[Storyboard] Scores calculated:', {
+      format: videoFormat,
+      hook: scoreResult.subScores.hook,
+      structure: scoreResult.subScores.structure,
+      clarity: scoreResult.subScores.clarity,
+      delivery: scoreResult.subScores.delivery,
+      total: scoreResult.totalScore,
+    });
+
+    // ============================================
+    // STEP 3: Generate analysis with calculated scores
+    // ============================================
+    console.log('[Storyboard] Step 3: Generating analysis...');
+    const analysisPrompt = buildAnalysisPrompt(
+      job.lint_result.violations,
+      signalData.signals,
+      scoreResult,
+      signalData.transcript,
+      signalData.beatTimestamps
+    );
+
+    const analysisResponse = await client.analyzeVideo(videoSource, analysisPrompt, {
+      temperature: 0.1, // Slight creativity for explanations
       maxTokens: 16384,
     });
 
-    console.log('[Storyboard] Gemini response received, parsing JSON...');
+    console.log('[Storyboard] Analysis complete, parsing JSON...');
+    const storyboard = parseStoryboardJSON(analysisResponse.content);
 
-    // Parse JSON response
-    const storyboard = parseStoryboardJSON(storyboardResponse.content);
+    // Inject calculated scores (ensure they match what we calculated)
+    storyboard.performance.hookStrength = scoreResult.subScores.hook;
+    storyboard.performance.structurePacing = scoreResult.subScores.structure;
+    storyboard.performance.deliveryPerformance = scoreResult.subScores.delivery;
+    if (storyboard.performance.content) {
+      storyboard.performance.content.valueClarity = scoreResult.subScores.clarity;
+    }
+
+    // Store signals and breakdown for transparency
+    storyboard._format = videoFormat;
+    storyboard._signals = signalData.signals;
+    storyboard._scoreBreakdown = scoreResult.breakdown;
+    storyboard._deterministicScore = scoreResult.totalScore;
 
     // Extract and deduplicate beat issues
     const { uniqueBeatIssues, counts } = extractBeatIssues(storyboard);
 
-    // Calculate score
-    const { finalScore, baseScore, bonusPoints, bonusDetails } = calculateScore(
+    // Calculate bonus points (using deterministic score as base)
+    const { finalScore, baseScore, bonusPoints, bonusDetails } = calculateScoreWithDeterministicBase(
       uniqueBeatIssues,
-      storyboard
+      storyboard,
+      scoreResult.totalScore
     );
 
-    console.log(`[Storyboard] Score: ${finalScore} (base: ${baseScore}, bonus: ${bonusPoints})`);
+    console.log(`[Storyboard] Score: ${finalScore} (deterministic base: ${scoreResult.totalScore}, bonus: ${bonusPoints})`);
 
     // Fetch YouTube statistics (only for YouTube videos, not uploaded files)
     const videoStats = isUploadedFile ? null : await fetchYouTubeStats(job.video_url);
@@ -326,6 +391,68 @@ function parseStoryboardJSON(content: string): any {
   }
 }
 
+function parseSignalJSON(content: string): SignalExtractionResult {
+  try {
+    let jsonText = content.trim();
+
+    // Handle markdown code blocks
+    if (jsonText.startsWith('```json')) {
+      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    } else if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/```\n?/g, '');
+    }
+
+    const parsed = JSON.parse(jsonText);
+
+    // Validate required fields
+    if (!parsed.signals) {
+      throw new Error('Missing signals in extraction result');
+    }
+
+    // Validate and normalize format
+    const validFormats = ['talking_head', 'gameplay', 'other'];
+    const format = validFormats.includes(parsed.format) ? parsed.format : 'talking_head';
+
+    // Provide defaults for missing optional fields
+    return {
+      format: format as VideoFormat,
+      signals: {
+        hook: {
+          TTClaim: parsed.signals.hook?.TTClaim ?? 3,
+          PB: parsed.signals.hook?.PB ?? 3,
+          Spec: parsed.signals.hook?.Spec ?? 0,
+          QC: parsed.signals.hook?.QC ?? 0,
+        },
+        structure: {
+          BC: parsed.signals.structure?.BC ?? 4,
+          PM: parsed.signals.structure?.PM ?? 0,
+          PP: parsed.signals.structure?.PP ?? false,
+          LC: parsed.signals.structure?.LC ?? false,
+        },
+        clarity: {
+          wordCount: parsed.signals.clarity?.wordCount ?? 100,
+          duration: parsed.signals.clarity?.duration ?? 30,
+          SC: parsed.signals.clarity?.SC ?? 3,
+          TJ: parsed.signals.clarity?.TJ ?? 0,
+          RD: parsed.signals.clarity?.RD ?? 2,
+        },
+        delivery: {
+          LS: parsed.signals.delivery?.LS ?? 3,
+          NS: parsed.signals.delivery?.NS ?? 3,
+          pauseCount: parsed.signals.delivery?.pauseCount ?? 2,
+          fillerCount: parsed.signals.delivery?.fillerCount ?? 0,
+          EC: parsed.signals.delivery?.EC ?? true,
+        },
+      },
+      transcript: parsed.transcript || '',
+      beatTimestamps: parsed.beatTimestamps || [],
+    };
+  } catch (error) {
+    console.error('Failed to parse signal JSON:', content);
+    throw new Error('Failed to parse signal extraction result');
+  }
+}
+
 function extractBeatIssues(storyboard: any) {
   const beatIssues: any[] = [];
 
@@ -364,6 +491,68 @@ function extractBeatIssues(storyboard: any) {
   return { uniqueBeatIssues, counts };
 }
 
+/**
+ * Calculate score with deterministic base
+ * Uses the deterministic score as the base, then applies bonuses
+ */
+function calculateScoreWithDeterministicBase(
+  uniqueBeatIssues: any[],
+  storyboard: any,
+  deterministicBase: number
+) {
+  console.log('=== DETERMINISTIC SCORING ===');
+  console.log('Deterministic base score:', deterministicBase);
+  console.log('Unique beat issues:', uniqueBeatIssues.length);
+
+  // Count issues by severity for display
+  const counts = uniqueBeatIssues.reduce(
+    (acc, issue) => {
+      if (issue.severity === 'critical') acc.critical++;
+      if (issue.severity === 'moderate') acc.moderate++;
+      if (issue.severity === 'minor') acc.minor++;
+      return acc;
+    },
+    { critical: 0, moderate: 0, minor: 0 }
+  );
+
+  console.log('Issues - Critical:', counts.critical, 'Moderate:', counts.moderate, 'Minor:', counts.minor);
+
+  // Use deterministic score as base
+  const baseScore = deterministicBase;
+
+  // Calculate bonus points
+  let bonusPoints = 0;
+  const bonusDetails: string[] = [];
+
+  // Bonus 1: Perfect beats (no issues) - +2 points each
+  if (storyboard.beats && Array.isArray(storyboard.beats)) {
+    const perfectBeats = storyboard.beats.filter(
+      (beat: any) => !beat.retention?.issues || beat.retention.issues.length === 0
+    ).length;
+
+    if (perfectBeats > 0) {
+      const perfectBeatBonus = perfectBeats * 2;
+      bonusPoints += perfectBeatBonus;
+      bonusDetails.push(`${perfectBeats} perfect beat${perfectBeats > 1 ? 's' : ''}: +${perfectBeatBonus}`);
+    }
+  }
+
+  // Bonus 2: Strong hook (>= 80/100) - +5 points
+  if (storyboard.performance?.hookStrength >= 80) {
+    bonusPoints += 5;
+    bonusDetails.push(`Strong hook (${storyboard.performance.hookStrength}/100): +5`);
+  }
+
+  const finalScore = baseScore + bonusPoints;
+
+  console.log('Bonus points:', bonusPoints);
+  console.log('Final score:', finalScore);
+  console.log('========================');
+
+  return { finalScore, baseScore, bonusPoints, bonusDetails };
+}
+
+// Keep old function for backward compatibility (not used in new flow)
 function calculateScore(uniqueBeatIssues: any[], storyboard: any) {
   const { critical, moderate, minor } = uniqueBeatIssues.reduce(
     (acc, issue) => {
