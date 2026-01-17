@@ -380,6 +380,9 @@ function parseStoryboardJSON(content: string): any {
   try {
     let jsonText = content.trim();
 
+    console.log('[parseStoryboardJSON] Raw content length:', content.length);
+    console.log('[parseStoryboardJSON] First 500 chars:', content.substring(0, 500));
+
     // Handle markdown code blocks
     if (jsonText.startsWith('```json')) {
       jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
@@ -387,9 +390,12 @@ function parseStoryboardJSON(content: string): any {
       jsonText = jsonText.replace(/```\n?/g, '');
     }
 
+    console.log('[parseStoryboardJSON] After cleanup, first 500 chars:', jsonText.substring(0, 500));
+
     return JSON.parse(jsonText);
   } catch (error) {
-    console.error('Failed to parse storyboard JSON:', content);
+    console.error('[parseStoryboardJSON] Parse error:', error);
+    console.error('[parseStoryboardJSON] Full content:', content);
     throw new Error('Failed to parse storyboard analysis');
   }
 }
@@ -398,6 +404,9 @@ function parseSignalJSON(content: string): SignalExtractionResult {
   try {
     let jsonText = content.trim();
 
+    console.log('[parseSignalJSON] Raw content length:', content.length);
+    console.log('[parseSignalJSON] First 500 chars:', content.substring(0, 500));
+
     // Handle markdown code blocks
     if (jsonText.startsWith('```json')) {
       jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
@@ -405,7 +414,10 @@ function parseSignalJSON(content: string): SignalExtractionResult {
       jsonText = jsonText.replace(/```\n?/g, '');
     }
 
+    console.log('[parseSignalJSON] After cleanup, first 500 chars:', jsonText.substring(0, 500));
+
     const parsed = JSON.parse(jsonText);
+    console.log('[parseSignalJSON] Parsed signals:', JSON.stringify(parsed.signals, null, 2));
 
     // Validate required fields
     if (!parsed.signals) {
@@ -451,7 +463,8 @@ function parseSignalJSON(content: string): SignalExtractionResult {
       beatTimestamps: parsed.beatTimestamps || [],
     };
   } catch (error) {
-    console.error('Failed to parse signal JSON:', content);
+    console.error('[parseSignalJSON] Parse error:', error);
+    console.error('[parseSignalJSON] Full content:', content);
     throw new Error('Failed to parse signal extraction result');
   }
 }

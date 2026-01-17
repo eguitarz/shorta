@@ -28,7 +28,8 @@ import {
   X,
   Upload,
   Copy,
-  Sparkles
+  Sparkles,
+  GitCompare
 } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import { ExportSubtitleButton } from "@/components/ExportSubtitleButton";
@@ -39,6 +40,8 @@ import { SeverityVoteButtons } from "@/components/SeverityVoteButtons";
 import { LearningIndicator } from "@/components/LearningIndicator";
 import { useIssuePreferences } from "@/hooks/useIssuePreferences";
 import { getSeverityColor } from "@/lib/preferences/issue-key";
+import { VideoPickerModal, type UserVideo } from "@/components/VideoPickerModal";
+import { CompareModal } from "@/components/CompareModal";
 
 interface Beat {
   beatNumber: number;
@@ -275,6 +278,11 @@ export default function AnalyzerResultsPage() {
   const [analysesRemaining, setAnalysesRemaining] = useState<number>(3);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<string>('');
+
+  // Comparison modal state
+  const [showVideoPickerModal, setShowVideoPickerModal] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+  const [compareBaseVideo, setCompareBaseVideo] = useState<UserVideo | null>(null);
 
   const approvedChangesCount = approvedChanges.length;
 
@@ -978,6 +986,17 @@ export default function AnalyzerResultsPage() {
               {jobId && <ShareButton jobId={jobId} />}
               {analysisData && (
                 <>
+                  {/* Compare Button - Only for logged-in users */}
+                  {isLoggedIn && (
+                    <button
+                      onClick={() => setShowVideoPickerModal(true)}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-700/50 rounded-lg transition-colors"
+                      title="Compare with another video"
+                    >
+                      <GitCompare className="w-4 h-4" />
+                      <span>Compare</span>
+                    </button>
+                  )}
                   <ExportSubtitleButton
                     beats={analysisData.storyboard.beats}
                     videoTitle={analysisData.storyboard.overview.title}
@@ -2598,6 +2617,49 @@ export default function AnalyzerResultsPage() {
 
       {/* Learning Indicator - Shows when saving preferences */}
       <LearningIndicator isVisible={isLearning} />
+
+      {/* Video Picker Modal for Comparison */}
+      <VideoPickerModal
+        isOpen={showVideoPickerModal}
+        onClose={() => setShowVideoPickerModal(false)}
+        onSelect={(video) => {
+          setCompareBaseVideo(video);
+          setShowVideoPickerModal(false);
+          setShowCompareModal(true);
+        }}
+        excludeJobId={jobId || undefined}
+      />
+
+      {/* Compare Modal */}
+      {compareBaseVideo && analysisData && (
+        <CompareModal
+          isOpen={showCompareModal}
+          onClose={() => {
+            setShowCompareModal(false);
+            setCompareBaseVideo(null);
+          }}
+          baseVideo={compareBaseVideo}
+          currentVideo={{
+            jobId: jobId || '',
+            title: analysisData.storyboard.overview.title || 'Current Video',
+            videoUrl: videoUrl,
+            fileUri: fileUri,
+            videoId: videoUrl ? extractYouTubeId(videoUrl) : null,
+            isShort: videoUrl?.includes('/shorts/') || false,
+            scores: {
+              overall: analysisData.lintSummary?.score || null,
+              hook: analysisData.storyboard.performance?.hookStrength || null,
+              structure: analysisData.storyboard.performance?.structurePacing || null,
+              delivery: analysisData.storyboard.performance?.deliveryPerformance || null,
+              clarity: analysisData.storyboard.performance?.content?.valueClarity || null,
+            },
+            stats: videoStats,
+            storyboard: analysisData.storyboard,
+            issues: allIssues,
+            signals: analysisData.storyboard._signals,
+          }}
+        />
+      )}
     </>
   );
 }
