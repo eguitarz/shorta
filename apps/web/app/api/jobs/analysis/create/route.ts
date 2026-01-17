@@ -5,6 +5,50 @@ import { cookies } from 'next/headers';
 import { hashIP, getClientIp } from '@/lib/ip-hash';
 import { verifyTurnstile } from '@/lib/turnstile';
 
+// Extract YouTube video ID from URL
+function extractYouTubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// Parse ISO 8601 duration (PT1M30S) to seconds
+function parseDuration(duration: string): number {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return 0;
+  const hours = parseInt(match[1] || '0', 10);
+  const minutes = parseInt(match[2] || '0', 10);
+  const seconds = parseInt(match[3] || '0', 10);
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
+// Fetch video duration from YouTube API (lightweight call)
+async function fetchVideoDuration(videoId: string): Promise<number | null> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoId}&key=${apiKey}`
+    );
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (!data.items?.[0]?.contentDetails?.duration) return null;
+
+    return parseDuration(data.items[0].contentDetails.duration);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * POST /api/jobs/analysis/create
  * Creates a new analysis job and returns job ID immediately
@@ -139,12 +183,22 @@ export async function POST(request: NextRequest) {
       const videoUrl = url || null;
       const videoFileUri = fileUri || null;
 
+      // Fetch video duration for FPS optimization (non-blocking, optional)
+      let videoDuration: number | null = null;
+      if (videoUrl) {
+        const videoId = extractYouTubeId(videoUrl);
+        if (videoId) {
+          videoDuration = await fetchVideoDuration(videoId);
+        }
+      }
+
       const { data: job, error: jobError } = await supabase
         .from('analysis_jobs')
         .insert({
           user_id: null, // Anonymous job
           video_url: videoUrl,
           file_uri: videoFileUri,
+          video_duration: videoDuration,
           status: 'pending',
           current_step: 0,
           is_anonymous: true,
@@ -221,12 +275,22 @@ export async function POST(request: NextRequest) {
       const videoUrl = url || null;
       const videoFileUri = fileUri || null;
 
+      // Fetch video duration for FPS optimization (non-blocking, optional)
+      let videoDuration: number | null = null;
+      if (videoUrl) {
+        const videoId = extractYouTubeId(videoUrl);
+        if (videoId) {
+          videoDuration = await fetchVideoDuration(videoId);
+        }
+      }
+
       const { data: job, error: jobError } = await supabase
         .from('analysis_jobs')
         .insert({
           user_id: user.id,
           video_url: videoUrl,
           file_uri: videoFileUri,
+          video_duration: videoDuration,
           status: 'pending',
           current_step: 0,
         })

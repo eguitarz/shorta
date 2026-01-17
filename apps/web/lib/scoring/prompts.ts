@@ -27,7 +27,7 @@ Return ONLY valid JSON in this exact format:
   "format": "<talking_head|gameplay|other>",
   "signals": {
     "hook": {
-      "TTClaim": <number - seconds until first hook moment. See format-specific guidelines below>,
+      "TTClaim": <number - seconds until first VALUE SIGNAL to viewer. See detailed guidelines below>,
       "PB": <number 1-5 - pattern break / energy variation in first 1-3 seconds. 1=no variation (flat start), 3=moderate energy, 5=very strong pattern interrupt (sudden zoom, energy spike, unexpected element)>,
       "Spec": <number - count of SPECIFIC elements in the hook (first 3-5 seconds): numbers ("7 days", "$500"), timeframes ("in 2024"), costs, percentages, proper nouns (brand names, tool names). Count each specific element>,
       "QC": <number - count of questions or contradictions in hook. Questions: "Why does X?", "What if?". Contradictions: "You think X? Wrong.", "Most people do X, but...". Count each occurrence>
@@ -67,9 +67,26 @@ Return ONLY valid JSON in this exact format:
 === FORMAT-SPECIFIC GUIDELINES ===
 
 **TALKING HEAD:**
-- TTClaim: Seconds until speaker makes a promise/claim ("I'll show you...", "Here's the secret...")
+- TTClaim: Seconds until speaker gives viewer a REASON TO KEEP WATCHING.
+
+  COUNT AS VALUE SIGNAL (start timer here):
+  • Explicit promise: Speaker says they will show/teach/reveal something
+  • Emotional intensity: Words expressing strong reaction (amazed, shocked, changed everything, game-changer, mind-blown, unbelievable, secret)
+  • Direct viewer benefit: Addresses what viewer will gain or avoid
+  • Curiosity trigger: Creates information gap viewer wants filled
+
+  DO NOT COUNT (keep waiting):
+  • Self-referential setup: Speaker describes their own action/experience without signaling viewer value
+  • Neutral context: Background information, introductions, greetings
+  • Brand/product mentions alone: Naming something is not a value signal
+
+  EXAMPLE: "I just discovered a new tool from X. It completely changed how I work."
+  → "I just discovered a new tool from X" = setup (no value signal yet)
+  → "completely changed how I work" = VALUE SIGNAL (emotional intensity + implied benefit)
+  → TTClaim = timestamp of "completely changed"
+
 - pauseCount: Count deliberate pauses for effect
-- fillerCount: Count "um", "uh", "like", "you know"
+- fillerCount: Count filler sounds/words (hesitation sounds, verbal fillers)
 - EC: Voice energy variation
 
 **GAMEPLAY:**
@@ -80,7 +97,7 @@ Return ONLY valid JSON in this exact format:
 - PP: True if there's a climax, win, or satisfying conclusion
 
 **FACELESS/OTHER (screen recordings, B-roll, text-based):**
-- TTClaim: Seconds until first value is shown (key info, interesting visual, text hook)
+- TTClaim: Seconds until first VALUE SIGNAL appears (text hook with promise/emotion, key reveal, surprising visual)
 - pauseCount: Use 2 (neutral)
 - fillerCount: 0 (no speech)
 - wordCount: Count text overlay words if no voiceover

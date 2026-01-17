@@ -71,6 +71,7 @@ export async function processStoryboard(jobId: string) {
     const signalResponse = await client.analyzeVideo(videoSource, SIGNAL_EXTRACTION_PROMPT, {
       temperature: 0.0, // Maximum consistency for signal extraction
       maxTokens: 8192,
+      videoDuration: job.video_duration || undefined, // Use job duration for FPS optimization
     });
 
     console.log('[Storyboard] Signal extraction complete, parsing...');
@@ -115,6 +116,7 @@ export async function processStoryboard(jobId: string) {
     const analysisResponse = await client.analyzeVideo(videoSource, analysisPrompt, {
       temperature: 0.1, // Slight creativity for explanations
       maxTokens: 16384,
+      videoDuration: signalData.signals.clarity.duration, // Optimize FPS for long videos
     });
 
     console.log('[Storyboard] Analysis complete, parsing JSON...');

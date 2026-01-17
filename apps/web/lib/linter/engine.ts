@@ -44,8 +44,11 @@ export class VideoLinter {
 
   /**
    * Lint a video and return structured results
+   * @param videoUrl - Video URL or file URI
+   * @param format - Video format for rule selection
+   * @param videoDuration - Optional video duration in seconds for FPS optimization
    */
-  async lint(videoUrl: string, format: VideoFormat): Promise<LintResult> {
+  async lint(videoUrl: string, format: VideoFormat, videoDuration?: number): Promise<LintResult> {
     const ruleSet = this.getRuleSet(format);
     const prompt = this.buildPrompt(ruleSet);
 
@@ -60,6 +63,7 @@ export class VideoLinter {
       {
         temperature: 0.0, // Minimum temperature for maximum consistency in scoring
         maxTokens: 16384, // Very high limit to prevent incomplete JSON responses
+        videoDuration, // Pass duration for FPS optimization on long videos
       }
     );
 

@@ -18,6 +18,16 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
+// Parse ISO 8601 duration (PT1M30S) to seconds
+function parseDuration(duration: string): number {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return 0;
+  const hours = parseInt(match[1] || '0', 10);
+  const minutes = parseInt(match[2] || '0', 10);
+  const seconds = parseInt(match[3] || '0', 10);
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
 // Fetch YouTube video statistics
 async function fetchYouTubeStats(videoId: string, apiKey?: string) {
   if (!apiKey) {
@@ -27,7 +37,7 @@ async function fetchYouTubeStats(videoId: string, apiKey?: string) {
 
   try {
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${apiKey}`
+      `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet,contentDetails&id=${videoId}&key=${apiKey}`
     );
 
     if (!response.ok) {
@@ -44,11 +54,13 @@ async function fetchYouTubeStats(videoId: string, apiKey?: string) {
 
     const stats = data.items[0].statistics;
     const snippet = data.items[0].snippet;
+    const contentDetails = data.items[0].contentDetails;
     return {
       views: parseInt(stats.viewCount || '0', 10),
       likes: parseInt(stats.likeCount || '0', 10),
       comments: parseInt(stats.commentCount || '0', 10),
       publishedAt: snippet.publishedAt,
+      duration: contentDetails?.duration ? parseDuration(contentDetails.duration) : null,
     };
   } catch (error) {
     console.error('Error fetching YouTube stats:', error);

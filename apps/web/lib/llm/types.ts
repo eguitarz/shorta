@@ -16,6 +16,9 @@ export interface LLMConfig {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  // Video-specific options
+  videoDuration?: number; // Duration in seconds, used to optimize FPS
+  fps?: number; // Override FPS (default: 1, auto-adjusted for long videos)
 }
 
 // Edge-compatible: env passed as parameter

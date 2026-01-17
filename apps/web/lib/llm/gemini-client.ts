@@ -110,10 +110,13 @@ Return JSON:
     console.log('Classifying video with:', { model: modelName, url: videoUrl });
 
     try {
-      // Build contents with video file
+      // Build contents with video file - only first 15 seconds needed for classification
       const contents = [
         { text: `${systemPrompt}\n\n${userPrompt}` },
-        { fileData: { fileUri: videoUrl } },
+        {
+          fileData: { fileUri: videoUrl },
+          videoMetadata: { endOffset: '15s' },
+        },
       ];
 
       const response = await this.ai.models.generateContent({
@@ -150,14 +153,31 @@ Return JSON:
   async analyzeVideo(videoUrl: string, prompt: string, config?: LLMConfig): Promise<LLMResponse> {
     const modelName = config?.model || 'gemini-2.5-flash';
 
-    console.log('Analyzing video with:', { model: modelName, url: videoUrl });
+    // Calculate optimal FPS based on video duration
+    // Default: 1 fps (~300 tokens/sec)
+    // Long videos (>60s): 0.5 fps to reduce tokens
+    // Very long videos (>180s): 0.25 fps
+    let fps = config?.fps;
+    if (!fps && config?.videoDuration) {
+      if (config.videoDuration > 180) {
+        fps = 0.25;
+      } else if (config.videoDuration > 60) {
+        fps = 0.5;
+      }
+    }
+
+    console.log('Analyzing video with:', { model: modelName, url: videoUrl, fps: fps || 'default (1)' });
 
     try {
-      // Build contents with video file
-      const contents = [
-        { text: prompt },
-        { fileData: { fileUri: videoUrl } },
-      ];
+      // Build contents with video file and optional FPS optimization
+      const videoContent: { fileData: { fileUri: string }; videoMetadata?: { fps: number } } = {
+        fileData: { fileUri: videoUrl },
+      };
+      if (fps) {
+        videoContent.videoMetadata = { fps };
+      }
+
+      const contents = [{ text: prompt }, videoContent];
 
       const response = await this.ai.models.generateContent({
         model: modelName,
