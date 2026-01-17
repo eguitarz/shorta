@@ -429,8 +429,8 @@ function parseSignalJSON(content: string): SignalExtractionResult {
         structure: {
           BC: parsed.signals.structure?.BC ?? 4,
           PM: parsed.signals.structure?.PM ?? 0,
-          PP: parsed.signals.structure?.PP ?? false,
-          LC: parsed.signals.structure?.LC ?? false,
+          PP: Boolean(parsed.signals.structure?.PP),
+          LC: Boolean(parsed.signals.structure?.LC),
         },
         clarity: {
           wordCount: parsed.signals.clarity?.wordCount ?? 100,
@@ -444,7 +444,7 @@ function parseSignalJSON(content: string): SignalExtractionResult {
           NS: parsed.signals.delivery?.NS ?? 3,
           pauseCount: parsed.signals.delivery?.pauseCount ?? 2,
           fillerCount: parsed.signals.delivery?.fillerCount ?? 0,
-          EC: parsed.signals.delivery?.EC ?? true,
+          EC: parsed.signals.delivery?.EC !== false,
         },
       },
       transcript: parsed.transcript || '',
