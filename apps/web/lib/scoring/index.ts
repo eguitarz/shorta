@@ -27,9 +27,18 @@ export type {
   CategoryExplanation,
   ScoreExplanations,
 } from './types';
+export type { HookCategory } from './hook-types';
 
 // Constants
 export { WEIGHTS, TOTAL_WEIGHTS, HOOK_WEIGHTS, STRUCTURE_WEIGHTS, CLARITY_WEIGHTS, DELIVERY_WEIGHTS } from './constants';
+export {
+  HOOK_TYPES,
+  HOOK_TYPE_VALUES,
+  HOOK_TYPE_DESCRIPTIONS,
+  isValidHookCategory,
+  normalizeHookCategory,
+  formatHookTypesForPrompt,
+} from './hook-types';
 
 // Calculator
 export {
