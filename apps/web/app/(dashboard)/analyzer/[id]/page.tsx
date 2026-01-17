@@ -144,6 +144,42 @@ interface AnalysisData {
       mistakesToAvoid: string[];
       patternVariations: string[];
     };
+    // Deterministic scoring signals
+    _format?: 'talking_head' | 'gameplay' | 'other';
+    _signals?: {
+      hook: {
+        TTClaim: number;
+        PB: number;
+        Spec: number;
+        QC: number;
+      };
+      structure: {
+        BC: number;
+        PM: number;
+        PP: boolean;
+        LC: boolean;
+      };
+      clarity: {
+        wordCount: number;
+        duration: number;
+        SC: number;
+        TJ: number;
+        RD: number;
+      };
+      delivery: {
+        LS: number;
+        NS: number;
+        pauseCount: number;
+        fillerCount: number;
+        EC: boolean;
+      };
+    };
+    _scoreBreakdown?: {
+      hook: { TTClaim: number; PB: number; Spec: number; QC: number };
+      structure: { BC: number; PM: number; PP: number; LC: number };
+      clarity: { WPS: number; SC: number; TJ: number; RD: number };
+      delivery: { LS: number; NS: number; PQ: number; EC: number };
+    };
   };
   analyzedAt: string;
 }
@@ -877,20 +913,30 @@ export default function AnalyzerResultsPage() {
 
   // Render analysis text with bullet points (clean, no bold)
   const renderAnalysis = (text: string) => {
-    // Split by newlines and filter empty lines
-    const lines = text.split('\n').filter(line => line.trim().length > 0);
+    // First try splitting by newlines
+    let lines = text.split('\n').filter(line => line.trim().length > 0);
+
+    // If only one line (paragraph), split by sentences
+    if (lines.length === 1) {
+      // Split by period followed by space, keeping the period with each sentence
+      lines = text.split(/(?<=\.)\s+/).filter(line => line.trim().length > 0);
+    }
 
     return (
       <ul className="space-y-1.5 text-xs text-gray-400">
         {lines.map((line, idx) => {
-          const trimmedLine = line.trim();
-          // Remove bullet character if present
-          const content = trimmedLine.startsWith('•') ? trimmedLine.substring(1).trim() : trimmedLine;
+          let trimmedLine = line.trim();
+          // Remove bullet character or dash if present at start
+          if (trimmedLine.startsWith('•') || trimmedLine.startsWith('-')) {
+            trimmedLine = trimmedLine.substring(1).trim();
+          }
+          // Remove leading numbers like "1." or "1)"
+          trimmedLine = trimmedLine.replace(/^\d+[.)]\s*/, '');
 
           return (
             <li key={idx} className="flex gap-2">
               <span className="text-gray-600 mt-0.5">•</span>
-              <span>{content}</span>
+              <span>{trimmedLine}</span>
             </li>
           );
         })}
@@ -1105,26 +1151,30 @@ export default function AnalyzerResultsPage() {
                           <div className="absolute left-0 top-6 w-72 bg-gray-900 border border-gray-700 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl">
                             <div className="text-xs text-gray-300 space-y-2">
                               <p className="font-semibold text-white">How is this score calculated?</p>
-                              <p>The <span className="text-orange-400 font-medium">Overall Score</span> (0-100) is based on automated linting rules that check for common retention issues:</p>
+                              <p>The <span className="text-orange-400 font-medium">Overall Score</span> (0-100) is calculated from 4 weighted categories:</p>
                               <ul className="space-y-1 pl-3">
                                 <li className="flex items-start gap-1.5">
-                                  <span className="text-red-500 mt-0.5">•</span>
-                                  <span><span className="text-red-500 font-medium">Critical</span> violations lower your grade significantly</span>
+                                  <span className="text-orange-500 mt-0.5">•</span>
+                                  <span><span className="text-orange-500 font-medium">Hook</span> (35%) - How quickly you grab attention</span>
                                 </li>
                                 <li className="flex items-start gap-1.5">
-                                  <span className="text-orange-500 mt-0.5">•</span>
-                                  <span><span className="text-orange-500 font-medium">Moderate</span> violations have a medium impact</span>
+                                  <span className="text-green-500 mt-0.5">•</span>
+                                  <span><span className="text-green-500 font-medium">Structure</span> (25%) - Flow and payoff delivery</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                  <span className="text-purple-500 mt-0.5">•</span>
+                                  <span><span className="text-purple-500 font-medium">Clarity</span> (25%) - Speaking pace and simplicity</span>
                                 </li>
                                 <li className="flex items-start gap-1.5">
                                   <span className="text-blue-500 mt-0.5">•</span>
-                                  <span><span className="text-blue-500 font-medium">Minor</span> violations have a small impact</span>
+                                  <span><span className="text-blue-500 font-medium">Delivery</span> (15%) - Audio quality and energy</span>
                                 </li>
                               </ul>
                               <p className="pt-2 border-t border-gray-800 text-[11px] text-gray-400">
-                                <span className="font-medium text-gray-300">Note:</span> Each rule type only counts once, even if it appears in multiple beats.
+                                <span className="font-medium text-gray-300">Deterministic:</span> Same video always gets the same score.
                               </p>
                               <p className="pt-2 border-t border-gray-800 text-[11px]">
-                                The 4 performance cards below (<span className="text-orange-400">Hook</span>, <span className="text-green-400">Structure</span>, <span className="text-purple-400">Clarity</span>, <span className="text-blue-400">Delivery</span>) are AI-evaluated grades: <span className="text-purple-500">S</span> (100+), <span className="text-green-500">A</span> (80-99), <span className="text-blue-500">B</span> (70-79), <span className="text-yellow-500">C</span> (60-69), <span className="text-orange-500">D</span> (50-59), <span className="text-red-500">F</span> (&lt;50).
+                                Grades: <span className="text-purple-500">S</span> (100+), <span className="text-green-500">A</span> (80-99), <span className="text-blue-500">B</span> (70-79), <span className="text-yellow-500">C</span> (60-69), <span className="text-orange-500">D</span> (50-59), <span className="text-red-500">F</span> (&lt;50).
                               </p>
                             </div>
                           </div>
@@ -1210,6 +1260,16 @@ export default function AnalyzerResultsPage() {
                           </div>
                         </div>
                       )}
+
+                      {/* Content Type */}
+                      {analysisData.storyboard.performance.content.contentType && (
+                        <div className="mt-3 pt-3 border-t border-gray-800">
+                          <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Content Type</div>
+                          <span className="inline-block px-2 py-1 bg-purple-500/10 text-purple-400 rounded text-[10px] font-semibold uppercase tracking-wide w-fit">
+                            {analysisData.storyboard.performance.content.contentType}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -1269,18 +1329,69 @@ export default function AnalyzerResultsPage() {
                               }}
                               style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
                             >
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Hook Duration</span>
-                                <span className="text-white font-semibold">{analysisData.storyboard.performance.hook.duration}s</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Viral Pattern</span>
-                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).label}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Loop Strength</span>
-                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).label}</span>
-                              </div>
+                              {analysisData.storyboard._signals?.hook ? (
+                                <>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Time to Claim
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Seconds until first promise/claim. Target: under 1.5s.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.hook.TTClaim <= 1.5 ? 'text-green-400' : analysisData.storyboard._signals.hook.TTClaim <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.hook.TTClaim}s
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Pattern Break
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Energy/visual variation in first 1-3 seconds. Higher is better.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.hook.PB >= 4 ? 'text-green-400' : analysisData.storyboard._signals.hook.PB >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.hook.PB}/5
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Specifics
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Numbers, timeframes, names in hook. More = more compelling.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.hook.Spec >= 2 ? 'text-green-400' : analysisData.storyboard._signals.hook.Spec >= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.hook.Spec} found
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Hook Question
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Opens with a question or contradiction to hook viewers.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.hook.QC > 0 ? 'text-green-400' : 'text-gray-400'}`}>
+                                      {analysisData.storyboard._signals.hook.QC > 0 ? 'Yes' : 'No'}
+                                    </span>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Hook Duration</span>
+                                    <span className="text-white font-semibold">{analysisData.storyboard.performance.hook.duration}s</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Viral Pattern</span>
+                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).label}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Loop Strength</span>
+                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).label}</span>
+                                  </div>
+                                </>
+                              )}
                             </div>
 
                             {/* Hook Category Badge + Pattern */}
@@ -1354,18 +1465,69 @@ export default function AnalyzerResultsPage() {
                               }}
                               style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
                             >
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Video Length</span>
-                                <span className="text-white font-semibold">{analysisData.storyboard.performance.structure.videoLength}s</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Pacing Consistency</span>
-                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).label}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Payoff Timing</span>
-                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).label}</span>
-                              </div>
+                              {analysisData.storyboard._signals?.structure ? (
+                                <>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Beat Count
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Number of content sections. Ideal: 3-6 for Shorts.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.structure.BC >= 3 && analysisData.storyboard._signals.structure.BC <= 6 ? 'text-green-400' : 'text-yellow-400'}`}>
+                                      {analysisData.storyboard._signals.structure.BC} beats
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Progress Markers
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Words like "first", "next", "finally" that guide viewers.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.structure.PM >= 2 ? 'text-green-400' : analysisData.storyboard._signals.structure.PM >= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.structure.PM} found
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Has Payoff
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Does the video deliver on its hook promise?
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.structure.PP ? 'text-green-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.structure.PP ? 'Yes' : 'No'}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Loop Cue
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Does ending reference the start or encourage rewatch?
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.structure.LC ? 'text-green-400' : 'text-gray-400'}`}>
+                                      {analysisData.storyboard._signals.structure.LC ? 'Yes' : 'No'}
+                                    </span>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Video Length</span>
+                                    <span className="text-white font-semibold">{analysisData.storyboard.performance.structure.videoLength}s</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Pacing Consistency</span>
+                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).label}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Payoff Timing</span>
+                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).label}</span>
+                                  </div>
+                                </>
+                              )}
                             </div>
 
                             {/* Only analysis is collapsible */}
@@ -1426,10 +1588,70 @@ export default function AnalyzerResultsPage() {
                               }}
                               style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
                             >
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Content Type</span>
-                                <span className="text-white font-semibold">{analysisData.storyboard.performance.content.contentType}</span>
-                              </div>
+                              {analysisData.storyboard._signals?.clarity ? (
+                                <>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Speaking Pace
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Words per second. Ideal: 3-4 WPS for comprehension.
+                                      </span>
+                                    </span>
+                                    {(() => {
+                                      const wps = analysisData.storyboard._signals!.clarity.wordCount / analysisData.storyboard._signals!.clarity.duration;
+                                      const isGood = wps >= 3 && wps <= 4;
+                                      const isOk = wps >= 2.5 && wps <= 4.5;
+                                      return (
+                                        <span className={`font-semibold ${isGood ? 'text-green-400' : isOk ? 'text-yellow-400' : 'text-red-400'}`}>
+                                          {wps.toFixed(1)} w/s
+                                        </span>
+                                      );
+                                    })()}
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Complexity
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Sentence complexity. Lower is easier to follow.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.clarity.SC <= 2 ? 'text-green-400' : analysisData.storyboard._signals.clarity.SC <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.clarity.SC}/5
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Topic Jumps
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Sudden context switches. Fewer = easier to follow.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.clarity.TJ === 0 ? 'text-green-400' : analysisData.storyboard._signals.clarity.TJ <= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.clarity.TJ}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Redundancy
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Repetition without new info. Lower is more concise.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.clarity.RD <= 2 ? 'text-green-400' : analysisData.storyboard._signals.clarity.RD <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.clarity.RD}/5
+                                    </span>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Clarity Score</span>
+                                    <span className={`font-semibold ${clarityScore >= 80 ? 'text-green-400' : clarityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {clarityScore}%
+                                    </span>
+                                  </div>
+                                </>
+                              )}
                             </div>
 
                             {/* Only analysis is collapsible */}
@@ -1489,18 +1711,69 @@ export default function AnalyzerResultsPage() {
                               }}
                               style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
                             >
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Energy Level</span>
-                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.energyLevel).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.energyLevel).label}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Vocal Clarity</span>
-                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.vocalClarity).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.vocalClarity).label}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Presence</span>
-                                <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.presence).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.presence).label}</span>
-                              </div>
+                              {analysisData.storyboard._signals?.delivery ? (
+                                <>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Volume Consistency
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Loudness stability. Higher = more consistent audio levels.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.delivery.LS >= 4 ? 'text-green-400' : analysisData.storyboard._signals.delivery.LS >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.delivery.LS}/5
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Audio Quality
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Noise level and clarity. Higher = cleaner audio.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.delivery.NS >= 4 ? 'text-green-400' : analysisData.storyboard._signals.delivery.NS >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.delivery.NS}/5
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Filler Words
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Count of "um", "uh", "like", etc. Lower = cleaner delivery.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.delivery.fillerCount === 0 ? 'text-green-400' : analysisData.storyboard._signals.delivery.fillerCount <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.delivery.fillerCount}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 cursor-help group relative">
+                                      Energy Variation
+                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                                        Vocal energy changes to maintain interest. Monotone = less engaging.
+                                      </span>
+                                    </span>
+                                    <span className={`font-semibold ${analysisData.storyboard._signals.delivery.EC ? 'text-green-400' : 'text-red-400'}`}>
+                                      {analysisData.storyboard._signals.delivery.EC ? 'Yes' : 'No'}
+                                    </span>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Energy Level</span>
+                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.energyLevel).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.energyLevel).label}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Vocal Clarity</span>
+                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.vocalClarity).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.vocalClarity).label}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Presence</span>
+                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.presence).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.presence).label}</span>
+                                  </div>
+                                </>
+                              )}
                             </div>
 
                             {/* Only analysis is collapsible */}
