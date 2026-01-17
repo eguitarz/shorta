@@ -5,6 +5,8 @@
  * These columns are auto-populated from JSONB fields for fast querying
  */
 
+import type { HookCategory } from '@/lib/scoring/hook-types';
+
 /**
  * Analysis job row from database
  * Includes all generated score columns for efficient filtering and sorting
@@ -49,7 +51,7 @@ export interface AnalysisJobRow {
 
 	// Video Metadata
 	video_format: 'talking_head' | 'gameplay' | 'other' | null;
-	hook_category: string | null;
+	hook_category: HookCategory | null;
 	hook_pattern: string | null;
 	niche_category: string | null;
 	content_type: string | null;
@@ -128,7 +130,7 @@ export interface FormattedAnalysisResult {
 
 	metadata: {
 		format: string | null;
-		hookCategory: string | null;
+		hookCategory: HookCategory | null;
 		hookPattern: string | null;
 		niche: string | null;
 		contentType: string | null;
@@ -166,7 +168,7 @@ export interface AnalysisSearchParams {
 
 	// Metadata filters
 	format?: 'talking_head' | 'gameplay' | 'other';
-	hookCategory?: string;
+	hookCategory?: HookCategory;
 	niche?: string;
 	contentType?: string;
 

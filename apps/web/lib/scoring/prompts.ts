@@ -7,6 +7,7 @@
  */
 
 import type { VideoSignals, SubScores, ScoreBreakdown } from './types';
+import { HOOK_TYPE_VALUES } from './hook-types';
 
 // ============================================
 // Signal Extraction Prompt
@@ -225,7 +226,7 @@ Return ONLY valid JSON in this exact format:
   "overview": {
     "title": "string - video title if detectable",
     "length": ${signals.clarity.duration},
-    "hookCategory": "string - MUST be one of: 'Outcome-first', 'Relatable pain', 'Contradiction / Myth-busting', 'Shock / Bold claim', 'Curiosity gap', 'Authority / Credibility', 'Specific number / specificity', 'Direct call-out', 'Pattern interrupt (verbal)', 'Before / After contrast', 'Time-bound promise', 'Negative framing', 'Question hook', 'Other'",
+    "hookCategory": "string - MUST be one of: ${HOOK_TYPE_VALUES.map(t => `'${t}'`).join(', ')}",
     "hookPattern": "string - specific description of the hook approach used",
     "nicheCategory": "string - MUST be one of: 'Creator / Personal Brand', 'Business / Career', 'Tech / AI', 'Productivity / Mindset', 'Money / Growth', 'Marketing / Growth', 'Education / Explainer', 'Life / Psychology', 'Design / Creative', 'Other'",
     "nicheDescription": "string - specific subcategory",
