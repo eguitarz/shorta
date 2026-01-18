@@ -36,6 +36,20 @@ interface Beat {
   audio: string;
 }
 
+// Hook variant styles aligned with rehook presets
+export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific';
+
+interface HookVariant {
+  id: string;
+  style: HookVariantStyle;
+  label: string;
+  script: string;
+  visual: string;
+  audio: string;
+  directorNotes: string;
+  whyItWorks: string;
+}
+
 interface Overview {
   title: string;
   contentType: string;
@@ -47,6 +61,7 @@ interface Overview {
 interface Storyboard {
   overview: Overview;
   beats: Beat[];
+  hookVariants?: HookVariant[];
 }
 
 export async function POST(request: NextRequest) {
@@ -130,6 +145,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       overview: storyboard.overview,
       beats: storyboard.beats,
+      hookVariants: storyboard.hookVariants || [],
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {
@@ -162,6 +178,8 @@ ${input.viralPatterns.commonElements.map(p => `• ${p}`).join('\n')}
 IMPORTANT: Your storyboard should naturally incorporate these viral patterns. Don't force them, but use them as a blueprint for success.
 ` : '';
 
+  const hookDuration = Math.min(5, Math.floor(input.targetLength * 0.15));
+
   return `You are an expert video director creating a storyboard for short-form content.
 
 Create a complete storyboard for a ${input.format} video with the following details:
@@ -188,6 +206,18 @@ STRUCTURE REQUIREMENTS:
    - Visual (what to show)
    - Audio (music, sound effects)
 
+HOOK VARIANTS REQUIREMENT:
+Generate 4 different hook options with distinct styles. Each variant should:
+- Cover the same hook duration (0-${hookDuration}s)
+- Have the same timing as Beat 1 but with different approaches
+- Include a brief explanation of why it works
+
+The 4 hook styles are:
+1. BOLD: Make a confident claim or promise. Lead with the result or outcome. Be assertive and direct. Use power words.
+2. QUESTION: Open with a thought-provoking question or create a curiosity gap. Make viewers NEED to know the answer.
+3. EMOTIONAL: Connect with the viewer's struggle, pain point, or desire. Use empathy, urgency, and relatability.
+4. SPECIFIC: Lead with concrete numbers, data, timeframes, or specific results. Ground the hook in measurable outcomes.
+
 DIRECTOR NOTES GUIDELINES:
 - Start with action verbs (Start, Show, Cut, Maintain, etc.)
 - Be specific about camera angles, pacing, energy, delivery
@@ -211,7 +241,7 @@ AUDIO GUIDELINES:
 - Keep each bullet under 8 words
 
 TIMING GUIDELINES:
-- Hook: 0-${Math.min(5, Math.floor(input.targetLength * 0.15))}s (grab attention immediately)
+- Hook: 0-${hookDuration}s (grab attention immediately)
 - Setup: Brief context if needed (20-25% of video)
 - Main content: Cover all key points (50-60% of video)
 - Payoff: Deliver the conclusion (10-15% of video)
@@ -226,20 +256,68 @@ Return VALID JSON ONLY in this format:
     "targetAudience": "${input.targetAudience || 'general audience'}",
     "length": ${input.targetLength}
   },
+  "hookVariants": [
+    {
+      "id": "bold",
+      "style": "bold",
+      "label": "Bold & Direct",
+      "script": "The direct, confident opening script",
+      "visual": "• Close-up shot\\n• Confident posture\\n• Direct eye contact",
+      "audio": "• Powerful intro beat\\n• Quick sound effect",
+      "directorNotes": "• **Lead with confidence**\\n• Maintain strong eye contact\\n• Speak with authority",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    },
+    {
+      "id": "question",
+      "style": "question",
+      "label": "Curiosity Hook",
+      "script": "The question or curiosity-gap opening",
+      "visual": "• Medium shot\\n• Curious expression\\n• Lean in slightly",
+      "audio": "• Intriguing music\\n• Pause for effect",
+      "directorNotes": "• **Pause after the question**\\n• Show genuine curiosity\\n• Create tension",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    },
+    {
+      "id": "emotional",
+      "style": "emotional",
+      "label": "Pain Point",
+      "script": "The empathetic, relatable opening",
+      "visual": "• Warm lighting\\n• Relatable setting\\n• Empathetic expression",
+      "audio": "• Soft intro music\\n• Conversational tone",
+      "directorNotes": "• **Connect emotionally first**\\n• Show understanding\\n• Be authentic",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    },
+    {
+      "id": "specific",
+      "style": "specific",
+      "label": "Data-Driven",
+      "script": "The opening with specific numbers or metrics",
+      "visual": "• Text overlay with number\\n• Medium shot\\n• Authoritative stance",
+      "audio": "• Clean, professional intro\\n• Subtle emphasis sound",
+      "directorNotes": "• **Emphasize the number clearly**\\n• Let the data speak\\n• Show credibility",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    }
+  ],
   "beats": [
     {
       "beatNumber": 1,
       "startTime": 0,
-      "endTime": 5,
+      "endTime": ${hookDuration},
       "type": "hook",
       "title": "Hook - [Descriptive Title]",
       "directorNotes": "• First actionable instruction\\n• Second instruction\\n• Third instruction",
-      "script": "What to say in this beat",
+      "script": "Use the BOLD hook variant as the default Beat 1 script",
       "visual": "• Medium close-up\\n• Natural setting\\n• Direct eye contact",
       "audio": "• Upbeat acoustic music\\n• Subtle whoosh effect"
     }
   ]
 }
+
+IMPORTANT:
+- The "beats" array Beat 1 should use the BOLD hook variant as default
+- All 4 hookVariants must have COMPLETELY DIFFERENT scripts that achieve the same goal differently
+- Each hookVariant.whyItWorks should be specific to the topic, not generic
+- Make each hook genuinely distinct - not just word variations
 
 NO markdown code blocks. Return ONLY the JSON object.`;
 }

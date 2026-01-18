@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
 import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
+import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
 
 interface GeneratedBeat {
   beatNumber: number;
@@ -27,6 +28,8 @@ interface GeneratedData {
     length: number;
   };
   beats: GeneratedBeat[];
+  hookVariants?: HookVariant[];
+  selectedHookId?: string;
   generatedAt: string;
 }
 
@@ -205,6 +208,36 @@ export default function StoryboardResultsPage() {
     setEditInput(actionTexts[action] || "");
   };
 
+  const handleHookSelect = (variant: HookVariant) => {
+    if (!storyboardData) return;
+
+    // Find the hook beat (beat 1)
+    const hookBeatIndex = storyboardData.beats.findIndex(b => b.beatNumber === 1);
+    if (hookBeatIndex === -1) return;
+
+    // Update beat 1 with the selected variant
+    const updatedBeats = [...storyboardData.beats];
+    updatedBeats[hookBeatIndex] = {
+      ...updatedBeats[hookBeatIndex],
+      script: variant.script,
+      visual: variant.visual,
+      audio: variant.audio,
+      directorNotes: variant.directorNotes,
+    };
+
+    const updatedData = {
+      ...storyboardData,
+      beats: updatedBeats,
+      selectedHookId: variant.id,
+    };
+
+    setStoryboardData(updatedData);
+
+    // Update sessionStorage
+    const id = params.id as string;
+    sessionStorage.setItem(`created_${id}`, JSON.stringify(updatedData));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -304,6 +337,15 @@ export default function StoryboardResultsPage() {
               </div>
             </div>
           </div>
+
+          {/* Hook Variant Selector */}
+          {storyboardData.hookVariants && storyboardData.hookVariants.length > 0 && (
+            <HookVariantSelector
+              variants={storyboardData.hookVariants}
+              selectedId={storyboardData.selectedHookId || storyboardData.hookVariants[0]?.id || 'bold'}
+              onSelect={handleHookSelect}
+            />
+          )}
 
           {/* Generated Storyboard */}
           <div className="space-y-6">
