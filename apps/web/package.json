@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "SKIP_NEXT_LOCKFILE_PATCHING=1 next dev",
+    "dev:https": "SKIP_NEXT_LOCKFILE_PATCHING=1 next dev --experimental-https",
     "build": "node scripts/generate-posts-data.mjs && next build",
     "pages:build": "node scripts/generate-posts-data.mjs && opennextjs-cloudflare build",
     "cf:build": "node scripts/generate-posts-data.mjs && opennextjs-cloudflare build",

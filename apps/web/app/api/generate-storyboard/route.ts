@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 interface ApprovedChange {
   id: string;
-  type: 'fix' | 'variant';
+  type: 'fix' | 'variant' | 'rehook';
   beatNumber?: number;
   beatTitle?: string;
   issue?: {
@@ -21,6 +21,11 @@ interface ApprovedChange {
     index: number;
     label: string;
     text: string;
+  };
+  rehook?: {
+    preset?: 'emotional' | 'specific' | 'shorter' | 'question';
+    hookType?: string;
+    label: string;
   };
 }
 
@@ -237,7 +242,7 @@ function applyApprovedChanges(beats: Beat[], approvedChanges: ApprovedChange[]):
     }
   });
 
-  // Apply re-hook variant (affects beat 1)
+  // Apply re-hook variant (affects beat 1) - this is when user selected an AI-suggested variant
   const hookVariant = approvedChanges.find(change => change.type === 'variant');
   if (hookVariant && hookVariant.variant) {
     const hookBeatIndex = updatedBeats.findIndex(b => b.beatNumber === 1);
@@ -250,13 +255,45 @@ function applyApprovedChanges(beats: Beat[], approvedChanges: ApprovedChange[]):
     }
   }
 
+  // Apply re-hook request (affects beat 1) - this is when user wants LLM to generate a new hook
+  const hookRequest = approvedChanges.find(change => change.type === 'rehook');
+  if (hookRequest && hookRequest.rehook) {
+    const hookBeatIndex = updatedBeats.findIndex(b => b.beatNumber === 1);
+    if (hookBeatIndex !== -1) {
+      updatedBeats[hookBeatIndex] = {
+        ...updatedBeats[hookBeatIndex],
+        rehookRequest: hookRequest.rehook,
+      } as any;
+    }
+  }
+
   return updatedBeats;
+}
+
+function getRehookInstruction(rehookRequest: any): string {
+  if (!rehookRequest) return '';
+
+  const presetInstructions: Record<string, string> = {
+    emotional: 'Rewrite emphasizing PAIN POINTS, URGENCY, and EMOTIONAL TRIGGERS. Tap into fears, frustrations, or desires.',
+    specific: 'Rewrite with CONCRETE NUMBERS, DATA, and SPECIFICITY. Add specific metrics, percentages, or timeframes.',
+    shorter: 'Rewrite SHORTER and PUNCHIER. Cut all filler words. Maximum 10-12 words. Hit hard immediately.',
+    question: 'Rewrite as a QUESTION that voices the viewer\'s inner doubt or curiosity. Create a curiosity gap.',
+  };
+
+  if (rehookRequest.preset && presetInstructions[rehookRequest.preset]) {
+    return `\nRE-HOOK REQUEST: ${presetInstructions[rehookRequest.preset]}`;
+  } else if (rehookRequest.hookType) {
+    return `\nRE-HOOK REQUEST: Rewrite using the "${rehookRequest.hookType}" hook style. Maintain the core message but apply this pattern.`;
+  }
+
+  return '';
 }
 
 function createGenerationPrompt(beats: Beat[], overview: any): string {
   const beatsDescription = beats.map(beat => {
     const appliedFix = (beat as any).appliedFix;
     const appliedVariant = (beat as any).appliedVariant;
+    const rehookRequest = (beat as any).rehookRequest;
 
     return `
 Beat ${beat.beatNumber}: ${beat.title} (${beat.startTime}s - ${beat.endTime}s)
@@ -266,6 +303,7 @@ Visual: ${beat.visual}
 Audio: ${beat.audio}
 ${appliedFix ? `\nAPPLIED FIX: ${appliedFix}` : ''}
 ${appliedVariant ? '\nNOTE: This is a re-written hook variant' : ''}
+${getRehookInstruction(rehookRequest)}
     `.trim();
   }).join('\n\n');
 
@@ -289,8 +327,9 @@ IMPORTANT GUIDELINES:
 - Focus on WHAT to do, not what's wrong
 - Be specific about camera angles, pacing, energy, delivery
 - If a fix was applied, incorporate that guidance naturally into the director notes
+- If a RE-HOOK REQUEST is present, you MUST rewrite the script for that beat according to the requested style. This is the most important change - generate a completely new hook line.
 - Keep the same beat structure (number, timing, type)
-- Maintain the original script/visual/audio unless a fix specifically changes them
+- Maintain the original script/visual/audio unless a fix or RE-HOOK REQUEST specifically changes them
 - No analysis or issues - only actionable shooting instructions
 - FORMAT DIRECTOR NOTES AS BULLET POINTS (3-5 actionable points per beat)
 - HIGHLIGHT CRITICAL NOTES: Wrap the 1-2 MOST IMPORTANT notes in **double asterisks** for emphasis

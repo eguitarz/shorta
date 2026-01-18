@@ -2,10 +2,13 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  // Force HTTPS redirect (skip in development)
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const proto = request.headers.get('x-forwarded-proto') || 'https';
-  if (!isDevelopment && proto === 'http') {
+  // Force HTTPS redirect (skip for localhost/development)
+  const host = request.headers.get('host') || '';
+  const isLocalhost = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+  const proto = request.headers.get('x-forwarded-proto');
+
+  // Only redirect to HTTPS in production (non-localhost) when explicitly on HTTP
+  if (!isLocalhost && proto === 'http') {
     const url = request.nextUrl.clone();
     url.protocol = 'https:';
     return NextResponse.redirect(url, 301);
@@ -22,7 +25,7 @@ export async function middleware(request: NextRequest) {
   const isTryPage = request.nextUrl.pathname.startsWith('/try');
   // Also allow /analyzer/* with ?trial=true query param (for viewing trial results)
   const isTrialAnalyzer = request.nextUrl.pathname.startsWith('/analyzer/') &&
-                          request.nextUrl.searchParams.get('trial') === 'true';
+    request.nextUrl.searchParams.get('trial') === 'true';
 
   if (isTryPage || isTrialAnalyzer) {
     // Public trial routes don't require authentication
