@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp, Camera, Move, Film, Type, Video, Zap } from "lucide-react";
+import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp, Camera, Move, Film, Type, Video, Zap, Trash2, Copy, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
 import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
 import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
@@ -251,6 +251,156 @@ export default function StoryboardResultsPage() {
     sessionStorage.setItem(`created_${id}`, JSON.stringify(updatedData));
   };
 
+  // Helper to recalculate beat times proportionally
+  const recalculateBeatTimes = (beats: GeneratedBeat[], totalLength: number): GeneratedBeat[] => {
+    const beatCount = beats.length;
+    if (beatCount === 0) return beats;
+
+    const avgDuration = totalLength / beatCount;
+    let currentTime = 0;
+
+    return beats.map((beat, index) => {
+      const startTime = Math.round(currentTime);
+      const endTime = index === beatCount - 1
+        ? totalLength
+        : Math.round(currentTime + avgDuration);
+      currentTime = endTime;
+
+      return {
+        ...beat,
+        beatNumber: index + 1,
+        startTime,
+        endTime,
+      };
+    });
+  };
+
+  // Save updated data to state and storage
+  const saveStoryboardData = (updatedData: GeneratedData) => {
+    setStoryboardData(updatedData);
+    const id = params.id as string;
+    sessionStorage.setItem(`created_${id}`, JSON.stringify(updatedData));
+  };
+
+  // Delete a beat
+  const handleDeleteBeat = (beatNumber: number) => {
+    if (!storyboardData || storyboardData.beats.length <= 1) return;
+
+    const updatedBeats = storyboardData.beats
+      .filter(b => b.beatNumber !== beatNumber);
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+  };
+
+  // Duplicate a beat
+  const handleDuplicateBeat = (beatNumber: number) => {
+    if (!storyboardData) return;
+
+    const beatIndex = storyboardData.beats.findIndex(b => b.beatNumber === beatNumber);
+    if (beatIndex === -1) return;
+
+    const beatToDuplicate = storyboardData.beats[beatIndex];
+    const newBeat: GeneratedBeat = {
+      ...beatToDuplicate,
+      title: `${beatToDuplicate.title} (Copy)`,
+    };
+
+    const updatedBeats = [
+      ...storyboardData.beats.slice(0, beatIndex + 1),
+      newBeat,
+      ...storyboardData.beats.slice(beatIndex + 1),
+    ];
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+  };
+
+  // Move beat up
+  const handleMoveBeatUp = (beatNumber: number) => {
+    if (!storyboardData) return;
+
+    const beatIndex = storyboardData.beats.findIndex(b => b.beatNumber === beatNumber);
+    if (beatIndex <= 0) return;
+
+    const updatedBeats = [...storyboardData.beats];
+    [updatedBeats[beatIndex - 1], updatedBeats[beatIndex]] =
+      [updatedBeats[beatIndex], updatedBeats[beatIndex - 1]];
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+  };
+
+  // Move beat down
+  const handleMoveBeatDown = (beatNumber: number) => {
+    if (!storyboardData) return;
+
+    const beatIndex = storyboardData.beats.findIndex(b => b.beatNumber === beatNumber);
+    if (beatIndex === -1 || beatIndex >= storyboardData.beats.length - 1) return;
+
+    const updatedBeats = [...storyboardData.beats];
+    [updatedBeats[beatIndex], updatedBeats[beatIndex + 1]] =
+      [updatedBeats[beatIndex + 1], updatedBeats[beatIndex]];
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+  };
+
+  // Insert a new beat after a specific position
+  const handleInsertBeat = (afterBeatNumber: number) => {
+    if (!storyboardData) return;
+
+    const beatIndex = storyboardData.beats.findIndex(b => b.beatNumber === afterBeatNumber);
+    if (beatIndex === -1) return;
+
+    const newBeat: GeneratedBeat = {
+      beatNumber: 0, // Will be recalculated
+      startTime: 0,
+      endTime: 0,
+      type: 'main_content',
+      title: 'New Beat',
+      directorNotes: '• Add your instructions here',
+      script: 'Add your script here...',
+      visual: '• Describe the visual',
+      audio: '• Describe the audio',
+      shotType: 'MS',
+      cameraMovement: 'static',
+      transition: 'cut',
+    };
+
+    const updatedBeats = [
+      ...storyboardData.beats.slice(0, beatIndex + 1),
+      newBeat,
+      ...storyboardData.beats.slice(beatIndex + 1),
+    ];
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+
+    // Open edit panel for the new beat
+    handleEditBeat(beatIndex + 2); // +2 because beatNumber is 1-indexed and we inserted after
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -364,9 +514,9 @@ export default function StoryboardResultsPage() {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Director&apos;s Shot List</h2>
 
-            {storyboardData.beats.map((beat) => (
+            {storyboardData.beats.map((beat, index) => (
+              <div key={beat.beatNumber} className="space-y-3">
               <div
-                key={beat.beatNumber}
                 className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden"
               >
                 {/* Beat Header */}
@@ -408,13 +558,53 @@ export default function StoryboardResultsPage() {
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleEditBeat(beat.beatNumber)}
-                      className="p-2 hover:bg-purple-800/30 rounded-lg transition-colors"
-                      title="Edit this beat"
-                    >
-                      <Pencil className="w-5 h-5 text-purple-400" />
-                    </button>
+                    {/* Beat Actions */}
+                    <div className="flex items-center gap-1">
+                      {/* Move Up */}
+                      <button
+                        onClick={() => handleMoveBeatUp(beat.beatNumber)}
+                        disabled={beat.beatNumber === 1}
+                        className="p-1.5 hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        <ArrowUp className="w-4 h-4 text-gray-400" />
+                      </button>
+                      {/* Move Down */}
+                      <button
+                        onClick={() => handleMoveBeatDown(beat.beatNumber)}
+                        disabled={beat.beatNumber === storyboardData.beats.length}
+                        className="p-1.5 hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        <ArrowDown className="w-4 h-4 text-gray-400" />
+                      </button>
+                      <div className="w-px h-5 bg-gray-700 mx-1" />
+                      {/* Duplicate */}
+                      <button
+                        onClick={() => handleDuplicateBeat(beat.beatNumber)}
+                        className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+                        title="Duplicate beat"
+                      >
+                        <Copy className="w-4 h-4 text-gray-400" />
+                      </button>
+                      {/* Edit */}
+                      <button
+                        onClick={() => handleEditBeat(beat.beatNumber)}
+                        className="p-1.5 hover:bg-purple-800/30 rounded transition-colors"
+                        title="Edit beat"
+                      >
+                        <Pencil className="w-4 h-4 text-purple-400" />
+                      </button>
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDeleteBeat(beat.beatNumber)}
+                        disabled={storyboardData.beats.length <= 1}
+                        className="p-1.5 hover:bg-red-900/30 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Delete beat"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -560,7 +750,28 @@ export default function StoryboardResultsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Insert Beat Button */}
+              {index < storyboardData.beats.length - 1 && (
+                <button
+                  onClick={() => handleInsertBeat(beat.beatNumber)}
+                  className="w-full py-2 border border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-purple-600 hover:text-purple-400 hover:bg-purple-900/10 transition-all flex items-center justify-center gap-2 group"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="text-sm">Insert Beat</span>
+                </button>
+              )}
+              </div>
             ))}
+
+            {/* Add Beat at End */}
+            <button
+              onClick={() => handleInsertBeat(storyboardData.beats[storyboardData.beats.length - 1]?.beatNumber || 0)}
+              className="w-full py-3 border border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-purple-600 hover:text-purple-400 hover:bg-purple-900/10 transition-all flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Beat</span>
+            </button>
           </div>
         </div>
       </div>
