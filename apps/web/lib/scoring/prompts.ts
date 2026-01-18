@@ -263,7 +263,7 @@ Return ONLY valid JSON in this exact format:
     "hookStrength": ${scores.subScores.hook},
     "structurePacing": ${scores.subScores.structure},
     "deliveryPerformance": ${scores.subScores.delivery},
-    "directorAssessment": "string - Professional director's review explaining the scores. Reference specific moments and signals. Format with newlines.",
+    "directorAssessment": "string - Professional director's review explaining the scores. Start with a one-line diagnosis, then use bullet points (•) for specific observations. Reference specific moments and signals. Example format:\nThis video struggles with retention due to weak hook execution.\n• Hook lacks pattern interrupt - opens with generic greeting\n• Strong payoff at 0:45 but buried too late\n• Delivery energy drops mid-video",
     "retentionDrivers": ["string - key engagement element 1", "..."],
     "pacingStrategy": "string - how video maintains momentum",
     "visualEngagementTactics": "string - text overlays, cuts, B-roll, etc.",
