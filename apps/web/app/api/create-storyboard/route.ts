@@ -24,6 +24,17 @@ interface CreateStoryboardInput {
   viralPatterns?: ViralPatterns;
 }
 
+// Shot types for professional video production
+export type ShotType = 'CU' | 'MCU' | 'MS' | 'MLS' | 'WS' | 'OTS' | 'POV' | 'INSERT';
+export type CameraMovement = 'static' | 'pan' | 'tilt' | 'track' | 'zoom' | 'handheld' | 'dolly';
+export type TransitionType = 'cut' | 'dissolve' | 'fade' | 'zoom' | 'swipe' | 'whip' | 'none';
+
+interface TextOverlay {
+  text: string;
+  position: 'top' | 'center' | 'bottom' | 'lower-third';
+  timing: string;
+}
+
 interface Beat {
   beatNumber: number;
   startTime: number;
@@ -34,6 +45,13 @@ interface Beat {
   script: string;
   visual: string;
   audio: string;
+  // Enhanced fields
+  shotType?: ShotType;
+  cameraMovement?: CameraMovement;
+  transition?: TransitionType;
+  textOverlays?: TextOverlay[];
+  bRollSuggestions?: string[];
+  retentionTip?: string;
 }
 
 // Hook variant styles aligned with rehook presets
@@ -205,6 +223,12 @@ STRUCTURE REQUIREMENTS:
    - Script (what to say)
    - Visual (what to show)
    - Audio (music, sound effects)
+   - Shot type: CU (close-up), MCU (medium close-up), MS (medium shot), MLS (medium long shot), WS (wide shot), OTS (over-the-shoulder), POV, INSERT
+   - Camera movement: static, pan, tilt, track, zoom, handheld, dolly
+   - Transition to next beat: cut, dissolve, fade, zoom, swipe, whip, none
+   - Text overlays: array of text to appear on screen with position and timing
+   - B-roll suggestions: 2-3 ideas for supplementary footage
+   - Retention tip: brief note on why this beat keeps viewers watching
 
 HOOK VARIANTS REQUIREMENT:
 Generate 4 different hook options with distinct styles. Each variant should:
@@ -308,7 +332,15 @@ Return VALID JSON ONLY in this format:
       "directorNotes": "• First actionable instruction\\n• Second instruction\\n• Third instruction",
       "script": "Use the BOLD hook variant as the default Beat 1 script",
       "visual": "• Medium close-up\\n• Natural setting\\n• Direct eye contact",
-      "audio": "• Upbeat acoustic music\\n• Subtle whoosh effect"
+      "audio": "• Upbeat acoustic music\\n• Subtle whoosh effect",
+      "shotType": "MCU",
+      "cameraMovement": "static",
+      "transition": "cut",
+      "textOverlays": [
+        { "text": "Key phrase or hook text", "position": "center", "timing": "0:01-0:03" }
+      ],
+      "bRollSuggestions": ["Relevant visual example", "Supporting footage idea"],
+      "retentionTip": "Brief explanation of why viewers stay for this beat"
     }
   ]
 }
