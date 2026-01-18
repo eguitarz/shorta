@@ -2,10 +2,16 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp, Camera, Move, Film, Type, Video, Zap } from "lucide-react";
 import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
 import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
 import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
+
+interface TextOverlay {
+  text: string;
+  position: 'top' | 'center' | 'bottom' | 'lower-third';
+  timing: string;
+}
 
 interface GeneratedBeat {
   beatNumber: number;
@@ -17,6 +23,13 @@ interface GeneratedBeat {
   script: string;
   visual: string;
   audio: string;
+  // Enhanced fields
+  shotType?: string;
+  cameraMovement?: string;
+  transition?: string;
+  textOverlays?: TextOverlay[];
+  bRollSuggestions?: string[];
+  retentionTip?: string;
 }
 
 interface GeneratedData {
@@ -365,9 +378,34 @@ export default function StoryboardResultsPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg">{beat.title}</h3>
-                        <p className="text-sm text-gray-400">
-                          {formatTime(beat.startTime)} - {formatTime(beat.endTime)} • {beat.type}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-sm text-gray-400">
+                            {formatTime(beat.startTime)} - {formatTime(beat.endTime)} • {beat.type}
+                          </p>
+                          {/* Technical Badges */}
+                          {(beat.shotType || beat.cameraMovement || beat.transition) && (
+                            <div className="flex items-center gap-1.5 ml-2">
+                              {beat.shotType && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-900/30 text-blue-400 text-xs rounded-full border border-blue-800/50">
+                                  <Camera className="w-3 h-3" />
+                                  {beat.shotType}
+                                </span>
+                              )}
+                              {beat.cameraMovement && beat.cameraMovement !== 'static' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-800/50">
+                                  <Move className="w-3 h-3" />
+                                  {beat.cameraMovement}
+                                </span>
+                              )}
+                              {beat.transition && beat.transition !== 'none' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-900/30 text-orange-400 text-xs rounded-full border border-orange-800/50">
+                                  <Film className="w-3 h-3" />
+                                  {beat.transition}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <button
@@ -419,6 +457,60 @@ export default function StoryboardResultsPage() {
                       </ul>
                     </div>
                   </div>
+
+                  {/* Enhanced Fields Row */}
+                  {(beat.textOverlays?.length || beat.bRollSuggestions?.length || beat.retentionTip) && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-800/30 rounded-lg">
+                      {/* Text Overlays */}
+                      {beat.textOverlays && beat.textOverlays.length > 0 && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                            <Type className="w-3.5 h-3.5" />
+                            Text Overlays
+                          </h4>
+                          <ul className="text-sm space-y-1.5">
+                            {beat.textOverlays.map((overlay, idx) => (
+                              <li key={idx} className="text-gray-300">
+                                <span className="font-medium">&ldquo;{overlay.text}&rdquo;</span>
+                                <span className="text-gray-500 text-xs ml-2">
+                                  {overlay.position} • {overlay.timing}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* B-Roll Suggestions */}
+                      {beat.bRollSuggestions && beat.bRollSuggestions.length > 0 && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                            <Video className="w-3.5 h-3.5" />
+                            B-Roll Ideas
+                          </h4>
+                          <ul className="text-sm text-gray-400 space-y-1">
+                            {beat.bRollSuggestions.map((suggestion, idx) => (
+                              <li key={idx} className="flex gap-2 items-start">
+                                <span className="text-gray-600 flex-shrink-0">•</span>
+                                <span>{suggestion}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Retention Tip */}
+                      {beat.retentionTip && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                            <Zap className="w-3.5 h-3.5" />
+                            Retention Tip
+                          </h4>
+                          <p className="text-sm text-gray-400">{beat.retentionTip}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Director's Notes - Collapsible */}
                   <div className="border-t border-gray-800 pt-4">
