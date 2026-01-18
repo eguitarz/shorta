@@ -42,6 +42,8 @@ import { useIssuePreferences } from "@/hooks/useIssuePreferences";
 import { getSeverityColor } from "@/lib/preferences/issue-key";
 import { VideoPickerModal, type UserVideo } from "@/components/VideoPickerModal";
 import { CompareModal } from "@/components/CompareModal";
+import { HOOK_TYPES, HOOK_TYPE_DESCRIPTIONS, type HookCategory } from "@/lib/scoring/hook-types";
+import { REHOOK_PRESETS, type RehookPreset } from "@/lib/rehook";
 
 interface Beat {
   beatNumber: number;
@@ -66,7 +68,7 @@ interface Beat {
 
 interface ApprovedChange {
   id: string;
-  type: 'fix' | 'variant';
+  type: 'fix' | 'variant' | 'rehook';
   beatNumber?: number;
   beatTitle?: string;
   issue?: {
@@ -78,6 +80,11 @@ interface ApprovedChange {
     index: number;
     label: string;
     text: string;
+  };
+  rehook?: {
+    preset?: RehookPreset;
+    hookType?: HookCategory;
+    label: string;
   };
 }
 
@@ -284,6 +291,11 @@ export default function AnalyzerResultsPage() {
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [compareBaseVideo, setCompareBaseVideo] = useState<UserVideo | null>(null);
 
+  // Re-hook generation state
+  const [selectedPreset, setSelectedPreset] = useState<RehookPreset | null>(null);
+  const [selectedHookType, setSelectedHookType] = useState<HookCategory | null>(null);
+  const [hookTypePickerOpen, setHookTypePickerOpen] = useState(false);
+
   const approvedChangesCount = approvedChanges.length;
 
   // Blur and disable buttons only for anonymous trial users (not logged-in users)
@@ -342,7 +354,8 @@ export default function AnalyzerResultsPage() {
     const withoutVariants = approvedChanges.filter(change => change.type !== 'variant');
 
     const id = `variant-${index}-${Date.now()}`;
-    const label = String.fromCharCode(65 + index); // A, B, C...
+    // Use "Custom" for generated variants (index 99), otherwise A, B, C...
+    const label = index === 99 ? 'Custom' : String.fromCharCode(65 + index);
     const newChange: ApprovedChange = {
       id,
       type: 'variant',
@@ -353,6 +366,55 @@ export default function AnalyzerResultsPage() {
       },
     };
     setApprovedChanges([...withoutVariants, newChange]);
+  };
+
+  const addRehookRequest = () => {
+    if (!selectedPreset && !selectedHookType) return;
+
+    // Remove any existing rehook request or variant (only one allowed at a time)
+    const withoutRehooks = approvedChanges.filter(
+      change => change.type !== 'rehook' && change.type !== 'variant'
+    );
+
+    const label = selectedHookType
+      ? selectedHookType
+      : REHOOK_PRESETS.find(p => p.id === selectedPreset)?.label || selectedPreset || '';
+
+    const id = `rehook-${Date.now()}`;
+    const newChange: ApprovedChange = {
+      id,
+      type: 'rehook',
+      rehook: {
+        preset: selectedPreset || undefined,
+        hookType: selectedHookType || undefined,
+        label,
+      },
+    };
+
+    setApprovedChanges([...withoutRehooks, newChange]);
+
+    // Reset selection after adding
+    setSelectedPreset(null);
+    setSelectedHookType(null);
+    setHookTypePickerOpen(false);
+  };
+
+  const handlePresetSelect = (preset: RehookPreset) => {
+    if (selectedPreset === preset) {
+      setSelectedPreset(null);
+    } else {
+      setSelectedPreset(preset);
+      setSelectedHookType(null); // Clear hook type when preset is selected
+    }
+  };
+
+  const handleHookTypeSelect = (hookType: HookCategory) => {
+    if (selectedHookType === hookType) {
+      setSelectedHookType(null);
+    } else {
+      setSelectedHookType(hookType);
+      setSelectedPreset(null); // Clear preset when hook type is selected
+    }
   };
 
   const removeApprovedChange = (id: string) => {
@@ -759,6 +821,13 @@ export default function AnalyzerResultsPage() {
       setApprovedChangesCollapsed(false);
     }
   }, [approvedChangesCount]);
+
+  // Reset re-hook state when analysis changes
+  useEffect(() => {
+    setSelectedPreset(null);
+    setSelectedHookType(null);
+    setHookTypePickerOpen(false);
+  }, [params.id]);
 
   // Function to seek video to specific timestamp
   const seekToTimestamp = (seconds: number) => {
@@ -2446,6 +2515,14 @@ export default function AnalyzerResultsPage() {
                   </span>
                 </div>
 
+                {/* Current hook type indicator */}
+                <div className="flex items-center gap-2 mb-4 text-sm">
+                  <span className="text-gray-500">Current Hook:</span>
+                  <span className="px-2 py-0.5 bg-gray-800 text-gray-300 rounded text-xs">
+                    {analysisData?.storyboard.overview.hookCategory || 'Unknown'}
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   {(analysisData?.storyboard.replicationBlueprint.patternVariations || []).slice(0, 2).map((variant, idx) => (
                     <div key={idx} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
@@ -2483,6 +2560,129 @@ export default function AnalyzerResultsPage() {
                       })()}
                     </div>
                   ))}
+                </div>
+
+                {/* Try a different style section */}
+                <div className="mt-8 pt-6 border-t border-gray-800">
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className="text-xs text-gray-500 uppercase tracking-wider">or try a different style</span>
+                    <div className="flex-1 h-px bg-gray-800"></div>
+                  </div>
+
+                  {/* Quick style presets */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {REHOOK_PRESETS.map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => {
+                          if (shouldDisableButtons) {
+                            setUpgradeFeature('re-hook');
+                            setShowUpgradeModal(true);
+                            return;
+                          }
+                          handlePresetSelect(preset.id);
+                        }}
+                        disabled={shouldDisableButtons}
+                        className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                          selectedPreset === preset.id
+                            ? 'bg-orange-500/20 border-orange-500 text-orange-400'
+                            : shouldDisableButtons
+                              ? 'border-gray-700 text-gray-600 cursor-not-allowed opacity-50'
+                              : 'border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300'
+                        }`}
+                        title={preset.description}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Collapsible hook type picker */}
+                  <div className="mb-4">
+                    <button
+                      onClick={() => {
+                        if (shouldDisableButtons) {
+                          setUpgradeFeature('re-hook');
+                          setShowUpgradeModal(true);
+                          return;
+                        }
+                        setHookTypePickerOpen(!hookTypePickerOpen);
+                      }}
+                      disabled={shouldDisableButtons}
+                      className={`flex items-center gap-2 text-sm transition-colors ${
+                        shouldDisableButtons
+                          ? 'text-gray-600 cursor-not-allowed'
+                          : 'text-gray-400 hover:text-gray-300'
+                      }`}
+                    >
+                      <ChevronDown className={`w-4 h-4 transition-transform ${hookTypePickerOpen ? 'rotate-180' : ''}`} />
+                      <span>Pick specific hook type</span>
+                      {selectedHookType && (
+                        <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded">
+                          {selectedHookType}
+                        </span>
+                      )}
+                    </button>
+
+                    {hookTypePickerOpen && (
+                      <div className="mt-3 grid grid-cols-2 gap-2 p-3 bg-[#1a1a1a] border border-gray-800 rounded-lg">
+                        {Object.values(HOOK_TYPES).filter(type => type !== 'Other').map((hookType) => (
+                          <button
+                            key={hookType}
+                            onClick={() => handleHookTypeSelect(hookType)}
+                            className={`flex items-start gap-2 p-2 rounded-lg text-left transition-colors ${
+                              selectedHookType === hookType
+                                ? 'bg-orange-500/10 border border-orange-500/30'
+                                : 'hover:bg-gray-800/50'
+                            }`}
+                          >
+                            <div className={`w-3 h-3 mt-0.5 rounded-full border-2 flex-shrink-0 ${
+                              selectedHookType === hookType
+                                ? 'border-orange-500 bg-orange-500'
+                                : 'border-gray-600'
+                            }`}>
+                              {selectedHookType === hookType && (
+                                <div className="w-full h-full rounded-full bg-orange-500"></div>
+                              )}
+                            </div>
+                            <div>
+                              <div className={`text-xs font-medium ${
+                                selectedHookType === hookType ? 'text-orange-400' : 'text-gray-300'
+                              }`}>
+                                {hookType}
+                              </div>
+                              <div className="text-[10px] text-gray-500">
+                                {HOOK_TYPE_DESCRIPTIONS[hookType]}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Add to approved changes button */}
+                  <button
+                    onClick={() => {
+                      if (shouldDisableButtons) {
+                        setUpgradeFeature('re-hook');
+                        setShowUpgradeModal(true);
+                        return;
+                      }
+                      addRehookRequest();
+                    }}
+                    disabled={shouldDisableButtons || (!selectedPreset && !selectedHookType)}
+                    className={`w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                      !selectedPreset && !selectedHookType
+                        ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                        : shouldDisableButtons
+                          ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
+                          : 'bg-orange-500 hover:bg-orange-600 text-white'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Add Re-hook Style
+                  </button>
                 </div>
               </div>
             )}
@@ -2559,6 +2759,15 @@ export default function AnalyzerResultsPage() {
                                     <span className="text-[10px] text-gray-500">Variant {change.variant.label}</span>
                                   </div>
                                   <p className="text-xs text-gray-400 line-clamp-3">{change.variant.text}</p>
+                                </>
+                              )}
+                              {change.type === 'rehook' && change.rehook && (
+                                <>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[10px] font-bold uppercase text-orange-500">Re-hook</span>
+                                    <span className="text-[10px] text-gray-500">Generate New</span>
+                                  </div>
+                                  <p className="text-xs text-gray-400">Style: {change.rehook.label}</p>
                                 </>
                               )}
                             </div>

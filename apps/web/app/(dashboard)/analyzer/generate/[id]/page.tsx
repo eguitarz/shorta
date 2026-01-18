@@ -200,7 +200,7 @@ export default function GenerateResultsPage() {
               <div className="space-y-3">
                 {generatedData.appliedChanges.map((change) => (
                   <div key={change.id} className="text-sm group relative">
-                    {change.type === 'fix' ? (
+                    {change.type === 'fix' && change.issue && (
                       <>
                         <div className="flex gap-2 cursor-help">
                           <span className="text-purple-400 font-medium">Beat {change.beatNumber}:</span>
@@ -228,7 +228,8 @@ export default function GenerateResultsPage() {
                           </div>
                         </div>
                       </>
-                    ) : (
+                    )}
+                    {change.type === 'variant' && change.variant && (
                       <>
                         <div className="flex gap-2 cursor-help">
                           <span className="text-purple-400 font-medium">Re-hook Variant {change.variant.label}:</span>
@@ -239,6 +240,21 @@ export default function GenerateResultsPage() {
                           <div>
                             <p className="text-xs text-gray-400 font-medium mb-1">New Hook Text:</p>
                             <p className="text-sm text-gray-200 italic">&quot;{change.variant.text}&quot;</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    {change.type === 'rehook' && change.rehook && (
+                      <>
+                        <div className="flex gap-2 cursor-help">
+                          <span className="text-purple-400 font-medium">Re-hook Style:</span>
+                          <span className="text-gray-300">{change.rehook.label}</span>
+                        </div>
+                        {/* Tooltip */}
+                        <div className="absolute left-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] p-4 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                          <div>
+                            <p className="text-xs text-gray-400 font-medium mb-1">Hook Rewrite Request:</p>
+                            <p className="text-sm text-gray-200">Generated new hook using &quot;{change.rehook.label}&quot; style</p>
                           </div>
                         </div>
                       </>
