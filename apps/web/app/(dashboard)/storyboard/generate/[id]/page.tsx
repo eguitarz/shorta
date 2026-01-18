@@ -2,9 +2,16 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp, Camera, Move, Film, Type, Video, Zap, Trash2, Copy, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
 import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
+import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
+
+interface TextOverlay {
+  text: string;
+  position: 'top' | 'center' | 'bottom' | 'lower-third';
+  timing: string;
+}
 
 interface GeneratedBeat {
   beatNumber: number;
@@ -16,6 +23,13 @@ interface GeneratedBeat {
   script: string;
   visual: string;
   audio: string;
+  // Enhanced fields
+  shotType?: string;
+  cameraMovement?: string;
+  transition?: string;
+  textOverlays?: TextOverlay[];
+  bRollSuggestions?: string[];
+  retentionTip?: string;
 }
 
 interface GeneratedData {
@@ -27,6 +41,8 @@ interface GeneratedData {
     length: number;
   };
   beats: GeneratedBeat[];
+  hookVariants?: HookVariant[];
+  selectedHookId?: string;
   generatedAt: string;
 }
 
@@ -205,6 +221,186 @@ export default function StoryboardResultsPage() {
     setEditInput(actionTexts[action] || "");
   };
 
+  const handleHookSelect = (variant: HookVariant) => {
+    if (!storyboardData) return;
+
+    // Find the hook beat (beat 1)
+    const hookBeatIndex = storyboardData.beats.findIndex(b => b.beatNumber === 1);
+    if (hookBeatIndex === -1) return;
+
+    // Update beat 1 with the selected variant
+    const updatedBeats = [...storyboardData.beats];
+    updatedBeats[hookBeatIndex] = {
+      ...updatedBeats[hookBeatIndex],
+      script: variant.script,
+      visual: variant.visual,
+      audio: variant.audio,
+      directorNotes: variant.directorNotes,
+    };
+
+    const updatedData = {
+      ...storyboardData,
+      beats: updatedBeats,
+      selectedHookId: variant.id,
+    };
+
+    setStoryboardData(updatedData);
+
+    // Update sessionStorage
+    const id = params.id as string;
+    sessionStorage.setItem(`created_${id}`, JSON.stringify(updatedData));
+  };
+
+  // Helper to recalculate beat times proportionally
+  const recalculateBeatTimes = (beats: GeneratedBeat[], totalLength: number): GeneratedBeat[] => {
+    const beatCount = beats.length;
+    if (beatCount === 0) return beats;
+
+    const avgDuration = totalLength / beatCount;
+    let currentTime = 0;
+
+    return beats.map((beat, index) => {
+      const startTime = Math.round(currentTime);
+      const endTime = index === beatCount - 1
+        ? totalLength
+        : Math.round(currentTime + avgDuration);
+      currentTime = endTime;
+
+      return {
+        ...beat,
+        beatNumber: index + 1,
+        startTime,
+        endTime,
+      };
+    });
+  };
+
+  // Save updated data to state and storage
+  const saveStoryboardData = (updatedData: GeneratedData) => {
+    setStoryboardData(updatedData);
+    const id = params.id as string;
+    sessionStorage.setItem(`created_${id}`, JSON.stringify(updatedData));
+  };
+
+  // Delete a beat
+  const handleDeleteBeat = (beatNumber: number) => {
+    if (!storyboardData || storyboardData.beats.length <= 1) return;
+
+    const updatedBeats = storyboardData.beats
+      .filter(b => b.beatNumber !== beatNumber);
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+  };
+
+  // Duplicate a beat
+  const handleDuplicateBeat = (beatNumber: number) => {
+    if (!storyboardData) return;
+
+    const beatIndex = storyboardData.beats.findIndex(b => b.beatNumber === beatNumber);
+    if (beatIndex === -1) return;
+
+    const beatToDuplicate = storyboardData.beats[beatIndex];
+    const newBeat: GeneratedBeat = {
+      ...beatToDuplicate,
+      title: `${beatToDuplicate.title} (Copy)`,
+    };
+
+    const updatedBeats = [
+      ...storyboardData.beats.slice(0, beatIndex + 1),
+      newBeat,
+      ...storyboardData.beats.slice(beatIndex + 1),
+    ];
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+  };
+
+  // Move beat up
+  const handleMoveBeatUp = (beatNumber: number) => {
+    if (!storyboardData) return;
+
+    const beatIndex = storyboardData.beats.findIndex(b => b.beatNumber === beatNumber);
+    if (beatIndex <= 0) return;
+
+    const updatedBeats = [...storyboardData.beats];
+    [updatedBeats[beatIndex - 1], updatedBeats[beatIndex]] =
+      [updatedBeats[beatIndex], updatedBeats[beatIndex - 1]];
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+  };
+
+  // Move beat down
+  const handleMoveBeatDown = (beatNumber: number) => {
+    if (!storyboardData) return;
+
+    const beatIndex = storyboardData.beats.findIndex(b => b.beatNumber === beatNumber);
+    if (beatIndex === -1 || beatIndex >= storyboardData.beats.length - 1) return;
+
+    const updatedBeats = [...storyboardData.beats];
+    [updatedBeats[beatIndex], updatedBeats[beatIndex + 1]] =
+      [updatedBeats[beatIndex + 1], updatedBeats[beatIndex]];
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+  };
+
+  // Insert a new beat after a specific position
+  const handleInsertBeat = (afterBeatNumber: number) => {
+    if (!storyboardData) return;
+
+    const beatIndex = storyboardData.beats.findIndex(b => b.beatNumber === afterBeatNumber);
+    if (beatIndex === -1) return;
+
+    const newBeat: GeneratedBeat = {
+      beatNumber: 0, // Will be recalculated
+      startTime: 0,
+      endTime: 0,
+      type: 'main_content',
+      title: 'New Beat',
+      directorNotes: '• Add your instructions here',
+      script: 'Add your script here...',
+      visual: '• Describe the visual',
+      audio: '• Describe the audio',
+      shotType: 'MS',
+      cameraMovement: 'static',
+      transition: 'cut',
+    };
+
+    const updatedBeats = [
+      ...storyboardData.beats.slice(0, beatIndex + 1),
+      newBeat,
+      ...storyboardData.beats.slice(beatIndex + 1),
+    ];
+
+    const reorderedBeats = recalculateBeatTimes(updatedBeats, storyboardData.overview.length);
+
+    saveStoryboardData({
+      ...storyboardData,
+      beats: reorderedBeats,
+    });
+
+    // Open edit panel for the new beat
+    handleEditBeat(beatIndex + 2); // +2 because beatNumber is 1-indexed and we inserted after
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -305,13 +501,22 @@ export default function StoryboardResultsPage() {
             </div>
           </div>
 
+          {/* Hook Variant Selector */}
+          {storyboardData.hookVariants && storyboardData.hookVariants.length > 0 && (
+            <HookVariantSelector
+              variants={storyboardData.hookVariants}
+              selectedId={storyboardData.selectedHookId || storyboardData.hookVariants[0]?.id || 'bold'}
+              onSelect={handleHookSelect}
+            />
+          )}
+
           {/* Generated Storyboard */}
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Director&apos;s Shot List</h2>
 
-            {storyboardData.beats.map((beat) => (
+            {storyboardData.beats.map((beat, index) => (
+              <div key={beat.beatNumber} className="space-y-3">
               <div
-                key={beat.beatNumber}
                 className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden"
               >
                 {/* Beat Header */}
@@ -323,18 +528,83 @@ export default function StoryboardResultsPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg">{beat.title}</h3>
-                        <p className="text-sm text-gray-400">
-                          {formatTime(beat.startTime)} - {formatTime(beat.endTime)} • {beat.type}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-sm text-gray-400">
+                            {formatTime(beat.startTime)} - {formatTime(beat.endTime)} • {beat.type}
+                          </p>
+                          {/* Technical Badges */}
+                          {(beat.shotType || beat.cameraMovement || beat.transition) && (
+                            <div className="flex items-center gap-1.5 ml-2">
+                              {beat.shotType && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-900/30 text-blue-400 text-xs rounded-full border border-blue-800/50">
+                                  <Camera className="w-3 h-3" />
+                                  {beat.shotType}
+                                </span>
+                              )}
+                              {beat.cameraMovement && beat.cameraMovement !== 'static' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-800/50">
+                                  <Move className="w-3 h-3" />
+                                  {beat.cameraMovement}
+                                </span>
+                              )}
+                              {beat.transition && beat.transition !== 'none' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-900/30 text-orange-400 text-xs rounded-full border border-orange-800/50">
+                                  <Film className="w-3 h-3" />
+                                  {beat.transition}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleEditBeat(beat.beatNumber)}
-                      className="p-2 hover:bg-purple-800/30 rounded-lg transition-colors"
-                      title="Edit this beat"
-                    >
-                      <Pencil className="w-5 h-5 text-purple-400" />
-                    </button>
+                    {/* Beat Actions */}
+                    <div className="flex items-center gap-1">
+                      {/* Move Up */}
+                      <button
+                        onClick={() => handleMoveBeatUp(beat.beatNumber)}
+                        disabled={beat.beatNumber === 1}
+                        className="p-1.5 hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        <ArrowUp className="w-4 h-4 text-gray-400" />
+                      </button>
+                      {/* Move Down */}
+                      <button
+                        onClick={() => handleMoveBeatDown(beat.beatNumber)}
+                        disabled={beat.beatNumber === storyboardData.beats.length}
+                        className="p-1.5 hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        <ArrowDown className="w-4 h-4 text-gray-400" />
+                      </button>
+                      <div className="w-px h-5 bg-gray-700 mx-1" />
+                      {/* Duplicate */}
+                      <button
+                        onClick={() => handleDuplicateBeat(beat.beatNumber)}
+                        className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+                        title="Duplicate beat"
+                      >
+                        <Copy className="w-4 h-4 text-gray-400" />
+                      </button>
+                      {/* Edit */}
+                      <button
+                        onClick={() => handleEditBeat(beat.beatNumber)}
+                        className="p-1.5 hover:bg-purple-800/30 rounded transition-colors"
+                        title="Edit beat"
+                      >
+                        <Pencil className="w-4 h-4 text-purple-400" />
+                      </button>
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDeleteBeat(beat.beatNumber)}
+                        disabled={storyboardData.beats.length <= 1}
+                        className="p-1.5 hover:bg-red-900/30 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Delete beat"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -377,6 +647,60 @@ export default function StoryboardResultsPage() {
                       </ul>
                     </div>
                   </div>
+
+                  {/* Enhanced Fields Row */}
+                  {(beat.textOverlays?.length || beat.bRollSuggestions?.length || beat.retentionTip) && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-800/30 rounded-lg">
+                      {/* Text Overlays */}
+                      {beat.textOverlays && beat.textOverlays.length > 0 && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                            <Type className="w-3.5 h-3.5" />
+                            Text Overlays
+                          </h4>
+                          <ul className="text-sm space-y-1.5">
+                            {beat.textOverlays.map((overlay, idx) => (
+                              <li key={idx} className="text-gray-300">
+                                <span className="font-medium">&ldquo;{overlay.text}&rdquo;</span>
+                                <span className="text-gray-500 text-xs ml-2">
+                                  {overlay.position} • {overlay.timing}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* B-Roll Suggestions */}
+                      {beat.bRollSuggestions && beat.bRollSuggestions.length > 0 && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                            <Video className="w-3.5 h-3.5" />
+                            B-Roll Ideas
+                          </h4>
+                          <ul className="text-sm text-gray-400 space-y-1">
+                            {beat.bRollSuggestions.map((suggestion, idx) => (
+                              <li key={idx} className="flex gap-2 items-start">
+                                <span className="text-gray-600 flex-shrink-0">•</span>
+                                <span>{suggestion}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Retention Tip */}
+                      {beat.retentionTip && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                            <Zap className="w-3.5 h-3.5" />
+                            Retention Tip
+                          </h4>
+                          <p className="text-sm text-gray-400">{beat.retentionTip}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Director's Notes - Collapsible */}
                   <div className="border-t border-gray-800 pt-4">
@@ -426,7 +750,28 @@ export default function StoryboardResultsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Insert Beat Button */}
+              {index < storyboardData.beats.length - 1 && (
+                <button
+                  onClick={() => handleInsertBeat(beat.beatNumber)}
+                  className="w-full py-2 border border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-purple-600 hover:text-purple-400 hover:bg-purple-900/10 transition-all flex items-center justify-center gap-2 group"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="text-sm">Insert Beat</span>
+                </button>
+              )}
+              </div>
             ))}
+
+            {/* Add Beat at End */}
+            <button
+              onClick={() => handleInsertBeat(storyboardData.beats[storyboardData.beats.length - 1]?.beatNumber || 0)}
+              className="w-full py-3 border border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-purple-600 hover:text-purple-400 hover:bg-purple-900/10 transition-all flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Beat</span>
+            </button>
           </div>
         </div>
       </div>
