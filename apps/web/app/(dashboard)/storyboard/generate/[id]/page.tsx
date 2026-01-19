@@ -6,6 +6,7 @@ import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, Chevro
 import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
 import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
 import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
+import { TechnicalBadge } from "@/components/TechnicalBadge";
 
 interface TextOverlay {
   text: string;
@@ -536,22 +537,13 @@ export default function StoryboardResultsPage() {
                           {(beat.shotType || beat.cameraMovement || beat.transition) && (
                             <div className="flex items-center gap-1.5 ml-2">
                               {beat.shotType && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-900/30 text-blue-400 text-xs rounded-full border border-blue-800/50">
-                                  <Camera className="w-3 h-3" />
-                                  {beat.shotType}
-                                </span>
+                                <TechnicalBadge type="shot" value={beat.shotType} />
                               )}
                               {beat.cameraMovement && beat.cameraMovement !== 'static' && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-800/50">
-                                  <Move className="w-3 h-3" />
-                                  {beat.cameraMovement}
-                                </span>
+                                <TechnicalBadge type="movement" value={beat.cameraMovement} />
                               )}
                               {beat.transition && beat.transition !== 'none' && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-900/30 text-orange-400 text-xs rounded-full border border-orange-800/50">
-                                  <Film className="w-3 h-3" />
-                                  {beat.transition}
-                                </span>
+                                <TechnicalBadge type="transition" value={beat.transition} />
                               )}
                             </div>
                           )}
