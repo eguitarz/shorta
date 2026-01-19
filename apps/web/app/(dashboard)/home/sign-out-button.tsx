@@ -4,10 +4,12 @@ import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { LogOut } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 export default function SignOutButton() {
   const router = useRouter();
   const supabase = createClient();
+  const t = useTranslations('auth');
 
   const handleSignOut = async () => {
     try {
@@ -25,7 +27,7 @@ export default function SignOutButton() {
     <button
       onClick={handleSignOut}
       className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-      title="Sign out"
+      title={t('signOut')}
     >
       <LogOut className="w-5 h-5 text-gray-400" />
     </button>

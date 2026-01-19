@@ -9,11 +9,11 @@ import type { VideoFormat } from '@/lib/linter/types';
  * Duration: ~30-45 seconds
  * Updates job status to 'linting', runs linter, then advances to step 2
  */
-export async function processLinting(jobId: string) {
+export async function processLinting(jobId: string, locale?: string) {
   const supabase = createServiceClient();
 
   try {
-    console.log(`[Linting] Starting for job ${jobId}`);
+    console.log(`[Linting] Starting for job ${jobId} (locale: ${locale || 'en'})`);
 
     // Update status to 'linting'
     await supabase
@@ -45,7 +45,7 @@ export async function processLinting(jobId: string) {
 
     console.log(`[Linting] Processing video: ${videoSource}`);
     console.log(`[Linting] Format: ${job.classification_result.format}`);
-    
+
     // Log if using fallback format (from classification failure)
     if (job.classification_result.confidence === 0 && job.classification_result.evidence?.includes('Classification failed')) {
       console.log(`[Linting] Using generic rules due to classification failure`);
@@ -64,7 +64,8 @@ export async function processLinting(jobId: string) {
     const lintResult = await linter.lint(
       videoSource,
       job.classification_result.format as VideoFormat,
-      job.video_duration || undefined // Pass duration for FPS optimization
+      job.video_duration || undefined, // Pass duration for FPS optimization
+      locale
     );
 
     console.log(`[Linting] Found ${lintResult.violations.length} violations`);

@@ -16,11 +16,11 @@ import { HOOK_TYPE_VALUES } from '@/lib/scoring/hook-types';
  * Duration: ~60-90 seconds
  * Updates job status to 'storyboarding', generates analysis, then marks as completed
  */
-export async function processStoryboard(jobId: string) {
+export async function processStoryboard(jobId: string, locale?: string) {
   const supabase = createServiceClient();
 
   try {
-    console.log(`[Storyboard] Starting for job ${jobId}`);
+    console.log(`[Storyboard] Starting for job ${jobId} (locale: ${locale || 'en'})`);
 
     // Update status to 'storyboarding'
     await supabase
@@ -111,7 +111,8 @@ export async function processStoryboard(jobId: string) {
       signalData.signals,
       scoreResult,
       signalData.transcript,
-      signalData.beatTimestamps
+      signalData.beatTimestamps,
+      locale
     );
 
     const analysisResponse = await client.analyzeVideo(videoSource, analysisPrompt, {

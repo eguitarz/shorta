@@ -6,6 +6,7 @@ import { Bell, Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VideoUpload } from "@/components/video-upload";
+import { useTranslations } from "next-intl";
 
 type AnalyzeMode = "url" | "upload";
 
@@ -20,6 +21,7 @@ interface Activity {
 
 export default function DashboardContent() {
   const router = useRouter();
+  const t = useTranslations('dashboard');
   const [analyzeUrl, setAnalyzeUrl] = useState("");
   const [analyzeMode, setAnalyzeMode] = useState<AnalyzeMode>("url");
   const [topicInput, setTopicInput] = useState("");
@@ -109,9 +111,9 @@ export default function DashboardContent() {
       <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400">
-          <span>Overview</span>
+          <span>{t('breadcrumb.overview')}</span>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-white">Dashboard</span>
+          <span className="text-white">{t('breadcrumb.dashboard')}</span>
         </div>
 
         {/* Right Side */}
@@ -119,7 +121,7 @@ export default function DashboardContent() {
           {/* Status */}
           <div className="flex items-center gap-2 text-sm">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-gray-400">AI Directory Online</span>
+            <span className="text-gray-400">{t('status.aiOnline')}</span>
           </div>
 
           {/* Notifications */}
@@ -135,10 +137,10 @@ export default function DashboardContent() {
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold mb-4">
-              Start with a proven hook.
+              {t('hero.title')}
             </h1>
             <p className="text-xl text-gray-400">
-              Analyze viral hits or draft new concepts with AI-powered direction.
+              {t('hero.subtitle')}
             </p>
           </div>
 
@@ -148,13 +150,13 @@ export default function DashboardContent() {
             <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8">
               <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider mb-4">
                 <BarChart3 className="w-4 h-4" />
-                <span>Analyze Content</span>
+                <span>{t('analyzeCard.label')}</span>
               </div>
               <h2 className="text-2xl font-semibold mb-3">
-                Analyze Short
+                {t('analyzeCard.title')}
               </h2>
               <p className="text-gray-400 mb-6">
-                Paste a YouTube Short URL or upload a video to extract the hook, script structure, and retention score.
+                {t('analyzeCard.description')}
               </p>
 
               {/* Tab Toggle */}
@@ -167,7 +169,7 @@ export default function DashboardContent() {
                     }`}
                 >
                   <Link2 className="w-3.5 h-3.5" />
-                  URL
+                  {t('analyzeCard.urlTab')}
                 </button>
                 <button
                   onClick={() => setAnalyzeMode("upload")}
@@ -177,7 +179,7 @@ export default function DashboardContent() {
                     }`}
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  Upload
+                  {t('analyzeCard.uploadTab')}
                 </button>
               </div>
 
@@ -190,7 +192,7 @@ export default function DashboardContent() {
                       </div>
                       <Input
                         type="text"
-                        placeholder="https://youtube.com/shorts/..."
+                        placeholder={t('analyzeCard.placeholder')}
                         value={analyzeUrl}
                         onChange={(e) => setAnalyzeUrl(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && analyzeUrl.trim() && handleAnalyze()}
@@ -204,7 +206,7 @@ export default function DashboardContent() {
                     className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <BarChart3 className="w-5 h-5 mr-2" />
-                    Run Analysis
+                    {t('analyzeCard.button')}
                   </Button>
                 </>
               ) : (
@@ -218,13 +220,13 @@ export default function DashboardContent() {
             <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8">
               <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider mb-4">
                 <Hammer className="w-4 h-4" />
-                <span>New Project</span>
+                <span>{t('createCard.label')}</span>
               </div>
               <h2 className="text-2xl font-semibold mb-3">
-                Create from Topic
+                {t('createCard.title')}
               </h2>
               <p className="text-gray-400 mb-6">
-                Generate a storyboard and script from a simple topic or raw idea.
+                {t('createCard.description')}
               </p>
               <div className="mb-6">
                 <div className="relative">
@@ -233,7 +235,7 @@ export default function DashboardContent() {
                   </div>
                   <Input
                     type="text"
-                    placeholder="e.g., AI productivity tools for designers..."
+                    placeholder={t('createCard.placeholder')}
                     value={topicInput}
                     onChange={(e) => setTopicInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleCreateStoryboard()}
@@ -246,7 +248,7 @@ export default function DashboardContent() {
                 className="w-full h-14 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold text-base"
               >
                 <Hammer className="w-5 h-5 mr-2" />
-                Generate Storyboard
+                {t('createCard.button')}
               </Button>
             </div>
           </div>
@@ -255,21 +257,21 @@ export default function DashboardContent() {
           <div className="bg-[#141414] border border-gray-800 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                Recent Activity
+                {t('activity.title')}
               </h3>
               <button className="text-sm text-orange-500 hover:text-orange-400 font-medium">
-                View All History
+                {t('activity.viewAll')}
               </button>
             </div>
 
             <div className="space-y-1">
               {activitiesLoading ? (
                 <div className="text-center py-8 text-gray-500">
-                  Loading activities...
+                  {t('activity.loading')}
                 </div>
               ) : activities.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  No recent activities. Start by analyzing a video!
+                  {t('activity.empty')}
                 </div>
               ) : (
                 activities.map((activity) => (
@@ -278,8 +280,7 @@ export default function DashboardContent() {
                     onClick={() => handleActivityClick(activity)}
                     className="w-full flex items-center gap-4 p-4 hover:bg-gray-800/50 rounded-lg transition-colors group"
                   >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      activity.activityType === 'created' ? 'bg-green-500/10' :
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${activity.activityType === 'created' ? 'bg-green-500/10' :
                       activity.activityType === 'generated' ? 'bg-purple-500/10' : 'bg-orange-500/10'
                       }`}>
                       {activity.activityType === 'created' ? (

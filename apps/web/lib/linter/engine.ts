@@ -30,7 +30,7 @@ export class VideoLinter {
   /**
    * Build prompt with rules injected
    */
-  private buildPrompt(ruleSet: RuleSet): string {
+  private buildPrompt(ruleSet: RuleSet, locale?: string): string {
     const rulesList = ruleSet.rules
       .map((rule, idx) => {
         return `${idx + 1}. [${rule.severity.toUpperCase()}] ${rule.name} (${rule.id})
@@ -39,18 +39,34 @@ export class VideoLinter {
       })
       .join('\n\n');
 
-    return ruleSet.promptTemplate.replace('{{RULES_LIST}}', rulesList);
+    let prompt = ruleSet.promptTemplate.replace('{{RULES_LIST}}', rulesList);
+
+    // Inject language requirement if locale is not English
+    if (locale && locale !== 'en') {
+      const languageMap: Record<string, string> = {
+        'es': 'Spanish',
+        'ko': 'Korean',
+        'zh-TW': 'Traditional Chinese (zh-TW)'
+      };
+      const languageName = languageMap[locale] || locale;
+
+      prompt += `\n\nCRITICAL LANGUAGE REQUIREMENT:
+All output text—specifically the "message", "suggestion", and "summary" fields—MUST be written in ${languageName}.
+This is essential as the user is analyzing the video in this language.`;
+    }
+
+    return prompt;
   }
 
   /**
    * Lint a video and return structured results
    * @param videoUrl - Video URL or file URI
    * @param format - Video format for rule selection
-   * @param videoDuration - Optional video duration in seconds for FPS optimization
+   * @param locale - Optional locale for output language
    */
-  async lint(videoUrl: string, format: VideoFormat, videoDuration?: number): Promise<LintResult> {
+  async lint(videoUrl: string, format: VideoFormat, videoDuration?: number, locale?: string): Promise<LintResult> {
     const ruleSet = this.getRuleSet(format);
-    const prompt = this.buildPrompt(ruleSet);
+    const prompt = this.buildPrompt(ruleSet, locale);
 
     if (!this.client.analyzeVideo) {
       throw new Error('Client does not support video analysis');

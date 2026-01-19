@@ -1,0 +1,697 @@
+{
+  "common": {
+    "login": "로그인",
+    "signup": "회원가입",
+    "logout": "로그아웃",
+    "settings": "설정",
+    "language": "언어",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "create": "만들기",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "tryFree": "무료 체험",
+    "joinNow": "지금 가입",
+    "joinAsMember": "창립 멤버로 가입하기",
+    "noCreditCard": "신용카드 불필요 · 로그인 불필요",
+    "pricing": "연 $99 또는 평생 $199",
+    "yes": "네",
+    "pricingLimited": "연 $99 또는 평생 $199 · 한정 좌석",
+    "upgrade": "플랜 업그레이드",
+    "analyses": "분석",
+    "analysesRemaining": "{limit}회 중 {remaining}회 남음"
+  },
+  "nav": {
+    "home": "홈",
+    "analyzer": "분석기",
+    "build": "제작",
+    "library": "라이브러리"
+  },
+  "landing": {
+    "hero": {
+      "title": "당신의 AI 쇼츠 디렉터",
+      "subtitle": "분석. 개선. 제작."
+    },
+    "sections": {
+      "useCases": "Shorta를 사용하는 사람들",
+      "differentiation": "Shorta vs ChatGPT",
+      "faq": "자주 묻는 질문",
+      "founder": "Shorta가 내 워크플로우에서 바꾼 것",
+      "timeline": "출시 일정"
+    },
+    "faq": {
+      "aiGenerator": {
+        "question": "Shorta는 그냥 또 다른 AI 스크립트 생성기인가요?",
+        "answer": "아닙니다. Shorta는 먼저 분석과 피드백에 집중합니다. 생성은 선택 사항이며 실제로 수정이 필요한 부분에 따라 진행됩니다."
+      },
+      "monthlyPlan": {
+        "question": "왜 월간 플랜을 제공하지 않나요?",
+        "answer": "성공적인 YouTube Shorts 채널을 구축하는 것은 빠른 실험이 아닌 장기적인 비즈니스입니다. 연간 가격은 프로세스에 대한 헌신을 보장하고 실제 결과를 볼 수 있는 충분한 시간을 제공합니다. 우리는 성장에 진지한 크리에이터를 위해 구축하고 있습니다."
+      },
+      "chatgpt": {
+        "question": "그냥 ChatGPT를 사용하면 안 되나요?",
+        "answer1": "사용할 수 있습니다 — 하지만 ChatGPT는 오래된 데이터로 훈련되어 일반적인 훅을 제공합니다.",
+        "answer2": "Shorta는 최근 바이럴 쇼츠를 분석하고, 지금 효과가 있는 것을 추출하며, 랜덤한 바이럴 패턴이 아닌 특정 콘텐츠에 가장 적합한 훅을 매칭합니다.",
+        "answer3": "매일 트렌딩 쇼츠를 보고 당신의 주제에 어떤 훅이 효과적인지 정확히 알려주는 리서처가 있는 것과 같습니다."
+      },
+      "niche": {
+        "question": "제 니치가 생산성이나 AI가 아니면 어떻게 하나요?",
+        "answer": "Shorta는 니치별 유행어가 아닌 구조와 시청자 행동 패턴을 분석합니다."
+      },
+      "creativity": {
+        "question": "이게 제 창의성을 대체하나요?",
+        "answer": "아닙니다. 불확실성을 제거하여 중요한 창의적 결정에 집중할 수 있게 합니다."
+      },
+      "generateTime": {
+        "question": "스크립트 생성에 얼마나 걸리나요?",
+        "answer": "5분 미만입니다. 참조를 붙여넣고 주제를 입력하면 고품질 스토리보드를 즉시 받을 수 있습니다."
+      },
+      "otherPlatforms": {
+        "question": "TikTok이나 Instagram Reels에도 사용할 수 있나요?",
+        "answer": "사용할 수 있습니다 — 바이럴 숏폼 콘텐츠의 원칙은 플랫폼 전반에 적용됩니다. 그러나 현재 우리의 초점은 YouTube Shorts이므로 분석과 패턴은 해당 플랫폼에 최적화되어 있습니다."
+      },
+      "dataStorage": {
+        "question": "제 채널 데이터를 저장하나요?",
+        "answer": "AI가 귀하의 청중과 스타일에 맞는 최고의 콘텐츠를 생성할 수 있도록 요약된 채널 데이터(원본 비디오 아님)를 저장합니다. 귀하의 데이터는 제3자와 절대 공유되지 않습니다."
+      }
+    },
+    "timeline": {
+      "underway": "개발이 진행 중입니다.",
+      "launch": "출시: 2026년 2월 말.",
+      "calloutTitle": "개발이 진행 중입니다. 출시 전에 가입하세요.",
+      "calloutText": "공개 출시 전에 베타를 체험해보세요."
+    }
+  },
+  "dashboard": {
+    "welcome": "다시 오신 것을 환영합니다",
+    "recentAnalyses": "최근 분석",
+    "noAnalyses": "아직 분석이 없습니다",
+    "startAnalyzing": "첫 번째 비디오 분석을 시작하세요",
+    "breadcrumb": {
+      "overview": "개요",
+      "dashboard": "대시보드"
+    },
+    "status": {
+      "aiOnline": "AI 디렉토리 온라인"
+    },
+    "hero": {
+      "title": "검증된 훅으로 시작하세요.",
+      "subtitle": "바이럴 영상을 분석하거나 AI 가이드로 새로운 콘셉트를 작성하세요."
+    },
+    "analyzeCard": {
+      "label": "콘텐츠 분석",
+      "title": "쇼츠 분석",
+      "description": "YouTube Short URL을 붙여넣거나 비디오를 업로드하여 훅, 스크립트 구조, 유지율 점수를 추출하세요.",
+      "urlTab": "URL",
+      "uploadTab": "업로드",
+      "placeholder": "https://youtube.com/shorts/...",
+      "button": "분석 실행"
+    },
+    "createCard": {
+      "label": "새 프로젝트",
+      "title": "주제로 만들기",
+      "description": "간단한 주제나 원시 아이디어로 스토리보드와 스크립트를 생성하세요.",
+      "placeholder": "예: 디자이너를 위한 AI 생산성 도구...",
+      "button": "스토리보드 생성"
+    },
+    "activity": {
+      "title": "최근 활동",
+      "viewAll": "전체 기록 보기",
+      "loading": "활동 불러오는 중...",
+      "empty": "최근 활동이 없습니다. 비디오 분석을 시작해보세요!"
+    }
+  },
+  "analyzer": {
+    "title": "분석: {title}",
+    "uploadedVideo": "업로드된 비디오",
+    "subtitle": "분석 결과는 유사한 주제의 고유지율 쇼츠 패턴을 학습한 결과를 바탕으로 생성되었습니다.",
+    "pasteUrl": "분석할 YouTube Shorts URL을 붙여넣으세요",
+    "analyze": "분석",
+    "analyzing": "분석 중...",
+    "results": "분석 결과",
+    "score": "점수",
+    "compare": "비교하기",
+    "export": {
+      "subtitle": "자막 내보내기",
+      "storyboard": "스토리보드 내보내기"
+    },
+    "breadcrumb": {
+      "projects": "프로젝트",
+      "analysis": "분석"
+    },
+    "status": {
+      "analyzing": "분석 중",
+      "complete": "분석 완료",
+      "failed": "분석 실패",
+      "tryAgain": "다시 시도",
+      "loadingVideo": "비디오 불러오는 중...",
+      "starting": "분석 시작 중...",
+      "classifying": "비디오 형식 분류 중...",
+      "linting": "유지율 패턴 분석 중...",
+      "storyboarding": "스토리보드 생성 중...",
+      "classificationComplete": "분류 완료",
+      "lintingComplete": "분석 완료",
+      "step": "{total}단계 중 {current}단계",
+      "remainingStart": "약 2분 남음",
+      "remainingClassification": "약 90초 남음",
+      "remainingLinting": "약 60초 남음",
+      "remainingStoryboarding": "거의 다 되었습니다..."
+    },
+    "found": "{count}개 발견됨",
+    "scores": {
+      "overall": "종합 점수",
+      "howCalculated": "점수 계산 방식",
+      "calculationExplanation": "종합 점수(0-100)는 4가지 가중치 카테고리를 기준으로 계산됩니다:",
+      "hookWeight": "훅 (35%) - 주의를 얼마나 빨리 끄는가",
+      "structureWeight": "구조 (25%) - 흐름 및 가치 전달",
+      "clarityWeight": "명확성 (25%) - 말하기 속도 및 간결함",
+      "deliveryWeight": "전달 (15%) - 오디오 품질 및 에너지",
+      "deterministic": "결정론적: 동일한 비디오는 항상 동일한 점수를 받습니다.",
+      "grades": "등급: S (100+), A (80-99), B (70-79), C (60-69), D (50-59), F (<50)",
+      "comments": {
+        "S": "바이럴 가능성 높음",
+        "A": "우수한 성과",
+        "B": "탄탄한 기초",
+        "C": "개선 필요",
+        "D": "주의 요망",
+        "F": "대대적인 수정 필요"
+      },
+      "perfectBeats": "{total}개 비트 중 {perfect}개 비트가 완벽함"
+    },
+    "director": {
+      "take": "감독의 판정",
+      "niche": "니치",
+      "contentType": "콘텐츠 유형"
+    },
+    "whatToFix": {
+      "title": "🎯 수정이 필요한 부분",
+      "critical": {
+        "title": "치명적 수정 사항",
+        "subtitle": "(가장 먼저 수행)"
+      },
+      "moderate": {
+        "title": "보조 개선 사항"
+      },
+      "minor": {
+        "title": "선택적 다듬기"
+      },
+      "view": "보기 →",
+      "beats": "{numbers}번 비트",
+      "beat": "{number}번 비트",
+      "apply": "수정 적용",
+      "applied": "적용됨"
+    },
+    "metadata": {
+      "title": "제목 및 설명",
+      "suggest": "제목 및 설명 추천",
+      "noSuggestions": "아직 생성된 추천이 없습니다",
+      "suggesting": "추천 중...",
+      "titleOptions": "제목 옵션",
+      "description": "설명"
+    },
+    "hooks": {
+      "title": "리훅(Re-hook) 변형",
+      "aiSuggested": "AI 추천",
+      "currentHook": "현재 훅",
+      "variant": "변형 {letter}",
+      "whyThisWorks": "효과적인 이유",
+      "apply": "변형 {letter} 승인",
+      "applied": "변형 {letter} 적용됨",
+      "orTryDifferent": "또는 다른 스타일 시도",
+      "pickType": "특정 훅 유형 선택",
+      "addStyle": "리훅 스타일 추가",
+      "generating": "생성 중...",
+      "styles": {
+        "emotional": "더 감성적인",
+        "specific": "더 구체적인",
+        "shorter": "더 짧은",
+        "question": "질문형"
+      },
+      "types": {
+        "Outcome-first": {
+          "label": "결과 우선",
+          "description": "결과/혜택을 미리 약속"
+        },
+        "Relatable pain": {
+          "label": "공감되는 통증",
+          "description": "시청자의 말하지 못한 고민을 언급"
+        },
+        "Contradiction / Myth-busting": {
+          "label": "모순 / 미신 타파",
+          "description": "일반적인 통념에 도전"
+        },
+        "Shock / Bold claim": {
+          "label": "충격 / 대담한 주장",
+          "description": "극단적이거나 반직관적인 진술"
+        },
+        "Curiosity gap": {
+          "label": "호기심 간격",
+          "description": "불완전한 정보로 계속 시청하게 함"
+        },
+        "Authority / Credibility": {
+          "label": "권위 / 신뢰성",
+          "description": "빠르게 전문성을 확립"
+        },
+        "Specific number / specificity": {
+          "label": "구체적 숫자 / 구체성",
+          "description": "구체적인 데이터나 지표를 사용"
+        },
+        "Direct call-out": {
+          "label": "직접 호명",
+          "description": "특정 시청자 층을 직접 타겟팅"
+        },
+        "Pattern interrupt (verbal)": {
+          "label": "패턴 중단 (언어적)",
+          "description": "특이한 전달 방식이나 문구 사용"
+        },
+        "Before / After contrast": {
+          "label": "전후 대비",
+          "description": "변화 과정을 보여줌"
+        },
+        "Time-bound promise": {
+          "label": "기간 한정 약속",
+          "description": "속도나 긴급성을 강조"
+        },
+        "Negative framing": {
+          "label": "부정적 프레이밍",
+          "description": "실수나 위험을 먼저 제시"
+        },
+        "Question hook": {
+          "label": "질문 훅",
+          "description": "시청자의 마음속 질문을 던짐"
+        },
+        "Other": {
+          "label": "기타",
+          "description": "혼합되거나 독특한 접근"
+        }
+      }
+    },
+    "metrics": {
+      "labels": {
+        "excellent": "우수",
+        "good": "좋음",
+        "fair": "보통",
+        "weak": "약함",
+        "poor": "부족",
+        "clear": "명확함",
+        "somewhat": "어느 정도 명확함",
+        "unclear": "불분명함"
+      },
+      "hook": {
+        "title": "훅",
+        "timeToClaim": "가치 주장 시간",
+        "patternBreak": "패턴 브레이크",
+        "specifics": "구체성",
+        "hookQuestion": "훅 질문",
+        "duration": "훅 지속 시간",
+        "viralPattern": "바이럴 패턴",
+        "loopStrength": "루프 강도",
+        "tooltips": {
+          "timeToClaim": "첫 번째 약속/주장이 나오기까지의 시간. 목표: 1.5초 이내.",
+          "patternBreak": "첫 1-3초 동안의 에너지/시각적 변화. 높을수록 좋습니다.",
+          "specifics": "훅에 포함된 숫자, 기간, 이름 등. 많을수록 설득력이 높아집니다.",
+          "hookQuestion": "시청자를 끌어들이기 위한 질문이나 모순으로 시작하는지 여부."
+        }
+      },
+      "structure": {
+        "title": "구조",
+        "beatCount": "비트 수",
+        "beats": "{count}개 비트",
+        "progressMarkers": "진행 지표",
+        "hasPayoff": "보상(결과) 유무",
+        "loopCue": "루프 큐",
+        "videoLength": "비디오 길이",
+        "pacingConsistency": "본문 일관성",
+        "payoffTiming": "결과 제시 타이밍",
+        "tooltips": {
+          "beatCount": "콘텐츠 섹션 수. 쇼츠의 경우 3-6개가 이상적입니다.",
+          "progressMarkers": "\"첫째\", \"다음\", \"마지막으로\"와 같이 시청자를 안내하는 단어.",
+          "hasPayoff": "비디오가 훅에서 한 약속을 지키는지 여부.",
+          "loopCue": "엔딩이 시작 부분을 참조하거나 재시청을 유도하는지 여부."
+        }
+      },
+      "clarity": {
+        "title": "명확성",
+        "valueClarity": "가치 명확성",
+        "uniqueness": "독창성",
+        "speakingPace": "말하기 속도",
+        "wps": "{count} 단어/초",
+        "complexity": "복잡도",
+        "topicJumps": "주제 전환",
+        "redundancy": "중복도",
+        "tooltips": {
+          "speakingPace": "초당 단어 수. 이상적: 이해를 위해 초당 3-4단어.",
+          "complexity": "문장 복잡도. 낮을수록 이해하기 쉽습니다.",
+          "topicJumps": "갑작스러운 맥락 전환. 적을수록 따라가기 쉽습니다.",
+          "redundancy": "새로운 정보 없는 반복. 낮을수록 간결합니다."
+        }
+      },
+      "delivery": {
+        "title": "전달력",
+        "energyLevel": "에너지 레벨",
+        "vocalClarity": "음성 명확성",
+        "presence": "표현력",
+        "volumeConsistency": "볼륨 일관성",
+        "audioQuality": "오디오 품질",
+        "fillerWords": "추임새",
+        "energyVariation": "에너지 변화",
+        "tooltips": {
+          "volumeConsistency": "볼륨 안정성. 높을수록 일정한 볼륨 레벨을 의미합니다.",
+          "audioQuality": "노이즈 레벨 및 선명도. 높을수록 깨끗한 오디오를 의미합니다.",
+          "fillerWords": "\"음\", \"아\"와 같은 추임새 수. 적을수록 깔끔한 전달이 가능합니다.",
+          "energyVariation": "청각적 흥미를 유지하기 위한 톤 변화. 단조로운 톤은 덜 매력적입니다."
+        }
+      }
+    },
+    "comparison": {
+      "title": "비디오 비교",
+      "base": "기준",
+      "vs": "vs",
+      "current": "현재",
+      "loadingStats": "통계 불러오는 중...",
+      "today": "오늘",
+      "yesterday": "어제",
+      "analyzedAt": "{date}에 분석됨",
+      "baseScore": "기준 점수",
+      "currentScore": "현재 점수",
+      "overall": "종합",
+      "noSignals": "비교를 위한 {type}의 상세 신호가 없습니다",
+      "issues": {
+        "title": "문제 비교",
+        "fixed": "{count}개 수정됨",
+        "new": "{count}개 새로 발견됨",
+        "unchanged": "{count}개 변동 없음",
+        "none": "비교할 문제가 없습니다",
+        "status": {
+          "fixed": "수정됨",
+          "new": "새로 발견됨",
+          "unchanged": "변동 없음"
+        }
+      }
+    },
+    "upgrade": {
+      "title": "기능 잠금 해제",
+      "feature": "이 기능",
+      "message": "프리미엄 기능을 잠금 해제하여 상세 성과 인사이트, AI 추천 수정 사항, 바이럴 훅 변형 등을 확인하세요.",
+      "cta": "가격 보기",
+      "features": {
+        "unlimited": "무제한 분석",
+        "aiSuggestions": "AI 수정 추천",
+        "hookVariants": "바이럴 훅 변형",
+        "comparisons": "비디오 비교",
+        "export": "자막 및 스토리보드 내보내기"
+      }
+    },
+    "beatsbybeat": {
+      "title": "비트별 상세 분석",
+      "beatsCount": "{count}개 비트",
+      "noIssues": "문제 없음",
+      "showDetails": "세부 정보 표시",
+      "hideDetails": "세부 정보 숨기기",
+      "retentionDrop": "예상 유지율 하락",
+      "beatMini": "비트 {number}",
+      "transcript": "트랜스크립트",
+      "visual": "시각 요소",
+      "audio": "오디오",
+      "shotList": "감독의 샷 리스트",
+      "severity": {
+        "critical": "심각",
+        "moderate": "보통",
+        "minor": "경미",
+        "ignored": "무시됨"
+      },
+      "retention": {
+        "high": "높은 이탈 위험",
+        "moderate": "중간 이탈",
+        "minor": "경미한 이탈",
+        "strong": "강력한 유지"
+      }
+    },
+    "compare": "비교하기",
+    "changes": {
+      "title": "승인된 변경 사항",
+      "noChanges": "승인된 변경 사항 없음",
+      "noChangesSub": "분석 패널에서 제안을 검토하고 승인하여 여기에 추가하세요.",
+      "generate": "승인된 변경 사항으로 생성",
+      "generating": "생성 중...",
+      "estTime": "예상 처리 시간: {time}",
+      "fix": "수정",
+      "rehook": "리훅",
+      "variant": "변형 {label}",
+      "generateNew": "새로 생성"
+    },
+    "share": {
+      "button": "공유",
+      "generating": "생성 중...",
+      "copyLink": "링크 복사",
+      "openLink": "새 탭에서 열기",
+      "error": "링크 생성 실패"
+    },
+    "create": {
+      "title": "쇼츠 분석 만들기",
+      "subtitle": "YouTube URL을 입력하거나 비디오를 업로드하여 AI로 분석하세요",
+      "breadcrumb": {
+        "projects": "프로젝트",
+        "myNewShort": "내 새 쇼츠",
+        "createAnalysis": "분석 만들기"
+      },
+      "urlTab": "URL",
+      "uploadTab": "업로드",
+      "urlLabel": "YouTube Short URL",
+      "uploadLabel": "비디오 파일 업로드",
+      "placeholder": "https://youtube.com/shorts/...",
+      "button": "쇼츠 분석",
+      "generating": "스토리보드 생성 중...",
+      "errors": {
+        "enterUrl": "URL을 입력하세요",
+        "invalidUrl": "유효한 URL을 입력하세요",
+        "youtubeOnly": "YouTube URL만 지원됩니다"
+      }
+    }
+  },
+  "storyboard": {
+    "title": "스토리보드 제작",
+    "create": "스토리보드 만들기",
+    "chat": {
+      "placeholder": "비디오 아이디어를 설명해주세요...",
+      "send": "전송",
+      "generating": "스토리보드 생성 중...",
+      "ready": "생성 준비 완료!",
+      "generate": "스토리보드 생성"
+    },
+    "createPage": {
+      "title": "스토리보드 만들기",
+      "subtitle": "비디오 아이디어를 알려주세요",
+      "welcomeMessage": "안녕하세요! 비디오 스토리보드를 만드는 것을 도와드릴게요. 어떤 종류의 비디오를 만들고 싶으세요?",
+      "inputPlaceholder": "메시지를 입력하세요...",
+      "inputWithFiles": "파일에 대한 메시지를 추가하세요...",
+      "tryAnyway": "그래도 생성 시도",
+      "generating": "스토리보드를 생성하는 중...",
+      "attachments": {
+        "title": "첨부파일",
+        "addFiles": "파일 추가",
+        "noFiles": "첨부된 파일이 없습니다. \"파일 추가\"를 클릭하여 PDF나 이미지를 첨부하세요."
+      },
+      "errors": {
+        "fileType": "지원되지 않는 파일 형식: {name}. PDF 또는 이미지를 사용하세요.",
+        "fileSize": "파일이 너무 큽니다: {name}. 최대 크기는 10MB입니다.",
+        "chatFailed": "죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.",
+        "generateFailed": "죄송합니다. 스토리보드 생성에 실패했습니다. 다시 시도해주세요."
+      }
+    },
+    "beats": {
+      "title": "비트",
+      "add": "비트 추가",
+      "delete": "비트 삭제",
+      "duplicate": "비트 복제",
+      "regenerate": "비트 재생성",
+      "edit": "비트 편집",
+      "moveUp": "위로 이동",
+      "moveDown": "아래로 이동",
+      "insertBeat": "비트 삽입",
+      "newBeatTitle": "새 비트",
+      "newBeatNotes": "• 여기에 지침을 추가하세요",
+      "newBeatScript": "여기에 스크립트를 추가하세요...",
+      "newBeatVisual": "• 비주얼을 설명하세요",
+      "newBeatAudio": "• 오디오를 설명하세요",
+      "copySuffix": "복사"
+    },
+    "export": {
+      "subtitle": "자막 내보내기",
+      "storyboard": "스토리보드 내보내기"
+    },
+    "fields": {
+      "script": "스크립트",
+      "visual": "비주얼",
+      "audio": "오디오",
+      "directorNotes": "감독 노트"
+    },
+    "hookVariants": {
+      "title": "훅 변형",
+      "bold": "대담하고 직접적",
+      "question": "호기심 훅",
+      "emotional": "고통점",
+      "specific": "데이터 기반",
+      "selected": "선택됨",
+      "whyThisWorks": "왜 효과적인가",
+      "options": "옵션"
+    },
+    "resultPage": {
+      "title": "당신의 스토리보드",
+      "subtitle": "비디오 촬영을 위한 감독 가이드",
+      "loading": "스토리보드 로딩 중...",
+      "failedToLoad": "데이터 로드 실패",
+      "backToCreate": "만들기로 돌아가기",
+      "overview": {
+        "title": "비디오 개요",
+        "titleLabel": "제목",
+        "format": "형식",
+        "niche": "니치",
+        "length": "길이"
+      },
+      "hookSelector": {
+        "title": "훅 선택",
+        "description": "콘텐츠에 가장 적합한 훅 스타일을 선택하세요. 비트 1이 업데이트됩니다."
+      },
+      "shotList": {
+        "title": "감독 샷 리스트"
+      },
+      "beatContent": {
+        "whatToSay": "말할 내용",
+        "visual": "비주얼",
+        "audio": "오디오",
+        "textOverlays": "텍스트 오버레이",
+        "bRollIdeas": "B-Roll 아이디어",
+        "retentionTip": "유지율 팁",
+        "directorNotes": "감독 노트",
+        "shootingGuidance": "촬영 가이드"
+      },
+      "editPanel": {
+        "title": "비트 편집",
+        "subtitle": "AI로 이 비트 개선하기",
+        "sending": "편집 중...",
+        "quickActions": "빠른 작업",
+        "makeShorter": "더 짧게",
+        "addDetail": "세부 사항 추가",
+        "simplify": "단순화",
+        "energize": "활력 추가",
+        "proposedChanges": "제안된 변경",
+        "apply": "적용",
+        "discard": "취소",
+        "placeholder": "변경하고 싶은 내용을 설명하세요...",
+        "error": "죄송합니다. 문제가 발생했습니다. 다시 시도해 주세요.",
+        "welcomeMessage": "비트 {beatNumber} 개선을 도와드리겠습니다. 어떤 부분을 변경하고 싶으신가요?",
+        "quickActionPrompts": {
+          "shorter": "이 비트를 더 짧고 간결하게 만들기",
+          "longer": "이 비트에 세부 사항 더 추가하기",
+          "simplify": "언어를 단순화하여 이해하기 쉽게 만들기",
+          "energize": "이 비트를 더 활기차고 흥미롭게 만들기"
+        }
+      }
+    },
+    "technicalBadge": {
+      "shotTypes": {
+        "ECU": "초근접 샷: 특정 세부 사항의 매우 타이트한 샷 (눈, 손, 물체)",
+        "CU": "클로즈업: 얼굴이나 물체의 타이트한 샷, 감정이나 세부 사항 표시",
+        "MCU": "미디엄 클로즈업: 머리와 어깨 프레이밍, 대화에 일반적",
+        "MS": "미디엄 샷: 허리 위 프레이밍, 피사체와 환경의 균형",
+        "MWS": "미디엄 와이드 샷: 무릎 위 프레이밍, 바디 랭귀지 표시",
+        "MLS": "미디엄 롱 샷: 대부분의 신체와 일부 환경 표시",
+        "WS": "와이드 샷: 전신과 일부 환경이 보임",
+        "EWS": "익스트림 와이드 샷: 장소 설정, 피사체가 작게 보임",
+        "POV": "시점 샷: 카메라가 캐릭터가 보는 것을 보여줌",
+        "OTS": "오버 더 숄더: 한 사람 뒤에서 다른 사람을 바라보는 샷",
+        "2-shot": "투샷: 프레임에 두 사람 포함",
+        "INSERT": "인서트 샷: 장면과 관련된 물체나 세부 사항의 클로즈업",
+        "insert": "인서트 샷: 장면과 관련된 물체나 세부 사항의 클로즈업"
+      },
+      "cameraMovements": {
+        "static": "고정: 카메라가 제자리에 고정",
+        "pan": "팬: 카메라가 수평으로 좌우 회전",
+        "tilt": "틸트: 카메라가 수직으로 위아래 회전",
+        "dolly": "돌리: 카메라가 피사체를 향해 또는 멀어지며 물리적으로 이동",
+        "truck": "트럭: 카메라가 좌우로 물리적으로 이동",
+        "track": "트래킹 샷: 카메라가 움직이는 피사체를 따라감",
+        "zoom": "줌: 렌즈가 조절되어 피사체가 더 가깝거나 멀게 보임",
+        "push": "푸시 인: 카메라나 줌이 피사체에 가까워져 강조",
+        "pull": "풀 아웃: 카메라나 줌이 피사체에서 멀어짐",
+        "tracking": "트래킹 샷: 카메라가 움직이는 피사체를 따라감",
+        "handheld": "핸드헬드: 오퍼레이터가 카메라를 들고 자연스럽고 유기적인 움직임",
+        "steadicam": "스테디캠: 걸으면서 부드러운 움직임을 위한 안정된 카메라",
+        "crane": "크레인 샷: 크레인이나 지브를 사용하여 카메라가 수직으로 이동",
+        "whip": "휩 팬: 모션 블러를 만드는 매우 빠른 팬, 종종 전환에 사용",
+        "arc": "아크: 카메라가 피사체 주위로 곡선 경로로 이동"
+      },
+      "transitions": {
+        "cut": "컷: 한 샷에서 다른 샷으로 즉시 전환",
+        "jump cut": "점프 컷: 같은 샷 내에서의 갑작스러운 컷, 불편한 효과 생성",
+        "match cut": "매치 컷: 두 개의 비슷한 모양이나 액션 사이의 컷",
+        "fade": "페이드: 검은색이나 흰색으로의 점진적 전환",
+        "dissolve": "디졸브: 한 샷이 점차적으로 다른 샷으로 혼합",
+        "wipe": "와이프: 새 샷이 이전 샷 위로 슬라이드",
+        "swipe": "스와이프: 와이프와 유사, 새 샷이 이전 샷 위로 슬라이드",
+        "zoom": "줌 전환: 샷 전환에 사용되는 빠른 줌",
+        "whip": "휩 전환: 전환에 사용되는 모션 블러를 만드는 매우 빠른 팬",
+        "none": "전환 없음",
+        "J-cut": "J-컷: 다음 장면의 오디오가 비주얼 전에 시작",
+        "L-cut": "L-컷: 이전 장면의 오디오가 새 비주얼 위로 계속됨",
+        "smash cut": "스매시 컷: 극적인 대비나 코믹한 효과를 위한 갑작스러운 컷"
+      }
+    }
+  },
+  "footer": {
+    "tools": "도구",
+    "blog": "블로그",
+    "pricing": "가격",
+    "privacy": "개인정보",
+    "terms": "약관",
+    "contact": "문의"
+  },
+  "auth": {
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "email": "이메일",
+    "password": "비밀번호",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "noAccount": "계정이 없으신가요?",
+    "hasAccount": "이미 계정이 있으신가요?"
+  },
+  "tier": {
+    "anonymous": "체험판",
+    "free": "무료",
+    "founder": "창립 멤버",
+    "lifetime": "평생"
+  },
+  "time": {
+    "year": "{count}년 전",
+    "years": "{count}년 전",
+    "month": "{count}개월 전",
+    "months": "{count}개월 전",
+    "week": "{count}주 전",
+    "weeks": "{count}주 전",
+    "day": "{count}일 전",
+    "days": "{count}일 전",
+    "hour": "{count}시간 전",
+    "hours": "{count}시간 전",
+    "minute": "{count}분 전",
+    "minutes": "{count}분 전",
+    "justNow": "방금 전",
+    "m_ago": "{count}분 전",
+    "h_ago": "{count}시간 전",
+    "d_ago": "{count}일 전"
+  },
+  "sharedAnalysis": {
+    "readOnly": "공유된 분석 결과입니다 - 읽기 전용 보기",
+    "notFound": {
+      "title": "분석 결과를 찾을 수 없습니다",
+      "subtitle": "공유된 링크를 사용할 수 없습니다",
+      "reasonsTitle": "가능한 원인:",
+      "reason1": "분석 결과가 아직 공유되지 않았습니다",
+      "reason2": "링크가 잘못되었거나 만료되었습니다",
+      "reason3": "데이터베이스 마이그레이션이 필요할 수 있습니다"
+    }
+  }
+}

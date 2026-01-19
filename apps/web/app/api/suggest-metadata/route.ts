@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv, MetadataSuggestions } from '@/lib/llm';
+import { getLanguageName } from '@/lib/i18n-helpers';
 
 /**
  * POST /api/suggest-metadata
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { jobId } = body;
+        const { jobId, locale } = body;
 
         if (!jobId) {
             return NextResponse.json(
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Build context from analysis results
-        const prompt = buildMetadataPrompt(storyboard, classification);
+        const prompt = buildMetadataPrompt(storyboard, classification, locale);
 
         console.log('[SuggestMetadata] Generating suggestions for job:', jobId);
 
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-function buildMetadataPrompt(storyboard: any, classification: any): string {
+function buildMetadataPrompt(storyboard: any, classification: any, locale?: string): string {
     const overview = storyboard.overview || {};
     const performance = storyboard.performance || {};
 
@@ -190,7 +191,7 @@ Return ONLY this JSON format:
     "Title variant 3 (under 70 chars)"
   ],
   "description": "Multi-line description with hashtags"
-}`;
+}${locale && locale !== 'en' ? `\n\nIMPORTANT LANGUAGE REQUIREMENT: ALL output (titles and description) MUST be written in ${getLanguageName(locale)}.` : ''}`;
 }
 
 function parseMetadataResponse(content: string): MetadataSuggestions {

@@ -2,6 +2,7 @@
 
 import { X, Eye, Heart, Clock, Upload, ChevronDown, ChevronUp, CheckCircle2, Plus, Minus, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import type { UserVideo } from './VideoPickerModal';
 
 interface CompareModalProps {
@@ -51,18 +52,18 @@ const formatNumber = (num: number | null | undefined): string => {
 };
 
 // Format relative time
-const formatRelativeTime = (dateString: string | null | undefined): string => {
+const formatRelativeTime = (dateString: string | null | undefined, tTime: any, tCompare: any): string => {
     if (!dateString) return '—';
     const now = new Date();
     const date = new Date(dateString);
     const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
 
-    if (diffDays < 1) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    return `${Math.floor(diffDays / 365)} years ago`;
+    if (diffDays < 1) return tCompare('today');
+    if (diffDays === 1) return tCompare('yesterday');
+    if (diffDays < 7) return tTime('days', { count: diffDays });
+    if (diffDays < 30) return tTime('weeks', { count: Math.floor(diffDays / 7) });
+    if (diffDays < 365) return tTime('months', { count: Math.floor(diffDays / 30) });
+    return tTime('years', { count: Math.floor(diffDays / 365) });
 };
 
 // Calculate delta and return display values
@@ -188,6 +189,11 @@ interface IssueWithStatus {
 }
 
 export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: CompareModalProps) {
+    const tCompare = useTranslations('comparison');
+    const tAnalyzer = useTranslations('analyzer');
+    const tCommon = useTranslations('common');
+    const tTime = useTranslations('time');
+
     const [hookExpanded, setHookExpanded] = useState(true);
     const [structureExpanded, setStructureExpanded] = useState(true);
     const [clarityExpanded, setClarityExpanded] = useState(true);
@@ -304,15 +310,15 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-800 flex-shrink-0">
                     <h2 id="compare-modal-title" className="text-lg font-semibold text-white">
-                        Video Comparison
+                        {tCompare('title')}
                     </h2>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3 text-sm">
-                            <span className="text-gray-500">Base</span>
+                            <span className="text-gray-500">{tCompare('base')}</span>
                             <span className="text-white font-medium truncate max-w-[200px]">{baseVideo.title}</span>
-                            <span className="text-gray-500">vs</span>
+                            <span className="text-gray-500">{tCompare('vs')}</span>
                             <span className="text-orange-400 font-medium truncate max-w-[200px]">{currentVideo.title}</span>
-                            <span className="text-gray-500">(Current)</span>
+                            <span className="text-gray-500">({tCompare('current')})</span>
                         </div>
                     </div>
                     <button
@@ -345,7 +351,7 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
                                             <Upload className="w-8 h-8 mb-2" />
-                                            <span className="text-xs">Uploaded Video</span>
+                                            <span className="text-xs">{tAnalyzer('status.uploaded')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -354,7 +360,7 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     baseStatsLoading ? (
                                         <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                                             <Loader2 className="w-3 h-3 animate-spin" />
-                                            <span>Loading stats...</span>
+                                            <span>{tCompare('loadingStats')}</span>
                                         </div>
                                     ) : baseVideoStats ? (
                                         <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
@@ -368,18 +374,19 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <Clock className="w-3.5 h-3.5" />
-                                                {formatRelativeTime(baseVideoStats.publishedAt)}
+                                                {formatRelativeTime(baseVideoStats.publishedAt, tTime, tCompare)}
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="text-center text-xs text-gray-500">
-                                            Analyzed {formatRelativeTime(baseVideo.completedAt)}
+                                        <div className="flex items-center gap-1">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            {formatRelativeTime(baseVideo.completedAt, tTime, tCompare)}
                                         </div>
                                     )
                                 )}
                                 {!baseVideo.videoUrl && (
                                     <div className="text-center text-xs text-gray-500">
-                                        Analyzed {formatRelativeTime(baseVideo.completedAt)}
+                                        {tCompare('analyzedAt', { date: formatRelativeTime(baseVideo.completedAt, tTime, tCompare) })}
                                     </div>
                                 )}
                             </div>
@@ -403,12 +410,12 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     ) : currentVideo.videoUrl ? (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
                                             <Upload className="w-8 h-8 mb-2" />
-                                            <span className="text-xs">YouTube Video</span>
+                                            <span className="text-xs">{tAnalyzer('status.analyzing')}</span>
                                         </div>
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
                                             <Upload className="w-8 h-8 mb-2" />
-                                            <span className="text-xs">Uploaded Video</span>
+                                            <span className="text-xs">{tAnalyzer('status.uploaded')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -425,7 +432,7 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Clock className="w-3.5 h-3.5" />
-                                            {formatRelativeTime(currentVideo.stats.publishedAt)}
+                                            {formatRelativeTime(currentVideo.stats.publishedAt, tTime, tCompare)}
                                         </div>
                                     </div>
                                 )}
@@ -442,10 +449,10 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     <div className={`text-4xl font-bold text-${getLetterGrade(baseVideo.scores.overall).color}-500`}>
                                         {getLetterGrade(baseVideo.scores.overall).label}
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-1">Base Score</div>
+                                    <div className="text-xs text-gray-500 mt-1">{tCompare('baseScore')}</div>
                                 </div>
                                 <div className="text-center px-6">
-                                    <div className="text-sm text-gray-500 mb-1">Overall</div>
+                                    <div className="text-sm text-gray-500 mb-1">{tCompare('overall')}</div>
                                     {(() => {
                                         const delta = calculateDelta(currentVideo.scores.overall, baseVideo.scores.overall);
                                         return delta.hasChange ? (
@@ -461,7 +468,7 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     <div className={`text-4xl font-bold text-${getLetterGrade(currentVideo.scores.overall).color}-500`}>
                                         {getLetterGrade(currentVideo.scores.overall).label}
                                     </div>
-                                    <div className="text-xs text-orange-500 mt-1">Current Score</div>
+                                    <div className="text-xs text-orange-500 mt-1">{tCompare('currentScore')}</div>
                                 </div>
                             </div>
                         </div>
@@ -480,37 +487,37 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     {baseSignals?.hook && currentSignals?.hook ? (
                                         <>
                                             <MetricRow
-                                                label="Time to Claim"
+                                                label={tAnalyzer('metrics.hook.ttc')}
                                                 baseValue={`${baseSignals.hook.TTClaim}s`}
                                                 currentValue={`${currentSignals.hook.TTClaim}s`}
                                                 delta={calculateDelta(currentSignals.hook.TTClaim, baseSignals.hook.TTClaim, true)}
-                                                tooltip="Seconds until first claim. Lower is better."
+                                                tooltip={tAnalyzer('metrics.hook.tooltips.ttc')}
                                             />
                                             <MetricRow
-                                                label="Pattern Break"
+                                                label={tAnalyzer('metrics.hook.pb')}
                                                 baseValue={`${baseSignals.hook.PB}/5`}
                                                 currentValue={`${currentSignals.hook.PB}/5`}
                                                 delta={calculateDelta(currentSignals.hook.PB, baseSignals.hook.PB)}
-                                                tooltip="Visual/energy variation. Higher is better."
+                                                tooltip={tAnalyzer('metrics.hook.tooltips.pb')}
                                             />
                                             <MetricRow
-                                                label="Specifics"
+                                                label={tAnalyzer('metrics.hook.spec')}
                                                 baseValue={baseSignals.hook.Spec}
                                                 currentValue={currentSignals.hook.Spec}
                                                 delta={calculateDelta(currentSignals.hook.Spec, baseSignals.hook.Spec)}
-                                                tooltip="Numbers, timeframes in hook."
+                                                tooltip={tAnalyzer('metrics.hook.tooltips.spec')}
                                             />
                                             <MetricRow
-                                                label="Question/Contradiction"
-                                                baseValue={baseSignals.hook.QC > 0 ? 'Yes' : 'No'}
-                                                currentValue={currentSignals.hook.QC > 0 ? 'Yes' : 'No'}
+                                                label={tAnalyzer('metrics.hook.qc')}
+                                                baseValue={baseSignals.hook.QC > 0 ? tCommon('yes') : tCommon('no')}
+                                                currentValue={currentSignals.hook.QC > 0 ? tCommon('yes') : tCommon('no')}
                                                 delta={calculateDelta(currentSignals.hook.QC, baseSignals.hook.QC)}
-                                                tooltip="Opens with a question or contradiction."
+                                                tooltip={tAnalyzer('metrics.hook.tooltips.qc')}
                                             />
                                         </>
                                     ) : (
                                         <div className="text-center text-gray-500 text-sm py-4">
-                                            Detailed hook signals not available for comparison
+                                            {tCompare('noSignals', { type: 'hook' })}
                                         </div>
                                     )}
                                 </div>
@@ -531,37 +538,37 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     {baseSignals?.structure && currentSignals?.structure ? (
                                         <>
                                             <MetricRow
-                                                label="Beat Count"
+                                                label={tAnalyzer('beatsbybeat.beatsCount', { count: '' }).replace('{count}', '').trim()}
                                                 baseValue={baseSignals.structure.BC}
                                                 currentValue={currentSignals.structure.BC}
                                                 delta={calculateDelta(currentSignals.structure.BC, baseSignals.structure.BC)}
-                                                tooltip="Number of content sections."
+                                                tooltip={tAnalyzer('metrics.structure.tooltips.beatCount')}
                                             />
                                             <MetricRow
-                                                label="Progress Markers"
+                                                label={tAnalyzer('metrics.structure.progressMarkers')}
                                                 baseValue={baseSignals.structure.PM}
                                                 currentValue={currentSignals.structure.PM}
                                                 delta={calculateDelta(currentSignals.structure.PM, baseSignals.structure.PM)}
-                                                tooltip="Words like 'first', 'next', 'finally'."
+                                                tooltip={tAnalyzer('metrics.structure.tooltips.progressMarkers')}
                                             />
                                             <MetricRow
-                                                label="Has Payoff"
-                                                baseValue={baseSignals.structure.PP ? 'Yes' : 'No'}
-                                                currentValue={currentSignals.structure.PP ? 'Yes' : 'No'}
+                                                label={tAnalyzer('metrics.structure.hasPayoff')}
+                                                baseValue={baseSignals.structure.PP ? tCommon('yes') : tCommon('no')}
+                                                currentValue={currentSignals.structure.PP ? tCommon('yes') : tCommon('no')}
                                                 delta={calculateDelta(currentSignals.structure.PP ? 1 : 0, baseSignals.structure.PP ? 1 : 0)}
-                                                tooltip="Delivers on hook promise."
+                                                tooltip={tAnalyzer('metrics.structure.tooltips.hasPayoff')}
                                             />
                                             <MetricRow
-                                                label="Loop Cue"
-                                                baseValue={baseSignals.structure.LC ? 'Yes' : 'No'}
-                                                currentValue={currentSignals.structure.LC ? 'Yes' : 'No'}
+                                                label={tAnalyzer('metrics.structure.loopCue')}
+                                                baseValue={baseSignals.structure.LC ? tCommon('yes') : tCommon('no')}
+                                                currentValue={currentSignals.structure.LC ? tCommon('yes') : tCommon('no')}
                                                 delta={calculateDelta(currentSignals.structure.LC ? 1 : 0, baseSignals.structure.LC ? 1 : 0)}
-                                                tooltip="Ending references start."
+                                                tooltip={tAnalyzer('metrics.structure.tooltips.loopCue')}
                                             />
                                         </>
                                     ) : (
                                         <div className="text-center text-gray-500 text-sm py-4">
-                                            Detailed structure signals not available for comparison
+                                            {tCompare('noSignals', { type: 'structure' })}
                                         </div>
                                     )}
                                 </div>
@@ -582,36 +589,36 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     {baseSignals?.clarity && currentSignals?.clarity ? (
                                         <>
                                             <MetricRow
-                                                label="Speaking Pace"
+                                                label={tAnalyzer('metrics.clarity.speakingPace')}
                                                 baseValue={`${(baseSignals.clarity.wordCount / baseSignals.clarity.duration).toFixed(1)} w/s`}
                                                 currentValue={`${(currentSignals.clarity.wordCount / currentSignals.clarity.duration).toFixed(1)} w/s`}
-                                                tooltip="Words per second. Ideal: 3-4."
+                                                tooltip={tAnalyzer('metrics.clarity.tooltips.speakingPace')}
                                             />
                                             <MetricRow
-                                                label="Complexity"
+                                                label={tAnalyzer('metrics.clarity.complexity')}
                                                 baseValue={`${baseSignals.clarity.SC}/5`}
                                                 currentValue={`${currentSignals.clarity.SC}/5`}
                                                 delta={calculateDelta(currentSignals.clarity.SC, baseSignals.clarity.SC, true)}
-                                                tooltip="Sentence complexity. Lower is better."
+                                                tooltip={tAnalyzer('metrics.clarity.tooltips.complexity')}
                                             />
                                             <MetricRow
-                                                label="Topic Jumps"
+                                                label={tAnalyzer('metrics.clarity.topicJumps')}
                                                 baseValue={baseSignals.clarity.TJ}
                                                 currentValue={currentSignals.clarity.TJ}
                                                 delta={calculateDelta(currentSignals.clarity.TJ, baseSignals.clarity.TJ, true)}
-                                                tooltip="Context switches. Lower is better."
+                                                tooltip={tAnalyzer('metrics.clarity.tooltips.topicJumps')}
                                             />
                                             <MetricRow
-                                                label="Redundancy"
+                                                label={tAnalyzer('metrics.clarity.redundancy')}
                                                 baseValue={`${baseSignals.clarity.RD}/5`}
                                                 currentValue={`${currentSignals.clarity.RD}/5`}
                                                 delta={calculateDelta(currentSignals.clarity.RD, baseSignals.clarity.RD, true)}
-                                                tooltip="Repetition. Lower is better."
+                                                tooltip={tAnalyzer('metrics.clarity.tooltips.redundancy')}
                                             />
                                         </>
                                     ) : (
                                         <div className="text-center text-gray-500 text-sm py-4">
-                                            Detailed clarity signals not available for comparison
+                                            {tCompare('noSignals', { type: 'clarity' })}
                                         </div>
                                     )}
                                 </div>
@@ -632,37 +639,37 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                     {baseSignals?.delivery && currentSignals?.delivery ? (
                                         <>
                                             <MetricRow
-                                                label="Volume Consistency"
+                                                label={tAnalyzer('metrics.delivery.volumeConsistency')}
                                                 baseValue={`${baseSignals.delivery.LS}/5`}
                                                 currentValue={`${currentSignals.delivery.LS}/5`}
                                                 delta={calculateDelta(currentSignals.delivery.LS, baseSignals.delivery.LS)}
-                                                tooltip="Loudness stability. Higher is better."
+                                                tooltip={tAnalyzer('metrics.delivery.tooltips.volumeConsistency')}
                                             />
                                             <MetricRow
-                                                label="Audio Quality"
+                                                label={tAnalyzer('metrics.delivery.audioQuality')}
                                                 baseValue={`${baseSignals.delivery.NS}/5`}
                                                 currentValue={`${currentSignals.delivery.NS}/5`}
                                                 delta={calculateDelta(currentSignals.delivery.NS, baseSignals.delivery.NS)}
-                                                tooltip="Noise level. Higher is better."
+                                                tooltip={tAnalyzer('metrics.delivery.tooltips.audioQuality')}
                                             />
                                             <MetricRow
-                                                label="Filler Words"
+                                                label={tAnalyzer('metrics.delivery.fillerWords')}
                                                 baseValue={baseSignals.delivery.fillerCount}
                                                 currentValue={currentSignals.delivery.fillerCount}
                                                 delta={calculateDelta(currentSignals.delivery.fillerCount, baseSignals.delivery.fillerCount, true)}
-                                                tooltip="Count of 'um', 'uh'. Lower is better."
+                                                tooltip={tAnalyzer('metrics.delivery.tooltips.fillerWords')}
                                             />
                                             <MetricRow
-                                                label="Energy Variation"
-                                                baseValue={baseSignals.delivery.EC ? 'Yes' : 'No'}
-                                                currentValue={currentSignals.delivery.EC ? 'Yes' : 'No'}
+                                                label={tAnalyzer('metrics.delivery.energyVariation')}
+                                                baseValue={baseSignals.delivery.EC ? tCommon('yes') : tCommon('no')}
+                                                currentValue={currentSignals.delivery.EC ? tCommon('yes') : tCommon('no')}
                                                 delta={calculateDelta(currentSignals.delivery.EC ? 1 : 0, baseSignals.delivery.EC ? 1 : 0)}
-                                                tooltip="Vocal energy changes."
+                                                tooltip={tAnalyzer('metrics.delivery.tooltips.energyVariation')}
                                             />
                                         </>
                                     ) : (
                                         <div className="text-center text-gray-500 text-sm py-4">
-                                            Detailed delivery signals not available for comparison
+                                            {tCompare('noSignals', { type: 'delivery' })}
                                         </div>
                                     )}
                                 </div>
@@ -679,24 +686,24 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                 className="w-full flex items-center justify-between py-3 px-4 bg-gray-900/50 hover:bg-gray-800/50 rounded-lg transition-colors"
                             >
                                 <div className="flex items-center gap-4">
-                                    <span className="font-medium text-white">Issues Comparison</span>
+                                    <span className="font-medium text-white">{tCompare('issues.title')}</span>
                                     <div className="flex items-center gap-3 text-xs">
                                         {fixedCount > 0 && (
                                             <span className="flex items-center gap-1 text-green-500">
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                                {fixedCount} Fixed
+                                                {tCompare('issues.fixed', { count: fixedCount })}
                                             </span>
                                         )}
                                         {newCount > 0 && (
                                             <span className="flex items-center gap-1 text-red-500">
                                                 <Plus className="w-3.5 h-3.5" />
-                                                {newCount} New
+                                                {tCompare('issues.new', { count: newCount })}
                                             </span>
                                         )}
                                         {unchangedCount > 0 && (
                                             <span className="flex items-center gap-1 text-gray-500">
                                                 <Minus className="w-3.5 h-3.5" />
-                                                {unchangedCount} Unchanged
+                                                {tCompare('issues.unchanged', { count: unchangedCount })}
                                             </span>
                                         )}
                                     </div>
@@ -708,7 +715,7 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                 <div className="bg-gray-900/20 rounded-lg p-4 space-y-3">
                                     {issuesWithStatus.length === 0 ? (
                                         <div className="text-center text-gray-500 text-sm py-4">
-                                            No issues to compare
+                                            {tCompare('issues.none')}
                                         </div>
                                     ) : (
                                         <>
@@ -719,9 +726,9 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <span className="text-xs px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded font-medium">
-                                                                FIXED
+                                                                {tCompare('issues.status.fixed')}
                                                             </span>
-                                                            <span className="text-xs text-gray-500 capitalize">{issue.severity}</span>
+                                                            <span className="text-xs text-gray-500 capitalize">{tAnalyzer(`beatsbybeat.severity.${issue.severity as 'critical' | 'moderate' | 'minor'}`)}</span>
                                                         </div>
                                                         <p className="text-sm text-gray-300">{issue.message}</p>
                                                     </div>
@@ -735,9 +742,9 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <span className="text-xs px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded font-medium">
-                                                                NEW
+                                                                {tCompare('issues.status.new')}
                                                             </span>
-                                                            <span className="text-xs text-gray-500 capitalize">{issue.severity}</span>
+                                                            <span className="text-xs text-gray-500 capitalize">{tAnalyzer(`beatsbybeat.severity.${issue.severity as 'critical' | 'moderate' | 'minor'}`)}</span>
                                                         </div>
                                                         <p className="text-sm text-gray-300">{issue.message}</p>
                                                         {issue.suggestion && (
@@ -754,9 +761,9 @@ export function CompareModal({ isOpen, onClose, baseVideo, currentVideo }: Compa
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <span className="text-xs px-1.5 py-0.5 bg-gray-700 text-gray-400 rounded font-medium">
-                                                                UNCHANGED
+                                                                {tCompare('issues.status.unchanged')}
                                                             </span>
-                                                            <span className="text-xs text-gray-500 capitalize">{issue.severity}</span>
+                                                            <span className="text-xs text-gray-500 capitalize">{tAnalyzer(`beatsbybeat.severity.${issue.severity as 'critical' | 'moderate' | 'minor'}`)}</span>
                                                         </div>
                                                         <p className="text-sm text-gray-400">{issue.message}</p>
                                                     </div>

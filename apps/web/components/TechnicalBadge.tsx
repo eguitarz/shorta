@@ -7,49 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-// Filmmaking glossary - explanations for technical terms
-const FILMMAKING_GLOSSARY: Record<string, string> = {
-  // Shot Types
-  "ECU": "Extreme Close-Up: Very tight shot on a specific detail (eyes, hands, object)",
-  "CU": "Close-Up: Tight shot of a face or object, showing emotion or detail",
-  "MCU": "Medium Close-Up: Head and shoulders framing, common for dialogue",
-  "MS": "Medium Shot: Waist-up framing, balances subject and environment",
-  "MWS": "Medium Wide Shot: Knee-up framing, shows body language",
-  "WS": "Wide Shot: Full body with some environment visible",
-  "EWS": "Extreme Wide Shot: Establishes location, subject appears small",
-  "POV": "Point of View: Camera shows what a character sees",
-  "OTS": "Over the Shoulder: Shot from behind one person looking at another",
-  "2-shot": "Two Shot: Frame includes two people",
-  "insert": "Insert Shot: Close-up of an object or detail relevant to the scene",
-
-  // Camera Movements
-  "static": "Static: Camera stays fixed in position",
-  "pan": "Pan: Camera rotates horizontally left or right",
-  "tilt": "Tilt: Camera rotates vertically up or down",
-  "dolly": "Dolly: Camera physically moves toward or away from subject",
-  "truck": "Truck: Camera physically moves left or right",
-  "zoom": "Zoom: Lens adjusts to make subject appear closer/farther",
-  "push": "Push In: Camera or zoom moves closer to subject for emphasis",
-  "pull": "Pull Out: Camera or zoom moves away from subject",
-  "tracking": "Tracking Shot: Camera follows a moving subject",
-  "handheld": "Handheld: Camera held by operator for natural, organic movement",
-  "steadicam": "Steadicam: Stabilized camera for smooth movement while walking",
-  "crane": "Crane Shot: Camera moves vertically using a crane or jib",
-  "whip": "Whip Pan: Very fast pan creating motion blur, often used for transitions",
-  "arc": "Arc: Camera moves in a curved path around the subject",
-
-  // Transitions
-  "cut": "Cut: Instant switch from one shot to another",
-  "jump cut": "Jump Cut: Abrupt cut within the same shot, creates jarring effect",
-  "match cut": "Match Cut: Cut between two similar shapes or actions",
-  "fade": "Fade: Gradual transition to/from black or white",
-  "dissolve": "Dissolve: One shot gradually blends into another",
-  "wipe": "Wipe: New shot slides in over the previous shot",
-  "J-cut": "J-Cut: Audio from next scene starts before the visual",
-  "L-cut": "L-Cut: Audio from previous scene continues over new visual",
-  "smash cut": "Smash Cut: Abrupt cut for dramatic contrast or comedic effect",
-};
+import { useTranslations } from "next-intl";
 
 type BadgeType = "shot" | "movement" | "transition";
 
@@ -63,34 +21,73 @@ const badgeConfig: Record<BadgeType, {
   bgColor: string;
   textColor: string;
   borderColor: string;
+  translationKey: 'shotTypes' | 'cameraMovements' | 'transitions';
 }> = {
   shot: {
     icon: Camera,
     bgColor: "bg-blue-900/30",
     textColor: "text-blue-400",
     borderColor: "border-blue-800/50",
+    translationKey: 'shotTypes',
   },
   movement: {
     icon: Move,
     bgColor: "bg-green-900/30",
     textColor: "text-green-400",
     borderColor: "border-green-800/50",
+    translationKey: 'cameraMovements',
   },
   transition: {
     icon: Film,
     bgColor: "bg-orange-900/30",
     textColor: "text-orange-400",
     borderColor: "border-orange-800/50",
+    translationKey: 'transitions',
   },
 };
 
 export function TechnicalBadge({ type, value }: TechnicalBadgeProps) {
+  const tShot = useTranslations('storyboard.technicalBadge.shotTypes');
+  const tMovement = useTranslations('storyboard.technicalBadge.cameraMovements');
+  const tTransition = useTranslations('storyboard.technicalBadge.transitions');
+
   const config = badgeConfig[type];
   const Icon = config.icon;
 
-  // Look up explanation (case-insensitive)
-  const normalizedValue = value.toLowerCase();
-  const explanation = FILMMAKING_GLOSSARY[normalizedValue] || FILMMAKING_GLOSSARY[value];
+  // Get the appropriate translation function based on type
+  const getTranslation = () => {
+    const translators: Record<string, typeof tShot> = {
+      shotTypes: tShot,
+      cameraMovements: tMovement,
+      transitions: tTransition,
+    };
+    return translators[config.translationKey];
+  };
+
+  // Try to get translation for the value
+  const getExplanation = (): string | undefined => {
+    const t = getTranslation();
+
+    // Try different key formats
+    const keysToTry = [value, value.toLowerCase(), value.toUpperCase()];
+
+    for (const key of keysToTry) {
+      try {
+        // Check if key exists using has() if available, otherwise try to get
+        const result = t(key as any);
+        // If the result doesn't contain a dot (which would indicate it's returning the key path), it's a valid translation
+        if (result && typeof result === 'string' && !result.includes('storyboard.technicalBadge')) {
+          return result;
+        }
+      } catch {
+        // Key not found, try next
+      }
+    }
+
+    return undefined;
+  };
+
+  const explanation = getExplanation();
 
   const badge = (
     <span

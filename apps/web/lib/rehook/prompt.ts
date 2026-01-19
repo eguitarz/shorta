@@ -1,6 +1,7 @@
 import type { HookCategory } from '../scoring/hook-types';
 import { HOOK_TYPE_DESCRIPTIONS } from '../scoring/hook-types';
 import type { RehookPreset, VideoContext } from './types';
+import { getLanguageName } from '../i18n-helpers';
 
 /**
  * Style-specific instructions for each preset
@@ -38,7 +39,8 @@ export function buildRehookPrompt(
   originalHook: string,
   style: RehookPreset | 'custom',
   hookType: HookCategory | undefined,
-  context: VideoContext
+  context: VideoContext,
+  locale?: string
 ): string {
   let styleInstruction: string;
 
@@ -79,5 +81,6 @@ Return ONLY valid JSON in this exact format:
   "text": "The rewritten hook text (what the creator would say)",
   "explanation": "Brief explanation of why this version works (1-2 sentences)",
   "style": "${style === 'custom' ? hookType : style}"
-}`;
+}
+${locale && locale !== 'en' ? `\nIMPORTANT: Write the hook text in ${getLanguageName(locale)}. The explanation can be in English.` : ''}`;
 }

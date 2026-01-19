@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 
 // YouTube IFrame API types
 declare global {
@@ -210,7 +211,7 @@ const extractYouTubeId = (url: string): string | null => {
 };
 
 // Format relative time (e.g., "30 days ago")
-const formatRelativeTime = (dateString: string): string => {
+const formatRelativeTime = (dateString: string, t: any): string => {
   const now = new Date();
   const published = new Date(dateString);
   const diffMs = now.getTime() - published.getTime();
@@ -218,25 +219,30 @@ const formatRelativeTime = (dateString: string): string => {
   const diffMinutes = Math.floor(diffSeconds / 60);
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
-  const diffMonths = Math.floor(diffDays / 30);
-  const diffYears = Math.floor(diffDays / 365);
+  const diffMonths = Math.floor(diffHours / (24 * 30));
+  const diffYears = Math.floor(diffHours / (24 * 365));
 
   if (diffYears > 0) {
-    return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
+    return t(diffYears === 1 ? 'year' : 'years', { count: diffYears });
   } else if (diffMonths > 0) {
-    return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+    return t(diffMonths === 1 ? 'month' : 'months', { count: diffMonths });
   } else if (diffDays > 0) {
-    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return t(diffDays === 1 ? 'day' : 'days', { count: diffDays });
   } else if (diffHours > 0) {
-    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return t(diffHours === 1 ? 'hour' : 'hours', { count: diffHours });
   } else if (diffMinutes > 0) {
-    return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+    return t(diffMinutes === 1 ? 'minute' : 'minutes', { count: diffMinutes });
   } else {
-    return 'just now';
+    return t('justNow');
   }
 };
 
 export default function AnalyzerResultsPage() {
+  const t = useTranslations('analyzer');
+  const tShared = useTranslations('sharedAnalysis');
+  const tCommon = useTranslations('common');
+  const tTime = useTranslations('time');
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -437,6 +443,7 @@ export default function AnalyzerResultsPage() {
           approvedChanges,
           url: videoUrl,
           analysisJobId: jobId, // Pass job ID for database link
+          locale,
         }),
       });
 
@@ -478,7 +485,7 @@ export default function AnalyzerResultsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ jobId }),
+        body: JSON.stringify({ jobId, locale }),
       });
 
       const data = await response.json();
@@ -569,7 +576,7 @@ export default function AnalyzerResultsPage() {
       // Try to fetch job immediately to get video URL
       const fetchJob = async () => {
         try {
-          const response = await fetch(`/api/jobs/analysis/${id}`);
+          const response = await fetch(`/api/jobs/analysis/${id}?locale=${locale}`);
           const data = await response.json();
 
           if (!response.ok) {
@@ -680,7 +687,7 @@ export default function AnalyzerResultsPage() {
 
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`/api/jobs/analysis/${jobId}`);
+        const response = await fetch(`/api/jobs/analysis/${jobId}?locale=${locale}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -964,28 +971,28 @@ export default function AnalyzerResultsPage() {
   // Letter grade helpers for scores
   // S: 100+, A: 80-99, B: 70-79, C: 60-69, D: 50-59, F: <50
   const getLetterGrade = (score: number) => {
-    if (score >= 100) return { label: 'S', color: 'purple', comment: 'Viral Ready' };
-    if (score >= 80) return { label: 'A', color: 'green', comment: 'Strong Performance' };
-    if (score >= 70) return { label: 'B', color: 'blue', comment: 'Solid Foundation' };
-    if (score >= 60) return { label: 'C', color: 'yellow', comment: 'Room to Improve' };
-    if (score >= 50) return { label: 'D', color: 'orange', comment: 'Needs Attention' };
-    return { label: 'F', color: 'red', comment: 'Major Rework Needed' };
+    if (score >= 100) return { label: 'S', color: 'purple', comment: t('scores.comments.S') };
+    if (score >= 80) return { label: 'A', color: 'green', comment: t('scores.comments.A') };
+    if (score >= 70) return { label: 'B', color: 'blue', comment: t('scores.comments.B') };
+    if (score >= 60) return { label: 'C', color: 'yellow', comment: t('scores.comments.C') };
+    if (score >= 50) return { label: 'D', color: 'orange', comment: t('scores.comments.D') };
+    return { label: 'F', color: 'red', comment: t('scores.comments.F') };
   };
 
   // Special clarity grading: Clear (≥75), Somewhat (50-74), Unclear (<50)
   const getClarityGrade = (score: number) => {
-    if (score >= 75) return { label: 'Clear', color: 'green' };
-    if (score >= 50) return { label: 'Somewhat', color: 'yellow' };
-    return { label: 'Unclear', color: 'red' };
+    if (score >= 75) return { label: t('metrics.labels.clear'), color: 'green' };
+    if (score >= 50) return { label: t('metrics.labels.somewhat'), color: 'yellow' };
+    return { label: t('metrics.labels.unclear'), color: 'red' };
   };
 
   // Convert metric scores to descriptive words
   const getMetricLabel = (score: number) => {
-    if (score >= 80) return { label: 'Excellent', color: 'green' };
-    if (score >= 60) return { label: 'Good', color: 'blue' };
-    if (score >= 40) return { label: 'Fair', color: 'yellow' };
-    if (score >= 20) return { label: 'Weak', color: 'orange' };
-    return { label: 'Poor', color: 'red' };
+    if (score >= 80) return { label: t('metrics.labels.excellent'), color: 'green' };
+    if (score >= 60) return { label: t('metrics.labels.good'), color: 'blue' };
+    if (score >= 40) return { label: t('metrics.labels.fair'), color: 'yellow' };
+    if (score >= 20) return { label: t('metrics.labels.weak'), color: 'orange' };
+    return { label: t('metrics.labels.poor'), color: 'red' };
   };
 
   // Render analysis text with bullet points (clean, no bold)
@@ -1030,13 +1037,13 @@ export default function AnalyzerResultsPage() {
             onClick={() => router.push("/analyzer/create")}
             className="text-sm text-gray-400 hover:text-white transition-colors"
           >
-            Projects
+            {t('breadcrumb.projects')}
           </button>
           <button className="text-sm text-gray-400 hover:text-white transition-colors">
             {analysisData?.storyboard.overview.title || "My New Short"}
           </button>
           <button className="text-sm text-white font-medium border-b-2 border-orange-500 pb-[22px] -mb-[17px]">
-            Analysis
+            {t('breadcrumb.analysis')}
           </button>
         </div>
 
@@ -1044,13 +1051,13 @@ export default function AnalyzerResultsPage() {
           {loading ? (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 rounded-lg">
               <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
-              <span className="text-sm text-orange-500 font-medium">Analyzing</span>
+              <span className="text-sm text-orange-500 font-medium">{t('status.analyzing')}</span>
             </div>
           ) : (
             <>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-lg">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-green-500 font-medium">Analysis Complete</span>
+                <span className="text-sm text-green-500 font-medium">{t('status.complete')}</span>
               </div>
               {jobId && <ShareButton jobId={jobId} />}
               {analysisData && (
@@ -1063,7 +1070,7 @@ export default function AnalyzerResultsPage() {
                       title="Compare with another video"
                     >
                       <GitCompare className="w-4 h-4" />
-                      <span>Compare</span>
+                      <span>{t('compare')}</span>
                     </button>
                   )}
                   <ExportSubtitleButton
@@ -1088,13 +1095,13 @@ export default function AnalyzerResultsPage() {
               <div className="flex items-center justify-between mb-2">
                 <h1 className="text-3xl font-bold">
                   {isUploadedFile
-                    ? 'Analysis: Uploaded video'
-                    : `Analysis: ${analysisData?.storyboard?.overview?.title || 'Video'}`
+                    ? t('title', { title: t('uploadedVideo') })
+                    : t('title', { title: analysisData?.storyboard?.overview?.title || 'Video' })
                   }
                 </h1>
               </div>
               <p className="text-sm text-gray-400">
-                Insights are generated using patterns learned from high-retention Shorts in similar topic categories.
+                {t('subtitle')}
               </p>
             </div>
 
@@ -1150,7 +1157,7 @@ export default function AnalyzerResultsPage() {
                         {statsLoading ? (
                           <span className="inline-block w-20 h-4 bg-gray-800 rounded animate-pulse"></span>
                         ) : videoStats?.publishedAt ? (
-                          formatRelativeTime(videoStats.publishedAt)
+                          formatRelativeTime(videoStats.publishedAt, tTime)
                         ) : (
                           '—'
                         )}
@@ -1181,12 +1188,12 @@ export default function AnalyzerResultsPage() {
                       <div className="flex items-center gap-2 mb-4">
                         <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
                         <div className="text-xs text-orange-500 font-medium">
-                          {jobStatus === 'classifying' && 'Classifying video format...'}
-                          {jobStatus === 'linting' && 'Analyzing retention patterns...'}
-                          {jobStatus === 'storyboarding' && 'Generating storyboard...'}
-                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 0 && 'Starting analysis...'}
-                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 1 && 'Classification complete'}
-                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 2 && 'Linting complete'}
+                          {jobStatus === 'classifying' && t('status.classifying')}
+                          {jobStatus === 'linting' && t('status.linting')}
+                          {jobStatus === 'storyboarding' && t('status.storyboarding')}
+                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 0 && t('status.starting')}
+                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 1 && t('status.classificationComplete')}
+                          {(jobStatus === 'pending' || !jobStatus) && currentStep === 2 && t('status.lintingComplete')}
                         </div>
                       </div>
 
@@ -1200,15 +1207,15 @@ export default function AnalyzerResultsPage() {
 
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-xs text-gray-400">
-                          Step {currentStep} of 3
+                          {t('status.step', { current: currentStep, total: 3 })}
                         </span>
                         <div className="flex items-center gap-2">
                           <Clock className="w-3.5 h-3.5 text-gray-500" />
                           <span className="text-xs text-gray-400">
-                            {currentStep === 0 && '~2 minutes remaining'}
-                            {currentStep === 1 && '~90 seconds remaining'}
-                            {currentStep === 2 && '~60 seconds remaining'}
-                            {currentStep === 3 && 'Almost done...'}
+                            {currentStep === 0 && t('status.remainingStart')}
+                            {currentStep === 1 && t('status.remainingClassification')}
+                            {currentStep === 2 && t('status.remainingLinting')}
+                            {currentStep === 3 && t('status.remainingStoryboarding')}
                           </span>
                         </div>
                       </div>
@@ -1233,36 +1240,36 @@ export default function AnalyzerResultsPage() {
                     {/* Overall Score */}
                     <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
                       <div className="flex items-center gap-1.5 mb-1">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider">Overall Score</div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wider">{t('scores.overall')}</div>
                         <div className="relative group">
                           <InfoIcon className="w-3.5 h-3.5 text-gray-600 hover:text-gray-400 cursor-help transition-colors" />
                           <div className="absolute left-0 top-6 w-72 bg-gray-900 border border-gray-700 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl">
                             <div className="text-xs text-gray-300 space-y-2">
-                              <p className="font-semibold text-white">How is this score calculated?</p>
-                              <p>The <span className="text-orange-400 font-medium">Overall Score</span> (0-100) is calculated from 4 weighted categories:</p>
+                              <p className="font-semibold text-white">{t('scores.howCalculated')}</p>
+                              <p>{t('scores.calculationExplanation')}</p>
                               <ul className="space-y-1 pl-3">
                                 <li className="flex items-start gap-1.5">
                                   <span className="text-orange-500 mt-0.5">•</span>
-                                  <span><span className="text-orange-500 font-medium">Hook</span> (35%) - How quickly you grab attention</span>
+                                  <span>{t('scores.hookWeight')}</span>
                                 </li>
                                 <li className="flex items-start gap-1.5">
                                   <span className="text-green-500 mt-0.5">•</span>
-                                  <span><span className="text-green-500 font-medium">Structure</span> (25%) - Flow and payoff delivery</span>
+                                  <span>{t('scores.structureWeight')}</span>
                                 </li>
                                 <li className="flex items-start gap-1.5">
                                   <span className="text-purple-500 mt-0.5">•</span>
-                                  <span><span className="text-purple-500 font-medium">Clarity</span> (25%) - Speaking pace and simplicity</span>
+                                  <span>{t('scores.clarityWeight')}</span>
                                 </li>
                                 <li className="flex items-start gap-1.5">
                                   <span className="text-blue-500 mt-0.5">•</span>
-                                  <span><span className="text-blue-500 font-medium">Delivery</span> (15%) - Audio quality and energy</span>
+                                  <span>{t('scores.deliveryWeight')}</span>
                                 </li>
                               </ul>
                               <p className="pt-2 border-t border-gray-800 text-[11px] text-gray-400">
-                                <span className="font-medium text-gray-300">Deterministic:</span> Same video always gets the same score.
+                                <span className="font-medium text-gray-300">{t('scores.deterministic')}</span>
                               </p>
                               <p className="pt-2 border-t border-gray-800 text-[11px]">
-                                Grades: <span className="text-purple-500">S</span> (100+), <span className="text-green-500">A</span> (80-99), <span className="text-blue-500">B</span> (70-79), <span className="text-yellow-500">C</span> (60-69), <span className="text-orange-500">D</span> (50-59), <span className="text-red-500">F</span> (&lt;50).
+                                {t('scores.grades')}
                               </p>
                             </div>
                           </div>
@@ -1294,14 +1301,14 @@ export default function AnalyzerResultsPage() {
                             <div className="flex items-center gap-2">
                               <span className="text-green-500 text-lg">✓</span>
                               <span className="text-sm text-green-400">
-                                {perfectBeats} of {totalBeats} beats perfect
+                                {t('scores.perfectBeats', { perfect: perfectBeats, total: totalBeats })}
                               </span>
                             </div>
                           </div>
                         );
                       })()}
                       <div className="pt-3 border-t border-gray-800">
-                        <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Director's Take</div>
+                        <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">{t('director.take')}</div>
                         <div className="text-xs text-gray-400 leading-relaxed space-y-2">
                           {(() => {
                             if (!analysisData) return null;
@@ -1335,7 +1342,7 @@ export default function AnalyzerResultsPage() {
                       {/* Niche Category */}
                       {analysisData.storyboard.overview.nicheCategory && (
                         <div className="mt-3 pt-3 border-t border-gray-800">
-                          <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Niche</div>
+                          <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">{t('director.niche')}</div>
                           <div className="flex flex-col gap-1.5">
                             <span className="inline-block px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-[10px] font-semibold uppercase tracking-wide w-fit">
                               {analysisData.storyboard.overview.nicheCategory}
@@ -1352,7 +1359,7 @@ export default function AnalyzerResultsPage() {
                       {/* Content Type */}
                       {analysisData.storyboard.performance.content.contentType && (
                         <div className="mt-3 pt-3 border-t border-gray-800">
-                          <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">Content Type</div>
+                          <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">{t('director.contentType')}</div>
                           <span className="inline-block px-2 py-1 bg-purple-500/10 text-purple-400 rounded text-[10px] font-semibold uppercase tracking-wide w-fit">
                             {analysisData.storyboard.performance.content.contentType}
                           </span>
@@ -1387,7 +1394,7 @@ export default function AnalyzerResultsPage() {
                         <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Hook</span>
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t('metrics.hook.title')}</span>
                         <button
                           onClick={() => setHookExpanded(!hookExpanded)}
                           className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
@@ -1421,9 +1428,9 @@ export default function AnalyzerResultsPage() {
                                 <>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Time to Claim
+                                      {t('metrics.hook.timeToClaim')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Seconds until first promise/claim. Target: under 1.5s.
+                                        {t('metrics.hook.tooltips.timeToClaim')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.hook.TTClaim <= 1.5 ? 'text-green-400' : analysisData.storyboard._signals.hook.TTClaim <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -1432,9 +1439,9 @@ export default function AnalyzerResultsPage() {
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Pattern Break
+                                      {t('metrics.hook.patternBreak')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Energy/visual variation in first 1-3 seconds. Higher is better.
+                                        {t('metrics.hook.tooltips.patternBreak')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.hook.PB >= 4 ? 'text-green-400' : analysisData.storyboard._signals.hook.PB >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -1443,39 +1450,39 @@ export default function AnalyzerResultsPage() {
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Specifics
+                                      {t('metrics.hook.specifics')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Numbers, timeframes, names in hook. More = more compelling.
+                                        {t('metrics.hook.tooltips.specifics')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.hook.Spec >= 2 ? 'text-green-400' : analysisData.storyboard._signals.hook.Spec >= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.hook.Spec} found
+                                      {t('found', { count: analysisData.storyboard._signals.hook.Spec })}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Hook Question
+                                      {t('metrics.hook.hookQuestion')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Opens with a question or contradiction to hook viewers.
+                                        {t('metrics.hook.tooltips.hookQuestion')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.hook.QC > 0 ? 'text-green-400' : 'text-gray-400'}`}>
-                                      {analysisData.storyboard._signals.hook.QC > 0 ? 'Yes' : 'No'}
+                                      {analysisData.storyboard._signals.hook.QC > 0 ? tCommon('yes') : tCommon('no')}
                                     </span>
                                   </div>
                                 </>
                               ) : (
                                 <>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-500">Hook Duration</span>
+                                    <span className="text-gray-500">{t('metrics.hook.duration')}</span>
                                     <span className="text-white font-semibold">{analysisData.storyboard.performance.hook.duration}s</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-500">Viral Pattern</span>
+                                    <span className="text-gray-500">{t('metrics.hook.viralPattern')}</span>
                                     <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).label}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-500">Loop Strength</span>
+                                    <span className="text-gray-500">{t('metrics.hook.loopStrength')}</span>
                                     <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).label}</span>
                                   </div>
                                 </>
@@ -1486,7 +1493,15 @@ export default function AnalyzerResultsPage() {
                             {analysisData.storyboard.overview.hookCategory && (
                               <div className="space-y-1.5 mb-3">
                                 <span className="inline-block px-2 py-1 bg-orange-500/10 text-orange-400 rounded text-[10px] font-semibold uppercase tracking-wide">
-                                  {analysisData.storyboard.overview.hookCategory}
+                                  {(() => {
+                                    const cat = analysisData.storyboard.overview.hookCategory;
+                                    // Use raw labels from next-intl if available
+                                    try {
+                                      return t(`hooks.types.${cat}.label`);
+                                    } catch (e) {
+                                      return cat;
+                                    }
+                                  })()}
                                 </span>
                                 {analysisData.storyboard.overview.hookPattern && (
                                   <p className="text-[10px] text-gray-500">
@@ -1523,7 +1538,7 @@ export default function AnalyzerResultsPage() {
                         <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                         </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Structure</span>
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t('metrics.structure.title')}</span>
                         <button
                           onClick={() => setStructureExpanded(!structureExpanded)}
                           className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
@@ -1557,61 +1572,61 @@ export default function AnalyzerResultsPage() {
                                 <>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Beat Count
+                                      {t('metrics.structure.beatCount')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Number of content sections. Ideal: 3-6 for Shorts.
+                                        {t('metrics.structure.tooltips.beatCount')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.structure.BC >= 3 && analysisData.storyboard._signals.structure.BC <= 6 ? 'text-green-400' : 'text-yellow-400'}`}>
-                                      {analysisData.storyboard._signals.structure.BC} beats
+                                      {t('metrics.structure.beats', { count: analysisData.storyboard._signals.structure.BC })}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Progress Markers
+                                      {t('metrics.structure.progressMarkers')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Words like "first", "next", "finally" that guide viewers.
+                                        {t('metrics.structure.tooltips.progressMarkers')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.structure.PM >= 2 ? 'text-green-400' : analysisData.storyboard._signals.structure.PM >= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.structure.PM} found
+                                      {t('found', { count: analysisData.storyboard._signals.structure.PM })}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Has Payoff
+                                      {t('metrics.structure.hasPayoff')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Does the video deliver on its hook promise?
+                                        {t('metrics.structure.tooltips.hasPayoff')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.structure.PP ? 'text-green-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.structure.PP ? 'Yes' : 'No'}
+                                      {analysisData.storyboard._signals.structure.PP ? tCommon('yes') : tCommon('no')}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Loop Cue
+                                      {t('metrics.structure.loopCue')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Does ending reference the start or encourage rewatch?
+                                        {t('metrics.structure.tooltips.loopCue')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.structure.LC ? 'text-green-400' : 'text-gray-400'}`}>
-                                      {analysisData.storyboard._signals.structure.LC ? 'Yes' : 'No'}
+                                      {analysisData.storyboard._signals.structure.LC ? tCommon('yes') : tCommon('no')}
                                     </span>
                                   </div>
                                 </>
                               ) : (
                                 <>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-500">Video Length</span>
+                                    <span className="text-gray-500">{t('metrics.structure.videoLength')}</span>
                                     <span className="text-white font-semibold">{analysisData.storyboard.performance.structure.videoLength}s</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-500">Pacing Consistency</span>
+                                    <span className="text-gray-500">{t('metrics.structure.pacingConsistency')}</span>
                                     <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).label}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-500">Payoff Timing</span>
+                                    <span className="text-gray-500">{t('metrics.structure.payoffTiming')}</span>
                                     <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).label}</span>
                                   </div>
                                 </>
@@ -1645,7 +1660,7 @@ export default function AnalyzerResultsPage() {
                         <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Clarity</span>
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t('metrics.clarity.title')}</span>
                         <button
                           onClick={() => setClarityExpanded(!clarityExpanded)}
                           className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
@@ -1680,9 +1695,9 @@ export default function AnalyzerResultsPage() {
                                 <>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Speaking Pace
+                                      {t('metrics.clarity.speakingPace')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Words per second. Ideal: 3-4 WPS for comprehension.
+                                        {t('metrics.clarity.tooltips.speakingPace')}
                                       </span>
                                     </span>
                                     {(() => {
@@ -1698,9 +1713,9 @@ export default function AnalyzerResultsPage() {
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Complexity
+                                      {t('metrics.clarity.complexity')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Sentence complexity. Lower is easier to follow.
+                                        {t('metrics.clarity.tooltips.complexity')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.clarity.SC <= 2 ? 'text-green-400' : analysisData.storyboard._signals.clarity.SC <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -1709,9 +1724,9 @@ export default function AnalyzerResultsPage() {
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Topic Jumps
+                                      {t('metrics.clarity.topicJumps')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Sudden context switches. Fewer = easier to follow.
+                                        {t('metrics.clarity.tooltips.topicJumps')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.clarity.TJ === 0 ? 'text-green-400' : analysisData.storyboard._signals.clarity.TJ <= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -1720,9 +1735,9 @@ export default function AnalyzerResultsPage() {
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Redundancy
+                                      {t('metrics.clarity.redundancy')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Repetition without new info. Lower is more concise.
+                                        {t('metrics.clarity.tooltips.redundancy')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.clarity.RD <= 2 ? 'text-green-400' : analysisData.storyboard._signals.clarity.RD <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -1769,7 +1784,7 @@ export default function AnalyzerResultsPage() {
                         <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                         </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Delivery</span>
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t('metrics.delivery.title')}</span>
                         <button
                           onClick={() => setDeliveryExpanded(!deliveryExpanded)}
                           className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
@@ -1803,9 +1818,9 @@ export default function AnalyzerResultsPage() {
                                 <>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Volume Consistency
+                                      {t('metrics.delivery.volumeConsistency')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Loudness stability. Higher = more consistent audio levels.
+                                        {t('metrics.delivery.tooltips.volumeConsistency')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.delivery.LS >= 4 ? 'text-green-400' : analysisData.storyboard._signals.delivery.LS >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -1814,9 +1829,9 @@ export default function AnalyzerResultsPage() {
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Audio Quality
+                                      {t('metrics.delivery.audioQuality')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Noise level and clarity. Higher = cleaner audio.
+                                        {t('metrics.delivery.tooltips.audioQuality')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.delivery.NS >= 4 ? 'text-green-400' : analysisData.storyboard._signals.delivery.NS >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -1825,9 +1840,9 @@ export default function AnalyzerResultsPage() {
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Filler Words
+                                      {t('metrics.delivery.fillerWords')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Count of "um", "uh", "like", etc. Lower = cleaner delivery.
+                                        {t('metrics.delivery.tooltips.fillerWords')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.delivery.fillerCount === 0 ? 'text-green-400' : analysisData.storyboard._signals.delivery.fillerCount <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -1836,13 +1851,13 @@ export default function AnalyzerResultsPage() {
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-gray-500 cursor-help group relative">
-                                      Energy Variation
+                                      {t('metrics.delivery.energyVariation')}
                                       <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        Vocal energy changes to maintain interest. Monotone = less engaging.
+                                        {t('metrics.delivery.tooltips.energyVariation')}
                                       </span>
                                     </span>
                                     <span className={`font-semibold ${analysisData.storyboard._signals.delivery.EC ? 'text-green-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.delivery.EC ? 'Yes' : 'No'}
+                                      {analysisData.storyboard._signals.delivery.EC ? tCommon('yes') : tCommon('no')}
                                     </span>
                                   </div>
                                 </>
@@ -1892,15 +1907,15 @@ export default function AnalyzerResultsPage() {
             {/* Prioritized Action List */}
             {!loading && analysisData && (criticalCount > 0 || moderateCount > 0 || minorCount > 0) && (
               <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-6">🎯 What to Fix</h3>
+                <h3 className="text-xl font-semibold mb-6">{t('whatToFix.title')}</h3>
 
                 {/* Critical Fixes */}
                 {criticalCount > 0 && (
                   <div className="mb-6">
                     <div className="flex items-center gap-2 mb-3">
                       <XCircle className="w-5 h-5 text-red-500" />
-                      <h4 className="text-base font-semibold text-red-500">CRITICAL FIXES</h4>
-                      <span className="text-sm text-gray-500">(Do these first)</span>
+                      <h4 className="text-base font-semibold text-red-500">{t('whatToFix.critical.title')}</h4>
+                      <span className="text-sm text-gray-500">{t('whatToFix.critical.subtitle')}</span>
                     </div>
                     <div className="space-y-2">
                       {groupedIssuesList
@@ -1919,8 +1934,8 @@ export default function AnalyzerResultsPage() {
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-xs font-mono text-gray-500">
                                     {issue.beatNumbers.length > 1
-                                      ? `Beats ${issue.beatNumbers.join(', ')}`
-                                      : `Beat ${issue.beatNumbers[0]}`}
+                                      ? t('whatToFix.beats', { numbers: issue.beatNumbers.join(', ') })
+                                      : t('whatToFix.beat', { number: issue.beatNumbers[0] })}
                                   </span>
                                 </div>
                                 <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
@@ -1932,7 +1947,7 @@ export default function AnalyzerResultsPage() {
                               </div>
                               <div className="flex-shrink-0">
                                 <span className="text-xs text-gray-600 group-hover:text-orange-500 transition-colors">
-                                  View →
+                                  {t('whatToFix.view')}
                                 </span>
                               </div>
                             </div>
@@ -1947,7 +1962,7 @@ export default function AnalyzerResultsPage() {
                   <div className="mb-6">
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="w-5 h-5 text-orange-500" />
-                      <h4 className="text-base font-semibold text-orange-500">SECONDARY IMPROVEMENTS</h4>
+                      <h4 className="text-base font-semibold text-orange-500">{t('whatToFix.moderate.title')}</h4>
                     </div>
                     <div className="space-y-2">
                       {groupedIssuesList
@@ -1966,8 +1981,8 @@ export default function AnalyzerResultsPage() {
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-xs font-mono text-gray-500">
                                     {issue.beatNumbers.length > 1
-                                      ? `Beats ${issue.beatNumbers.join(', ')}`
-                                      : `Beat ${issue.beatNumbers[0]}`}
+                                      ? t('whatToFix.beats', { numbers: issue.beatNumbers.join(', ') })
+                                      : t('whatToFix.beat', { number: issue.beatNumbers[0] })}
                                   </span>
                                 </div>
                                 <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
@@ -1979,7 +1994,7 @@ export default function AnalyzerResultsPage() {
                               </div>
                               <div className="flex-shrink-0">
                                 <span className="text-xs text-gray-600 group-hover:text-orange-500 transition-colors">
-                                  View →
+                                  {t('whatToFix.view')}
                                 </span>
                               </div>
                             </div>
@@ -1994,7 +2009,7 @@ export default function AnalyzerResultsPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="w-5 h-5 text-blue-500" />
-                      <h4 className="text-base font-semibold text-blue-500">OPTIONAL POLISH</h4>
+                      <h4 className="text-base font-semibold text-blue-500">{t('whatToFix.minor.title')}</h4>
                     </div>
                     <div className="space-y-2">
                       {groupedIssuesList
@@ -2013,8 +2028,8 @@ export default function AnalyzerResultsPage() {
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-xs font-mono text-gray-500">
                                     {issue.beatNumbers.length > 1
-                                      ? `Beats ${issue.beatNumbers.join(', ')}`
-                                      : `Beat ${issue.beatNumbers[0]}`}
+                                      ? t('whatToFix.beats', { numbers: issue.beatNumbers.join(', ') })
+                                      : t('whatToFix.beat', { number: issue.beatNumbers[0] })}
                                   </span>
                                 </div>
                                 <p className="text-sm text-gray-200 mb-1">{issue.message}</p>
@@ -2026,7 +2041,7 @@ export default function AnalyzerResultsPage() {
                               </div>
                               <div className="flex-shrink-0">
                                 <span className="text-xs text-gray-600 group-hover:text-orange-500 transition-colors">
-                                  View →
+                                  {t('whatToFix.view')}
                                 </span>
                               </div>
                             </div>
@@ -2042,10 +2057,10 @@ export default function AnalyzerResultsPage() {
             {loading ? (
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold">🎬 Beat-by-Beat Breakdown</h3>
+                  <h3 className="text-xl font-semibold">{t('beatsbybeat.title')}</h3>
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 rounded-lg">
                     <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
-                    <span className="text-sm text-orange-500 font-medium">Analyzing</span>
+                    <span className="text-sm text-orange-500 font-medium">{t('status.analyzing')}</span>
                   </div>
                 </div>
                 <div className="space-y-4 animate-pulse">
@@ -2064,9 +2079,9 @@ export default function AnalyzerResultsPage() {
             ) : (
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold">🎬 Beat-by-Beat Breakdown</h3>
+                  <h3 className="text-xl font-semibold">{t('beatsbybeat.title')}</h3>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500">{analysisData?.storyboard.beats.length || 0} beats</span>
+                    <span className="text-sm text-gray-500">{t('beatsbybeat.beatsCount', { count: analysisData?.storyboard.beats.length || 0 })}</span>
                     {criticalCount > 0 && (
                       <div className="group relative">
                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 rounded-lg cursor-help">
@@ -2074,11 +2089,11 @@ export default function AnalyzerResultsPage() {
                           <span className="text-sm font-semibold text-red-500">{criticalCount}</span>
                         </div>
                         <div className="absolute right-0 top-full mt-2 w-72 bg-gray-900 border border-gray-800 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
-                          <div className="text-xs font-semibold text-red-500 mb-2">CRITICAL ({criticalCount})</div>
+                          <div className="text-xs font-semibold text-red-500 mb-2">{t('beatsbybeat.severity.critical')} ({criticalCount})</div>
                           <div className="space-y-1.5 max-h-48 overflow-y-auto">
                             {allIssues.filter(i => i.severity === 'critical').map((issue, idx) => (
                               <div key={idx} className="text-xs text-gray-400">
-                                <span className="text-gray-500">Beat {issue.beatNumber}:</span> {issue.message}
+                                <span className="text-gray-500">{t('beatsbybeat.beatMini', { number: issue.beatNumber })}:</span> {issue.message}
                               </div>
                             ))}
                           </div>
@@ -2092,11 +2107,11 @@ export default function AnalyzerResultsPage() {
                           <span className="text-sm font-semibold text-orange-500">{moderateCount}</span>
                         </div>
                         <div className="absolute right-0 top-full mt-2 w-72 bg-gray-900 border border-gray-800 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
-                          <div className="text-xs font-semibold text-orange-500 mb-2">MODERATE ({moderateCount})</div>
+                          <div className="text-xs font-semibold text-orange-500 mb-2">{t('beatsbybeat.severity.moderate')} ({moderateCount})</div>
                           <div className="space-y-1.5 max-h-48 overflow-y-auto">
                             {allIssues.filter(i => i.severity === 'moderate').map((issue, idx) => (
                               <div key={idx} className="text-xs text-gray-400">
-                                <span className="text-gray-500">Beat {issue.beatNumber}:</span> {issue.message}
+                                <span className="text-gray-500">{t('beatsbybeat.beatMini', { number: issue.beatNumber })}:</span> {issue.message}
                               </div>
                             ))}
                           </div>
@@ -2110,11 +2125,11 @@ export default function AnalyzerResultsPage() {
                           <span className="text-sm font-semibold text-blue-500">{minorCount}</span>
                         </div>
                         <div className="absolute right-0 top-full mt-2 w-72 bg-gray-900 border border-gray-800 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
-                          <div className="text-xs font-semibold text-blue-500 mb-2">MINOR ({minorCount})</div>
+                          <div className="text-xs font-semibold text-blue-500 mb-2">{t('beatsbybeat.severity.minor')} ({minorCount})</div>
                           <div className="space-y-1.5 max-h-48 overflow-y-auto">
                             {allIssues.filter(i => i.severity === 'minor').map((issue, idx) => (
                               <div key={idx} className="text-xs text-gray-400">
-                                <span className="text-gray-500">Beat {issue.beatNumber}:</span> {issue.message}
+                                <span className="text-gray-500">{t('beatsbybeat.beatMini', { number: issue.beatNumber })}:</span> {issue.message}
                               </div>
                             ))}
                           </div>
@@ -2124,7 +2139,7 @@ export default function AnalyzerResultsPage() {
                     {criticalCount === 0 && moderateCount === 0 && minorCount === 0 && (
                       <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 rounded-lg">
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                        <span className="text-sm font-semibold text-green-500">No issues</span>
+                        <span className="text-sm font-semibold text-green-500">{t('beatsbybeat.noIssues')}</span>
                       </div>
                     )}
                     <button
@@ -2133,12 +2148,12 @@ export default function AnalyzerResultsPage() {
                     >
                       {beatBreakdownCollapsed ? (
                         <>
-                          <span>Show Details</span>
+                          <span>{t('beatsbybeat.showDetails')}</span>
                           <ChevronDown className="w-4 h-4" />
                         </>
                       ) : (
                         <>
-                          <span>Hide Details</span>
+                          <span>{t('beatsbybeat.hideDetails')}</span>
                           <ChevronUp className="w-4 h-4" />
                         </>
                       )}
@@ -2157,7 +2172,7 @@ export default function AnalyzerResultsPage() {
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs text-gray-500 font-semibold">Beat {beat.beatNumber}</span>
+                              <span className="text-xs text-gray-500 font-semibold">{t('whatToFix.beat', { number: beat.beatNumber })}</span>
                               <button
                                 onClick={() => seekToTimestamp(beat.startTime)}
                                 className="text-xs font-mono text-gray-500 hover:text-orange-500 transition-colors hover:underline cursor-pointer"
@@ -2173,15 +2188,15 @@ export default function AnalyzerResultsPage() {
 
                             <div className="space-y-2 mb-3">
                               <div>
-                                <div className="text-xs text-gray-500 mb-1">Transcript</div>
+                                <div className="text-xs text-gray-500 mb-1">{t('beatsbybeat.transcript')}</div>
                                 <p className="text-sm text-gray-300">"{beat.transcript}"</p>
                               </div>
                               <div>
-                                <div className="text-xs text-gray-500 mb-1">Visual</div>
+                                <div className="text-xs text-gray-500 mb-1">{t('beatsbybeat.visual')}</div>
                                 <p className="text-sm text-gray-300">{beat.visual}</p>
                               </div>
                               <div>
-                                <div className="text-xs text-gray-500 mb-1">Audio</div>
+                                <div className="text-xs text-gray-500 mb-1">{t('beatsbybeat.audio')}</div>
                                 <p className="text-sm text-gray-300">{beat.audio}</p>
                               </div>
                             </div>
@@ -2198,7 +2213,7 @@ export default function AnalyzerResultsPage() {
                           }}
                           style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
                         >
-                          <div className="text-xs text-gray-500 mb-1">Retention Drop Estimate</div>
+                          <div className="text-xs text-gray-500 mb-1">{t('beatsbybeat.retentionDrop')}</div>
                           <div className={`text-sm font-semibold ${beat.retention?.issues?.some(i => i.severity === 'critical')
                             ? 'text-red-500'
                             : beat.retention?.issues?.some(i => i.severity === 'moderate')
@@ -2208,12 +2223,12 @@ export default function AnalyzerResultsPage() {
                                 : 'text-green-500'
                             }`}>
                             {beat.retention?.issues?.some(i => i.severity === 'critical')
-                              ? 'High Drop Risk'
+                              ? t('beatsbybeat.retention.high')
                               : beat.retention?.issues?.some(i => i.severity === 'moderate')
-                                ? 'Moderate Drop'
+                                ? t('beatsbybeat.retention.moderate')
                                 : beat.retention?.issues?.some(i => i.severity === 'minor')
-                                  ? 'Minor Drop'
-                                  : 'Strong Retention'}
+                                  ? t('beatsbybeat.retention.minor')
+                                  : t('beatsbybeat.retention.strong')}
                           </div>
                         </div>
                         {(beat.retention?.issues?.length ?? 0) > 0 ? (
@@ -2267,7 +2282,7 @@ export default function AnalyzerResultsPage() {
                                       {/* Header: Severity + Vote Buttons + Timestamp + Rule Badge */}
                                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                                         <span className={`text-[10px] font-bold uppercase ${severityColors.text}`}>
-                                          {effectiveSeverity}
+                                          {t(`beatsbybeat.severity.${effectiveSeverity as 'critical' | 'moderate' | 'minor' | 'ignored'}`)}
                                         </span>
                                         {/* Severity Vote Buttons */}
                                         <SeverityVoteButtons
@@ -2340,7 +2355,7 @@ export default function AnalyzerResultsPage() {
                                               : 'text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500'
                                               }`}
                                           >
-                                            {isAlreadyApproved ? 'Applied' : 'Apply Fix'}
+                                            {isAlreadyApproved ? t('whatToFix.applied') : t('whatToFix.apply')}
                                           </button>
                                         </div>
                                       )}
@@ -2380,7 +2395,7 @@ export default function AnalyzerResultsPage() {
             {!loading && analysisData && (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <h3 className="text-xl font-semibold">Title & Description</h3>
+                  <h3 className="text-xl font-semibold">{t('metadata.title')}</h3>
                   {!suggestions && (
                     <button
                       onClick={() => {
@@ -2400,12 +2415,12 @@ export default function AnalyzerResultsPage() {
                       {suggestionsLoading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          Generating...
+                          {t('metadata.suggesting')}
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4" />
-                          Suggest Title & Description
+                          {t('metadata.suggest')}
                         </>
                       )}
                     </button>
@@ -2432,7 +2447,7 @@ export default function AnalyzerResultsPage() {
                   <div className="space-y-4">
                     {/* Title Variants */}
                     <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
-                      <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-4">Title Options</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-4">{t('metadata.titleOptions')}</div>
                       <div className="space-y-3">
                         {suggestions.titles.map((title, idx) => (
                           <div key={idx} className="flex items-start gap-3 p-3 bg-gray-900/50 rounded-lg group">
@@ -2459,7 +2474,7 @@ export default function AnalyzerResultsPage() {
                     {/* Description */}
                     <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
                       <div className="flex items-center justify-between mb-4">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Description</div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{t('metadata.description')}</div>
                         <button
                           onClick={() => copyToClipboard(suggestions.description, 'description')}
                           className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 hover:text-white hover:bg-gray-800 rounded transition-colors"
@@ -2467,12 +2482,12 @@ export default function AnalyzerResultsPage() {
                           {copiedItem === 'description' ? (
                             <>
                               <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                              <span className="text-green-500">Copied!</span>
+                              <span className="text-green-500">{tCommon('copied')}</span>
                             </>
                           ) : (
                             <>
                               <Copy className="w-3.5 h-3.5" />
-                              <span>Copy</span>
+                              <span>{tCommon('copy')}</span>
                             </>
                           )}
                         </button>
@@ -2488,7 +2503,7 @@ export default function AnalyzerResultsPage() {
             {loading ? (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <h3 className="text-xl font-semibold">Re-hook Variants</h3>
+                  <h3 className="text-xl font-semibold">{t('hooks.title')}</h3>
                   <div className="flex items-center gap-2 px-2.5 py-1 bg-orange-500/10 rounded-lg">
                     <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
                   </div>
@@ -2509,15 +2524,15 @@ export default function AnalyzerResultsPage() {
             ) : (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <h3 className="text-xl font-semibold">Re-hook Variants</h3>
+                  <h3 className="text-xl font-semibold">{t('hooks.title')}</h3>
                   <span className="px-2 py-1 bg-orange-500/10 text-orange-500 rounded text-xs font-semibold uppercase">
-                    AI Suggested
+                    {t('hooks.aiSuggested')}
                   </span>
                 </div>
 
                 {/* Current hook type indicator */}
                 <div className="flex items-center gap-2 mb-4 text-sm">
-                  <span className="text-gray-500">Current Hook:</span>
+                  <span className="text-gray-500">{t('hooks.currentHook')}:</span>
                   <span className="px-2 py-0.5 bg-gray-800 text-gray-300 rounded text-xs">
                     {analysisData?.storyboard.overview.hookCategory || 'Unknown'}
                   </span>
@@ -2527,7 +2542,7 @@ export default function AnalyzerResultsPage() {
                   {(analysisData?.storyboard.replicationBlueprint.patternVariations || []).slice(0, 2).map((variant, idx) => (
                     <div key={idx} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5">
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xs text-gray-500 uppercase tracking-wider">Variant {String.fromCharCode(65 + idx)}</span>
+                        <span className="text-xs text-gray-500 uppercase tracking-wider">{t('hooks.variant', { letter: String.fromCharCode(65 + idx) })}</span>
                       </div>
                       <p className="text-sm text-gray-400 mb-4">{variant}</p>
                       {(() => {
@@ -2554,7 +2569,7 @@ export default function AnalyzerResultsPage() {
                               }`}
                           >
                             <CheckCircle2 className="w-4 h-4" />
-                            {isThisVariantApproved ? `Variant ${label} Applied` : `Approve Variant ${label}`}
+                            {isThisVariantApproved ? t('hooks.applied', { letter: label }) : t('hooks.apply', { letter: label })}
                           </button>
                         );
                       })()}
@@ -2565,7 +2580,7 @@ export default function AnalyzerResultsPage() {
                 {/* Try a different style section */}
                 <div className="mt-8 pt-6 border-t border-gray-800">
                   <div className="flex items-center gap-4 mb-4">
-                    <span className="text-xs text-gray-500 uppercase tracking-wider">or try a different style</span>
+                    <span className="text-xs text-gray-500 uppercase tracking-wider">{t('hooks.orTryDifferent')}</span>
                     <div className="flex-1 h-px bg-gray-800"></div>
                   </div>
 
@@ -2583,13 +2598,12 @@ export default function AnalyzerResultsPage() {
                           handlePresetSelect(preset.id);
                         }}
                         disabled={shouldDisableButtons}
-                        className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                          selectedPreset === preset.id
-                            ? 'bg-orange-500/20 border-orange-500 text-orange-400'
-                            : shouldDisableButtons
-                              ? 'border-gray-700 text-gray-600 cursor-not-allowed opacity-50'
-                              : 'border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300'
-                        }`}
+                        className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${selectedPreset === preset.id
+                          ? 'bg-orange-500/20 border-orange-500 text-orange-400'
+                          : shouldDisableButtons
+                            ? 'border-gray-700 text-gray-600 cursor-not-allowed opacity-50'
+                            : 'border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300'
+                          }`}
                         title={preset.description}
                       >
                         {preset.label}
@@ -2609,17 +2623,16 @@ export default function AnalyzerResultsPage() {
                         setHookTypePickerOpen(!hookTypePickerOpen);
                       }}
                       disabled={shouldDisableButtons}
-                      className={`flex items-center gap-2 text-sm transition-colors ${
-                        shouldDisableButtons
-                          ? 'text-gray-600 cursor-not-allowed'
-                          : 'text-gray-400 hover:text-gray-300'
-                      }`}
+                      className={`flex items-center gap-2 text-sm transition-colors ${shouldDisableButtons
+                        ? 'text-gray-600 cursor-not-allowed'
+                        : 'text-gray-400 hover:text-gray-300'
+                        }`}
                     >
                       <ChevronDown className={`w-4 h-4 transition-transform ${hookTypePickerOpen ? 'rotate-180' : ''}`} />
-                      <span>Pick specific hook type</span>
+                      <span>{t('hooks.pickType')}</span>
                       {selectedHookType && (
                         <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded">
-                          {selectedHookType}
+                          {t(`hooks.types.${selectedHookType}.label`)}
                         </span>
                       )}
                     </button>
@@ -2630,29 +2643,26 @@ export default function AnalyzerResultsPage() {
                           <button
                             key={hookType}
                             onClick={() => handleHookTypeSelect(hookType)}
-                            className={`flex items-start gap-2 p-2 rounded-lg text-left transition-colors ${
-                              selectedHookType === hookType
-                                ? 'bg-orange-500/10 border border-orange-500/30'
-                                : 'hover:bg-gray-800/50'
-                            }`}
+                            className={`flex items-start gap-2 p-2 rounded-lg text-left transition-colors ${selectedHookType === hookType
+                              ? 'bg-orange-500/10 border border-orange-500/30'
+                              : 'hover:bg-gray-800/50'
+                              }`}
                           >
-                            <div className={`w-3 h-3 mt-0.5 rounded-full border-2 flex-shrink-0 ${
-                              selectedHookType === hookType
-                                ? 'border-orange-500 bg-orange-500'
-                                : 'border-gray-600'
-                            }`}>
+                            <div className={`w-3 h-3 mt-0.5 rounded-full border-2 flex-shrink-0 ${selectedHookType === hookType
+                              ? 'border-orange-500 bg-orange-500'
+                              : 'border-gray-600'
+                              }`}>
                               {selectedHookType === hookType && (
                                 <div className="w-full h-full rounded-full bg-orange-500"></div>
                               )}
                             </div>
                             <div>
-                              <div className={`text-xs font-medium ${
-                                selectedHookType === hookType ? 'text-orange-400' : 'text-gray-300'
-                              }`}>
-                                {hookType}
+                              <div className={`text-xs font-medium ${selectedHookType === hookType ? 'text-orange-400' : 'text-gray-300'
+                                }`}>
+                                {t(`hooks.types.${hookType}.label`)}
                               </div>
                               <div className="text-[10px] text-gray-500">
-                                {HOOK_TYPE_DESCRIPTIONS[hookType]}
+                                {t(`hooks.types.${hookType}.description`)}
                               </div>
                             </div>
                           </button>
@@ -2672,16 +2682,15 @@ export default function AnalyzerResultsPage() {
                       addRehookRequest();
                     }}
                     disabled={shouldDisableButtons || (!selectedPreset && !selectedHookType)}
-                    className={`w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                      !selectedPreset && !selectedHookType
-                        ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                        : shouldDisableButtons
-                          ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
-                          : 'bg-orange-500 hover:bg-orange-600 text-white'
-                    }`}
+                    className={`w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${!selectedPreset && !selectedHookType
+                      ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                      : shouldDisableButtons
+                        ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
+                        : 'bg-orange-500 hover:bg-orange-600 text-white'
+                      }`}
                   >
                     <Sparkles className="w-4 h-4" />
-                    Add Re-hook Style
+                    {t('hooks.addStyle')}
                   </button>
                 </div>
               </div>
@@ -2706,7 +2715,7 @@ export default function AnalyzerResultsPage() {
             ) : (
               <>
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">Approved Changes</h3>
+                  <h3 className="text-lg font-semibold">{t('changes.title')}</h3>
                   <div className="flex items-center gap-2">
                     <span className="w-7 h-7 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-sm font-bold">
                       {approvedChangesCount}
@@ -2730,9 +2739,9 @@ export default function AnalyzerResultsPage() {
                     <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
                       <CheckCircle2 className="w-8 h-8 text-gray-600" />
                     </div>
-                    <p className="text-sm text-gray-400 mb-2">No changes approved yet</p>
+                    <p className="text-sm text-gray-400 mb-2">{t('changes.noChanges')}</p>
                     <p className="text-xs text-gray-600 max-w-[240px]">
-                      Review suggestions in the Analysis panel and approve actions to add them here.
+                      {t('changes.noChangesSub')}
                     </p>
                   </div>
                 ) : (
@@ -2745,8 +2754,8 @@ export default function AnalyzerResultsPage() {
                               {change.type === 'fix' && change.issue && (
                                 <>
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[10px] font-bold uppercase text-orange-500">Fix</span>
-                                    <span className="text-[10px] text-gray-500">Beat {change.beatNumber}</span>
+                                    <span className="text-[10px] font-bold uppercase text-orange-500">{t('changes.fix')}</span>
+                                    <span className="text-[10px] text-gray-500">{t('whatToFix.beat', { number: change.beatNumber ?? 0 })}</span>
                                   </div>
                                   <p className="text-xs text-gray-300 mb-1">{change.issue.message}</p>
                                   <p className="text-[10px] text-gray-500 line-clamp-2">{change.issue.suggestion}</p>
@@ -2755,8 +2764,8 @@ export default function AnalyzerResultsPage() {
                               {change.type === 'variant' && change.variant && (
                                 <>
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[10px] font-bold uppercase text-orange-500">Re-hook</span>
-                                    <span className="text-[10px] text-gray-500">Variant {change.variant.label}</span>
+                                    <span className="text-[10px] font-bold uppercase text-orange-500">{t('changes.rehook')}</span>
+                                    <span className="text-[10px] text-gray-500">{t('changes.variant', { label: change.variant.label })}</span>
                                   </div>
                                   <p className="text-xs text-gray-400 line-clamp-3">{change.variant.text}</p>
                                 </>
@@ -2764,8 +2773,8 @@ export default function AnalyzerResultsPage() {
                               {change.type === 'rehook' && change.rehook && (
                                 <>
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[10px] font-bold uppercase text-orange-500">Re-hook</span>
-                                    <span className="text-[10px] text-gray-500">Generate New</span>
+                                    <span className="text-[10px] font-bold uppercase text-orange-500">{t('changes.rehook')}</span>
+                                    <span className="text-[10px] text-gray-500">{t('changes.generateNew')}</span>
                                   </div>
                                   <p className="text-xs text-gray-400">Style: {change.rehook.label}</p>
                                 </>
@@ -2788,7 +2797,7 @@ export default function AnalyzerResultsPage() {
                 {/* Generate Button */}
                 <div className="mt-auto pt-4">
                   <div className="mb-3 text-xs text-gray-500 text-center">
-                    Est. Processing Time: <span className="text-white">~45s</span>
+                    {t('changes.estTime', { time: '~45s' })}
                   </div>
                   <button
                     onClick={handleGenerate}
@@ -2798,12 +2807,12 @@ export default function AnalyzerResultsPage() {
                     {generating ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Generating...
+                        {t('changes.generating')}
                       </>
                     ) : (
                       <>
                         <Zap className="w-4 h-4" fill="currentColor" />
-                        Generate using approved changes
+                        {t('changes.generate')}
                       </>
                     )}
                   </button>
@@ -2850,7 +2859,7 @@ export default function AnalyzerResultsPage() {
           baseVideo={compareBaseVideo}
           currentVideo={{
             jobId: jobId || '',
-            title: analysisData.storyboard.overview.title || 'Current Video',
+            title: analysisData.storyboard.overview.title || tCommon('currentVideo'),
             videoUrl: videoUrl,
             fileUri: fileUri,
             videoId: videoUrl ? extractYouTubeId(videoUrl) : null,

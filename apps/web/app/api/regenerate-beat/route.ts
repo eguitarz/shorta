@@ -1,6 +1,7 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
 import { NextRequest, NextResponse } from 'next/server';
+import { getLanguageName } from '@/lib/i18n-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,7 +42,7 @@ interface Storyboard {
 
 export async function POST(request: NextRequest) {
   try {
-    const { storyboard, beatNumber } = await request.json();
+    const { storyboard, beatNumber, locale } = await request.json();
 
     if (!storyboard || !beatNumber) {
       return NextResponse.json(
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     const client = createDefaultLLMClient(env);
 
     // Create regeneration prompt
-    const prompt = createRegenerationPrompt(storyboard, beatToRegenerate);
+    const prompt = createRegenerationPrompt(storyboard, beatToRegenerate, locale);
 
     console.log('Regenerating beat:', beatNumber);
 
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function createRegenerationPrompt(storyboard: Storyboard, beat: Beat): string {
+function createRegenerationPrompt(storyboard: Storyboard, beat: Beat, locale?: string): string {
   const prevBeat = storyboard.beats.find(b => b.beatNumber === beat.beatNumber - 1);
   const nextBeat = storyboard.beats.find(b => b.beatNumber === beat.beatNumber + 1);
 
@@ -177,5 +178,6 @@ Return ONLY valid JSON (no markdown):
 Shot types: CU, MCU, MS, MLS, WS, OTS, POV, INSERT
 Camera movements: static, pan, tilt, track, zoom, handheld, dolly
 Transitions: cut, dissolve, fade, zoom, swipe, whip, none
-Text positions: top, center, bottom, lower-third`;
+Text positions: top, center, bottom, lower-third
+${locale && locale !== 'en' ? `\nIMPORTANT: Write ALL text content (scripts, titles, director notes, etc.) in ${getLanguageName(locale)}.` : ''}`;
 }

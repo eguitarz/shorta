@@ -7,6 +7,7 @@ import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubti
 import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
 import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
 import { TechnicalBadge } from "@/components/TechnicalBadge";
+import { useTranslations, useLocale } from "next-intl";
 
 interface TextOverlay {
   text: string;
@@ -62,6 +63,10 @@ interface ProposedChanges {
 export default function StoryboardResultsPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations('storyboard.resultPage');
+  const tBeats = useTranslations('storyboard.beats');
+  const tFields = useTranslations('storyboard.fields');
+  const locale = useLocale();
   const [storyboardData, setStoryboardData] = useState<GeneratedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -159,7 +164,7 @@ export default function StoryboardResultsPage() {
     setEditMessages([
       {
         role: "assistant",
-        content: `I'll help you refine Beat ${beatNumber}. What would you like to change?`,
+        content: t('editPanel.welcomeMessage', { beatNumber }),
       },
     ]);
     setProposedChanges(null);
@@ -183,6 +188,10 @@ export default function StoryboardResultsPage() {
     try {
       const editingBeat = storyboardData.beats.find(b => b.beatNumber === editingBeatNumber);
 
+      if (!editingBeat) {
+        throw new Error(`Beat ${editingBeatNumber} not found. Please try closing and re-opening the edit panel.`);
+      }
+
       const response = await fetch("/api/edit-beat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -191,10 +200,14 @@ export default function StoryboardResultsPage() {
           beatNumber: editingBeatNumber,
           currentBeat: editingBeat,
           messages: [...editMessages, userMessage],
+          locale,
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to edit beat");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to edit beat");
+      }
 
       const data = await response.json();
 
@@ -212,7 +225,7 @@ export default function StoryboardResultsPage() {
         ...prev,
         {
           role: "assistant",
-          content: "Sorry, something went wrong. Please try again.",
+          content: t('editPanel.error'),
         },
       ]);
     } finally {
@@ -257,14 +270,8 @@ export default function StoryboardResultsPage() {
   };
 
   const handleQuickAction = (action: string) => {
-    const actionTexts: Record<string, string> = {
-      shorter: "Make this beat shorter and more concise",
-      longer: "Add more detail to this beat",
-      simplify: "Simplify the language and make it easier to understand",
-      energize: "Make this beat more energetic and exciting",
-    };
-
-    setEditInput(actionTexts[action] || "");
+    const actionKey = action === "shorter" ? "shorter" : action === "longer" ? "longer" : action === "simplify" ? "simplify" : "energize";
+    setEditInput(t(`editPanel.quickActionPrompts.${actionKey}`));
   };
 
   const handleHookSelect = (variant: HookVariant) => {
@@ -353,7 +360,7 @@ export default function StoryboardResultsPage() {
     const beatToDuplicate = storyboardData.beats[beatIndex];
     const newBeat: GeneratedBeat = {
       ...beatToDuplicate,
-      title: `${beatToDuplicate.title} (Copy)`,
+      title: `${beatToDuplicate.title} (${tBeats('copySuffix')})`,
     };
 
     const updatedBeats = [
@@ -423,11 +430,11 @@ export default function StoryboardResultsPage() {
       startTime: 0,
       endTime: 0,
       type: 'main_content',
-      title: 'New Beat',
-      directorNotes: '• Add your instructions here',
-      script: 'Add your script here...',
-      visual: '• Describe the visual',
-      audio: '• Describe the audio',
+      title: tBeats('newBeatTitle'),
+      directorNotes: tBeats('newBeatNotes'),
+      script: tBeats('newBeatScript'),
+      visual: tBeats('newBeatVisual'),
+      audio: tBeats('newBeatAudio'),
       shotType: 'MS',
       cameraMovement: 'static',
       transition: 'cut',
@@ -463,6 +470,7 @@ export default function StoryboardResultsPage() {
         body: JSON.stringify({
           storyboard: storyboardData,
           beatNumber,
+          locale,
         }),
       });
 
@@ -509,7 +517,7 @@ export default function StoryboardResultsPage() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-          <p className="text-gray-400">Loading storyboard...</p>
+          <p className="text-gray-400">{t('loading')}</p>
         </div>
       </div>
     );
@@ -519,12 +527,12 @@ export default function StoryboardResultsPage() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || "Failed to load data"}</p>
+          <p className="text-red-500 mb-4">{error || t('failedToLoad')}</p>
           <button
             onClick={() => router.push("/storyboard/create")}
             className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
           >
-            Back to Create
+            {t('backToCreate')}
           </button>
         </div>
       </div>
@@ -536,359 +544,358 @@ export default function StoryboardResultsPage() {
       {/* Main Content */}
       <div className={`flex-1 overflow-y-auto transition-all duration-300 ${editingBeatNumber ? 'mr-96' : ''}`}>
         <div className="min-h-full pb-20">
-        {/* Header */}
-        <div className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => router.back()}
-                  className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold">Your Storyboard</h1>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Director&apos;s guide for shooting your video
-                    </p>
+          {/* Header */}
+          <div className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => router.back()}
+                    className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold">{t('title')}</h1>
+                      <p className="text-sm text-gray-400 mt-1">
+                        {t('subtitle')}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <ExportGeneratedSubtitleButton
-                  beats={storyboardData.beats}
-                  videoTitle={storyboardData.overview.title}
-                />
-                <ExportGeneratedStoryboardButton
-                  generatedData={{
-                    generated: {
-                      overview: storyboardData.overview,
-                      beats: storyboardData.beats
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Video Overview */}
-          <div className="mb-8 p-6 bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg border border-purple-800/50">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-400" />
-              Video Overview
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <p className="text-gray-400">Title</p>
-                <p className="font-medium">{storyboardData.overview.title}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Format</p>
-                <p className="font-medium">{storyboardData.overview.contentType}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Niche</p>
-                <p className="font-medium">{storyboardData.overview.nicheCategory}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Length</p>
-                <p className="font-medium">{storyboardData.overview.length}s</p>
+                <div className="flex items-center gap-3">
+                  <ExportGeneratedSubtitleButton
+                    beats={storyboardData.beats}
+                    videoTitle={storyboardData.overview.title}
+                  />
+                  <ExportGeneratedStoryboardButton
+                    generatedData={{
+                      generated: {
+                        overview: storyboardData.overview,
+                        beats: storyboardData.beats
+                      }
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Hook Variant Selector */}
-          {storyboardData.hookVariants && storyboardData.hookVariants.length > 0 && (
-            <HookVariantSelector
-              variants={storyboardData.hookVariants}
-              selectedId={storyboardData.selectedHookId || storyboardData.hookVariants[0]?.id || 'bold'}
-              onSelect={handleHookSelect}
-            />
-          )}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Video Overview */}
+            <div className="mb-8 p-6 bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg border border-purple-800/50">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-purple-400" />
+                {t('overview.title')}
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-400">{t('overview.titleLabel')}</p>
+                  <p className="font-medium">{storyboardData.overview.title}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">{t('overview.format')}</p>
+                  <p className="font-medium">{storyboardData.overview.contentType}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">{t('overview.niche')}</p>
+                  <p className="font-medium">{storyboardData.overview.nicheCategory}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">{t('overview.length')}</p>
+                  <p className="font-medium">{storyboardData.overview.length}s</p>
+                </div>
+              </div>
+            </div>
 
-          {/* Generated Storyboard */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Director&apos;s Shot List</h2>
+            {/* Hook Variant Selector */}
+            {storyboardData.hookVariants && storyboardData.hookVariants.length > 0 && (
+              <HookVariantSelector
+                variants={storyboardData.hookVariants}
+                selectedId={storyboardData.selectedHookId || storyboardData.hookVariants[0]?.id || 'bold'}
+                onSelect={handleHookSelect}
+              />
+            )}
 
-            {storyboardData.beats.map((beat, index) => (
-              <div key={beat.beatNumber} className="space-y-3">
-              <div
-                ref={(el) => {
-                  if (el) beatRefs.current.set(beat.beatNumber, el);
-                }}
-                className={`bg-gray-900 rounded-lg border overflow-hidden transition-all duration-500 ${
-                  highlightedBeatNumber === beat.beatNumber
-                    ? "border-purple-500 ring-2 ring-purple-500/50 shadow-lg shadow-purple-500/20"
-                    : "border-gray-800"
-                }`}
-              >
-                {/* Beat Header */}
-                <div className="bg-gradient-to-r from-purple-900/30 to-transparent p-4 border-b border-gray-800">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold">
-                        {beat.beatNumber}
+            {/* Generated Storyboard */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">{t('shotList.title')}</h2>
+
+              {storyboardData.beats.map((beat, index) => (
+                <div key={beat.beatNumber} className="space-y-3">
+                  <div
+                    ref={(el) => {
+                      if (el) beatRefs.current.set(beat.beatNumber, el);
+                    }}
+                    className={`bg-gray-900 rounded-lg border overflow-hidden transition-all duration-500 ${highlightedBeatNumber === beat.beatNumber
+                      ? "border-purple-500 ring-2 ring-purple-500/50 shadow-lg shadow-purple-500/20"
+                      : "border-gray-800"
+                      }`}
+                  >
+                    {/* Beat Header */}
+                    <div className="bg-gradient-to-r from-purple-900/30 to-transparent p-4 border-b border-gray-800">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold">
+                            {beat.beatNumber}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">{beat.title}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-sm text-gray-400">
+                                {formatTime(beat.startTime)} - {formatTime(beat.endTime)} • {beat.type}
+                              </p>
+                              {/* Technical Badges */}
+                              {(beat.shotType || beat.cameraMovement || beat.transition) && (
+                                <div className="flex items-center gap-1.5 ml-2">
+                                  {beat.shotType && (
+                                    <TechnicalBadge type="shot" value={beat.shotType} />
+                                  )}
+                                  {beat.cameraMovement && beat.cameraMovement !== 'static' && (
+                                    <TechnicalBadge type="movement" value={beat.cameraMovement} />
+                                  )}
+                                  {beat.transition && beat.transition !== 'none' && (
+                                    <TechnicalBadge type="transition" value={beat.transition} />
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        {/* Beat Actions */}
+                        <div className="flex items-center gap-1">
+                          {/* Move Up */}
+                          <button
+                            onClick={() => handleMoveBeatUp(beat.beatNumber)}
+                            disabled={beat.beatNumber === 1}
+                            className="p-1.5 hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title={tBeats('moveUp')}
+                          >
+                            <ArrowUp className="w-4 h-4 text-gray-400" />
+                          </button>
+                          {/* Move Down */}
+                          <button
+                            onClick={() => handleMoveBeatDown(beat.beatNumber)}
+                            disabled={beat.beatNumber === storyboardData.beats.length}
+                            className="p-1.5 hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title={tBeats('moveDown')}
+                          >
+                            <ArrowDown className="w-4 h-4 text-gray-400" />
+                          </button>
+                          <div className="w-px h-5 bg-gray-700 mx-1" />
+                          {/* Duplicate */}
+                          <button
+                            onClick={() => handleDuplicateBeat(beat.beatNumber)}
+                            className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+                            title={tBeats('duplicate')}
+                          >
+                            <Copy className="w-4 h-4 text-gray-400" />
+                          </button>
+                          {/* Regenerate */}
+                          <button
+                            onClick={() => handleRegenerateBeat(beat.beatNumber)}
+                            disabled={regeneratingBeat !== null}
+                            className="p-1.5 hover:bg-green-900/30 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={tBeats('regenerate')}
+                          >
+                            {regeneratingBeat === beat.beatNumber ? (
+                              <Loader2 className="w-4 h-4 text-green-400 animate-spin" />
+                            ) : (
+                              <RefreshCw className="w-4 h-4 text-green-400" />
+                            )}
+                          </button>
+                          {/* Edit */}
+                          <button
+                            onClick={() => handleEditBeat(beat.beatNumber)}
+                            className="p-1.5 hover:bg-purple-800/30 rounded transition-colors"
+                            title={tBeats('edit')}
+                          >
+                            <Pencil className="w-4 h-4 text-purple-400" />
+                          </button>
+                          {/* Delete */}
+                          <button
+                            onClick={() => handleDeleteBeat(beat.beatNumber)}
+                            disabled={storyboardData.beats.length <= 1}
+                            className="p-1.5 hover:bg-red-900/30 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title={tBeats('delete')}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-400" />
+                          </button>
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Beat Content */}
+                    <div className="p-6 space-y-6">
+                      {/* Script - Primary Focus */}
                       <div>
-                        <h3 className="font-semibold text-lg">{beat.title}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-sm text-gray-400">
-                            {formatTime(beat.startTime)} - {formatTime(beat.endTime)} • {beat.type}
-                          </p>
-                          {/* Technical Badges */}
-                          {(beat.shotType || beat.cameraMovement || beat.transition) && (
-                            <div className="flex items-center gap-1.5 ml-2">
-                              {beat.shotType && (
-                                <TechnicalBadge type="shot" value={beat.shotType} />
-                              )}
-                              {beat.cameraMovement && beat.cameraMovement !== 'static' && (
-                                <TechnicalBadge type="movement" value={beat.cameraMovement} />
-                              )}
-                              {beat.transition && beat.transition !== 'none' && (
-                                <TechnicalBadge type="transition" value={beat.transition} />
-                              )}
+                        <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-3 font-semibold">{t('beatContent.whatToSay')}</h4>
+                        <p className="text-lg leading-relaxed text-gray-100 font-medium">{beat.script}</p>
+                      </div>
+
+                      {/* Visual & Audio - Concise Bullets */}
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">{t('beatContent.visual')}</h4>
+                          <ul className="text-sm text-gray-400 space-y-1 list-none">
+                            {(() => {
+                              const visual = beat.visual.split('\n').filter(line => line.trim());
+                              return visual.map((line, idx) => (
+                                <li key={idx} className="flex gap-2 items-start">
+                                  <span className="text-gray-600 flex-shrink-0">•</span>
+                                  <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
+                                </li>
+                              ));
+                            })()}
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">{t('beatContent.audio')}</h4>
+                          <ul className="text-sm text-gray-400 space-y-1 list-none">
+                            {(() => {
+                              const audio = beat.audio.split('\n').filter(line => line.trim());
+                              return audio.map((line, idx) => (
+                                <li key={idx} className="flex gap-2 items-start">
+                                  <span className="text-gray-600 flex-shrink-0">•</span>
+                                  <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
+                                </li>
+                              ));
+                            })()}
+                          </ul>
+                        </div>
+                      </div>
+
+                      {/* Enhanced Fields Row */}
+                      {(beat.textOverlays?.length || beat.bRollSuggestions?.length || beat.retentionTip) && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-800/30 rounded-lg">
+                          {/* Text Overlays */}
+                          {beat.textOverlays && beat.textOverlays.length > 0 && (
+                            <div>
+                              <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                                <Type className="w-3.5 h-3.5" />
+                                {t('beatContent.textOverlays')}
+                              </h4>
+                              <ul className="text-sm space-y-1.5">
+                                {beat.textOverlays.map((overlay, idx) => (
+                                  <li key={idx} className="text-gray-300">
+                                    <span className="font-medium">&ldquo;{overlay.text}&rdquo;</span>
+                                    <span className="text-gray-500 text-xs ml-2">
+                                      {overlay.position} • {overlay.timing}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* B-Roll Suggestions */}
+                          {beat.bRollSuggestions && beat.bRollSuggestions.length > 0 && (
+                            <div>
+                              <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                                <Video className="w-3.5 h-3.5" />
+                                {t('beatContent.bRollIdeas')}
+                              </h4>
+                              <ul className="text-sm text-gray-400 space-y-1">
+                                {beat.bRollSuggestions.map((suggestion, idx) => (
+                                  <li key={idx} className="flex gap-2 items-start">
+                                    <span className="text-gray-600 flex-shrink-0">•</span>
+                                    <span>{suggestion}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Retention Tip */}
+                          {beat.retentionTip && (
+                            <div>
+                              <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
+                                <Zap className="w-3.5 h-3.5" />
+                                {t('beatContent.retentionTip')}
+                              </h4>
+                              <p className="text-sm text-gray-400">{beat.retentionTip}</p>
                             </div>
                           )}
                         </div>
-                      </div>
-                    </div>
-                    {/* Beat Actions */}
-                    <div className="flex items-center gap-1">
-                      {/* Move Up */}
-                      <button
-                        onClick={() => handleMoveBeatUp(beat.beatNumber)}
-                        disabled={beat.beatNumber === 1}
-                        className="p-1.5 hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        title="Move up"
-                      >
-                        <ArrowUp className="w-4 h-4 text-gray-400" />
-                      </button>
-                      {/* Move Down */}
-                      <button
-                        onClick={() => handleMoveBeatDown(beat.beatNumber)}
-                        disabled={beat.beatNumber === storyboardData.beats.length}
-                        className="p-1.5 hover:bg-gray-800 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        title="Move down"
-                      >
-                        <ArrowDown className="w-4 h-4 text-gray-400" />
-                      </button>
-                      <div className="w-px h-5 bg-gray-700 mx-1" />
-                      {/* Duplicate */}
-                      <button
-                        onClick={() => handleDuplicateBeat(beat.beatNumber)}
-                        className="p-1.5 hover:bg-gray-800 rounded transition-colors"
-                        title="Duplicate beat"
-                      >
-                        <Copy className="w-4 h-4 text-gray-400" />
-                      </button>
-                      {/* Regenerate */}
-                      <button
-                        onClick={() => handleRegenerateBeat(beat.beatNumber)}
-                        disabled={regeneratingBeat !== null}
-                        className="p-1.5 hover:bg-green-900/30 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Regenerate beat"
-                      >
-                        {regeneratingBeat === beat.beatNumber ? (
-                          <Loader2 className="w-4 h-4 text-green-400 animate-spin" />
-                        ) : (
-                          <RefreshCw className="w-4 h-4 text-green-400" />
+                      )}
+
+                      {/* Director's Notes - Collapsible */}
+                      <div className="border-t border-gray-800 pt-4">
+                        <button
+                          onClick={() => toggleDirectorNotes(beat.beatNumber)}
+                          className="w-full flex items-center justify-between text-left group hover:bg-gray-900/50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Lightbulb className="w-4 h-4 text-purple-400" />
+                            <h4 className="text-sm font-semibold text-purple-300">{t('beatContent.directorNotes')}</h4>
+                            <span className="text-xs text-gray-500">({t('beatContent.shootingGuidance')})</span>
+                          </div>
+                          {collapsedBeats.has(beat.beatNumber) ? (
+                            <ChevronDown className="w-4 h-4 text-gray-500 group-hover:text-gray-400" />
+                          ) : (
+                            <ChevronUp className="w-4 h-4 text-gray-500 group-hover:text-gray-400" />
+                          )}
+                        </button>
+                        {!collapsedBeats.has(beat.beatNumber) && (
+                          <ul className="mt-3 text-sm text-gray-400 leading-relaxed space-y-2 list-none pl-6">
+                            {(() => {
+                              // Handle both string and array formats
+                              const notes = Array.isArray(beat.directorNotes)
+                                ? beat.directorNotes
+                                : (typeof beat.directorNotes === 'string' ? beat.directorNotes.split('\n') : []);
+
+                              return notes.filter(line => line && line.trim()).map((note, idx) => {
+                                const noteText = typeof note === 'string' ? note.replace(/^[•\-\*]\s*/, '') : note;
+                                // Check if note is highlighted with **text**
+                                const isHighlighted = noteText.includes('**');
+                                const displayText = noteText.replace(/\*\*/g, '');
+
+                                return (
+                                  <li key={idx} className="flex gap-2 items-start">
+                                    <span className={`flex-shrink-0 mt-0.5 ${isHighlighted ? 'text-gray-100/60' : 'text-purple-400/50'}`}>
+                                      •
+                                    </span>
+                                    <span className={`flex-1 ${isHighlighted ? 'text-white/90 font-medium' : ''}`}>
+                                      {displayText}
+                                    </span>
+                                  </li>
+                                );
+                              });
+                            })()}
+                          </ul>
                         )}
-                      </button>
-                      {/* Edit */}
-                      <button
-                        onClick={() => handleEditBeat(beat.beatNumber)}
-                        className="p-1.5 hover:bg-purple-800/30 rounded transition-colors"
-                        title="Edit beat"
-                      >
-                        <Pencil className="w-4 h-4 text-purple-400" />
-                      </button>
-                      {/* Delete */}
-                      <button
-                        onClick={() => handleDeleteBeat(beat.beatNumber)}
-                        disabled={storyboardData.beats.length <= 1}
-                        className="p-1.5 hover:bg-red-900/30 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        title="Delete beat"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Beat Content */}
-                <div className="p-6 space-y-6">
-                  {/* Script - Primary Focus */}
-                  <div>
-                    <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-3 font-semibold">What to Say</h4>
-                    <p className="text-lg leading-relaxed text-gray-100 font-medium">{beat.script}</p>
-                  </div>
-
-                  {/* Visual & Audio - Concise Bullets */}
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">Visual</h4>
-                      <ul className="text-sm text-gray-400 space-y-1 list-none">
-                        {(() => {
-                          const visual = beat.visual.split('\n').filter(line => line.trim());
-                          return visual.map((line, idx) => (
-                            <li key={idx} className="flex gap-2 items-start">
-                              <span className="text-gray-600 flex-shrink-0">•</span>
-                              <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
-                            </li>
-                          ));
-                        })()}
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">Audio</h4>
-                      <ul className="text-sm text-gray-400 space-y-1 list-none">
-                        {(() => {
-                          const audio = beat.audio.split('\n').filter(line => line.trim());
-                          return audio.map((line, idx) => (
-                            <li key={idx} className="flex gap-2 items-start">
-                              <span className="text-gray-600 flex-shrink-0">•</span>
-                              <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
-                            </li>
-                          ));
-                        })()}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Enhanced Fields Row */}
-                  {(beat.textOverlays?.length || beat.bRollSuggestions?.length || beat.retentionTip) && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-800/30 rounded-lg">
-                      {/* Text Overlays */}
-                      {beat.textOverlays && beat.textOverlays.length > 0 && (
-                        <div>
-                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
-                            <Type className="w-3.5 h-3.5" />
-                            Text Overlays
-                          </h4>
-                          <ul className="text-sm space-y-1.5">
-                            {beat.textOverlays.map((overlay, idx) => (
-                              <li key={idx} className="text-gray-300">
-                                <span className="font-medium">&ldquo;{overlay.text}&rdquo;</span>
-                                <span className="text-gray-500 text-xs ml-2">
-                                  {overlay.position} • {overlay.timing}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* B-Roll Suggestions */}
-                      {beat.bRollSuggestions && beat.bRollSuggestions.length > 0 && (
-                        <div>
-                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
-                            <Video className="w-3.5 h-3.5" />
-                            B-Roll Ideas
-                          </h4>
-                          <ul className="text-sm text-gray-400 space-y-1">
-                            {beat.bRollSuggestions.map((suggestion, idx) => (
-                              <li key={idx} className="flex gap-2 items-start">
-                                <span className="text-gray-600 flex-shrink-0">•</span>
-                                <span>{suggestion}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* Retention Tip */}
-                      {beat.retentionTip && (
-                        <div>
-                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold flex items-center gap-1.5">
-                            <Zap className="w-3.5 h-3.5" />
-                            Retention Tip
-                          </h4>
-                          <p className="text-sm text-gray-400">{beat.retentionTip}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Director's Notes - Collapsible */}
-                  <div className="border-t border-gray-800 pt-4">
-                    <button
-                      onClick={() => toggleDirectorNotes(beat.beatNumber)}
-                      className="w-full flex items-center justify-between text-left group hover:bg-gray-900/50 -mx-2 px-2 py-2 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4 text-purple-400" />
-                        <h4 className="text-sm font-semibold text-purple-300">Director&apos;s Notes</h4>
-                        <span className="text-xs text-gray-500">(shooting guidance)</span>
                       </div>
-                      {collapsedBeats.has(beat.beatNumber) ? (
-                        <ChevronDown className="w-4 h-4 text-gray-500 group-hover:text-gray-400" />
-                      ) : (
-                        <ChevronUp className="w-4 h-4 text-gray-500 group-hover:text-gray-400" />
-                      )}
-                    </button>
-                    {!collapsedBeats.has(beat.beatNumber) && (
-                      <ul className="mt-3 text-sm text-gray-400 leading-relaxed space-y-2 list-none pl-6">
-                        {(() => {
-                          // Handle both string and array formats
-                          const notes = Array.isArray(beat.directorNotes)
-                            ? beat.directorNotes
-                            : (typeof beat.directorNotes === 'string' ? beat.directorNotes.split('\n') : []);
-
-                          return notes.filter(line => line && line.trim()).map((note, idx) => {
-                            const noteText = typeof note === 'string' ? note.replace(/^[•\-\*]\s*/, '') : note;
-                            // Check if note is highlighted with **text**
-                            const isHighlighted = noteText.includes('**');
-                            const displayText = noteText.replace(/\*\*/g, '');
-
-                            return (
-                              <li key={idx} className="flex gap-2 items-start">
-                                <span className={`flex-shrink-0 mt-0.5 ${isHighlighted ? 'text-gray-100/60' : 'text-purple-400/50'}`}>
-                                  •
-                                </span>
-                                <span className={`flex-1 ${isHighlighted ? 'text-white/90 font-medium' : ''}`}>
-                                  {displayText}
-                                </span>
-                              </li>
-                            );
-                          });
-                        })()}
-                      </ul>
-                    )}
+                    </div>
                   </div>
+
+                  {/* Insert Beat Button */}
+                  {index < storyboardData.beats.length - 1 && (
+                    <button
+                      onClick={() => handleInsertBeat(beat.beatNumber)}
+                      className="w-full py-2 border border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-purple-600 hover:text-purple-400 hover:bg-purple-900/10 transition-all flex items-center justify-center gap-2 group"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span className="text-sm">{tBeats('insertBeat')}</span>
+                    </button>
+                  )}
                 </div>
-              </div>
+              ))}
 
-              {/* Insert Beat Button */}
-              {index < storyboardData.beats.length - 1 && (
-                <button
-                  onClick={() => handleInsertBeat(beat.beatNumber)}
-                  className="w-full py-2 border border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-purple-600 hover:text-purple-400 hover:bg-purple-900/10 transition-all flex items-center justify-center gap-2 group"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="text-sm">Insert Beat</span>
-                </button>
-              )}
-              </div>
-            ))}
-
-            {/* Add Beat at End */}
-            <button
-              onClick={() => handleInsertBeat(storyboardData.beats[storyboardData.beats.length - 1]?.beatNumber || 0)}
-              className="w-full py-3 border border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-purple-600 hover:text-purple-400 hover:bg-purple-900/10 transition-all flex items-center justify-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add Beat</span>
-            </button>
+              {/* Add Beat at End */}
+              <button
+                onClick={() => handleInsertBeat(storyboardData.beats[storyboardData.beats.length - 1]?.beatNumber || 0)}
+                className="w-full py-3 border border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-purple-600 hover:text-purple-400 hover:bg-purple-900/10 transition-all flex items-center justify-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                <span>{tBeats('add')}</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
       </div>
 
       {/* Edit Panel - Fixed Right Side */}
@@ -897,8 +904,8 @@ export default function StoryboardResultsPage() {
           {/* Panel Header */}
           <div className="p-4 border-b border-gray-800 flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">Edit Beat {editingBeatNumber}</h3>
-              <p className="text-sm text-gray-400">Refine this beat with AI</p>
+              <h3 className="font-semibold">{t('editPanel.title')} {editingBeatNumber}</h3>
+              <p className="text-sm text-gray-400">{t('editPanel.subtitle')}</p>
             </div>
             <button
               onClick={handleCloseEdit}
@@ -910,31 +917,31 @@ export default function StoryboardResultsPage() {
 
           {/* Quick Actions */}
           <div className="p-4 border-b border-gray-800">
-            <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Quick Actions</p>
+            <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">{t('editPanel.quickActions')}</p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleQuickAction("shorter")}
                 className="px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
               >
-                Make Shorter
+                {t('editPanel.makeShorter')}
               </button>
               <button
                 onClick={() => handleQuickAction("longer")}
                 className="px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
               >
-                Add Detail
+                {t('editPanel.addDetail')}
               </button>
               <button
                 onClick={() => handleQuickAction("simplify")}
                 className="px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
               >
-                Simplify
+                {t('editPanel.simplify')}
               </button>
               <button
                 onClick={() => handleQuickAction("energize")}
                 className="px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
               >
-                Energize
+                {t('editPanel.energize')}
               </button>
             </div>
           </div>
@@ -947,11 +954,10 @@ export default function StoryboardResultsPage() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-lg px-4 py-2 ${
-                    msg.role === "user"
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-800 text-gray-100"
-                  }`}
+                  className={`max-w-[85%] rounded-lg px-4 py-2 ${msg.role === "user"
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-800 text-gray-100"
+                    }`}
                 >
                   <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                 </div>
@@ -960,8 +966,9 @@ export default function StoryboardResultsPage() {
 
             {isEditing && (
               <div className="flex justify-start">
-                <div className="bg-gray-800 rounded-lg px-4 py-2">
+                <div className="bg-gray-800 rounded-lg px-4 py-2 flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                  <span className="text-sm text-gray-400">{t('editPanel.sending')}</span>
                 </div>
               </div>
             )}
@@ -975,12 +982,12 @@ export default function StoryboardResultsPage() {
               <div className="mb-3">
                 <p className="text-xs text-green-400 font-medium mb-2 flex items-center gap-2">
                   <Check className="w-4 h-4" />
-                  PROPOSED CHANGES
+                  {t('editPanel.proposedChanges')}
                 </p>
                 <div className="text-sm space-y-3 max-h-64 overflow-y-auto">
                   {Object.entries(proposedChanges).map(([key, value]) => (
                     <div key={key} className="space-y-1">
-                      <span className="text-gray-400 capitalize font-medium block">{key}:</span>
+                      <span className="text-gray-400 font-medium block">{tFields(key as any)}:</span>
                       <p className="text-gray-200 pl-2 whitespace-pre-wrap break-words">{String(value)}</p>
                     </div>
                   ))}
@@ -991,13 +998,13 @@ export default function StoryboardResultsPage() {
                   onClick={handleApplyChanges}
                   className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
                 >
-                  Apply
+                  {t('editPanel.apply')}
                 </button>
                 <button
                   onClick={() => setProposedChanges(null)}
                   className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
                 >
-                  Discard
+                  {t('editPanel.discard')}
                 </button>
               </div>
             </div>
@@ -1011,7 +1018,7 @@ export default function StoryboardResultsPage() {
                 value={editInput}
                 onChange={(e) => setEditInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSendEdit()}
-                placeholder="Describe the changes you want..."
+                placeholder={t('editPanel.placeholder')}
                 disabled={isEditing}
                 className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 disabled:opacity-50"
               />

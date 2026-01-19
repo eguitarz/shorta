@@ -8,6 +8,7 @@
 
 import type { VideoSignals, SubScores, ScoreBreakdown } from './types';
 import { HOOK_TYPE_VALUES } from './hook-types';
+import { getLanguageName } from '../i18n-helpers';
 
 // ============================================
 // Signal Extraction Prompt
@@ -142,20 +143,21 @@ export function buildAnalysisPrompt(
   signals: VideoSignals,
   scores: { subScores: SubScores; totalScore: number; breakdown: ScoreBreakdown },
   transcript: string,
-  beatTimestamps: any[]
+  beatTimestamps: any[],
+  locale?: string
 ): string {
   // Format violations for context
   const violationsContext =
     violations.length > 0
       ? `\n\nLINT VIOLATIONS DETECTED:\n${violations
-          .map(
-            (v, idx) =>
-              `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName} (${v.ruleId})
+        .map(
+          (v, idx) =>
+            `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName} (${v.ruleId})
    Timestamp: ${v.timestamp || 'N/A'}
    Message: ${v.message}
    Suggestion: ${v.suggestion || 'N/A'}`
-          )
-          .join('\n\n')}`
+        )
+        .join('\n\n')}`
       : '';
 
   // Format calculated scores
@@ -196,6 +198,8 @@ EXTRACTED SIGNALS:
 - Delivery: LS=${signals.delivery.LS}/5, NS=${signals.delivery.NS}/5, pauses=${signals.delivery.pauseCount}, fillers=${signals.delivery.fillerCount}, EC=${signals.delivery.EC}`;
 
   return `You are an expert YouTube Shorts director. Analyze the provided video and generate a structured JSON storyboard.
+
+${locale && locale !== 'en' ? `CRITICAL LANGUAGE REQUIREMENT: ALL output (analysis, explanations, suggestions, director's assessment, visual/audio descriptions, beat titles) MUST be written in ${getLanguageName(locale)}. DO NOT use English for these fields.` : ''}
 
 ${violationsContext}
 
@@ -309,8 +313,12 @@ CRITICAL INSTRUCTIONS:
 6. For AI-discovered issues, OMIT ruleId and ruleName fields
 
 LANGUAGE ALIGNMENT - CRITICAL:
-- ALL output text must be in the SAME language as the video/transcript
-- Do NOT mix languages
+${locale && locale !== 'en'
+      ? `- Write ALL analysis, suggestions, and explanations in ${getLanguageName(locale)}
+- Keep the transcript field in its ORIGINAL language (same as video)
+- Beat titles and visual/audio descriptions should be in ${getLanguageName(locale)}`
+      : `- ALL output text must be in the SAME language as the video/transcript
+- Do NOT mix languages`}
 
 Return ONLY the JSON. No additional text.`;
 }

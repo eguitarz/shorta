@@ -1,6 +1,7 @@
 'use client';
 
 import { FileType } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface GeneratedBeat {
   beatNumber: number;
@@ -41,9 +42,10 @@ function formatTime(seconds: number): string {
 }
 
 export function ExportGeneratedStoryboardButton({ generatedData }: ExportGeneratedStoryboardButtonProps) {
-  const handleExport = () => {
-    const { generated } = generatedData;
+  const t = useTranslations('storyboard.export');
+  const { generated } = generatedData;
 
+  const handleExport = () => {
     // Generate text content
     let content = '';
 
@@ -114,10 +116,10 @@ export function ExportGeneratedStoryboardButton({ generatedData }: ExportGenerat
     <button
       onClick={handleExport}
       className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-      title="Export storyboard as text"
+      title={t('storyboard')}
     >
       <FileType className="w-4 h-4 text-gray-400" />
-      <span className="text-sm text-gray-400">Export Storyboard</span>
+      <span className="text-sm text-gray-400">{t('storyboard')}</span>
     </button>
   );
 }

@@ -1,0 +1,711 @@
+{
+  "common": {
+    "login": "登入",
+    "signup": "註冊",
+    "logout": "登出",
+    "settings": "設定",
+    "language": "語言",
+    "save": "儲存",
+    "cancel": "取消",
+    "delete": "刪除",
+    "edit": "編輯",
+    "create": "建立",
+    "loading": "載入中...",
+    "error": "錯誤",
+    "success": "成功",
+    "tryFree": "免費試用",
+    "joinNow": "立即加入",
+    "joinAsMember": "成為創始會員",
+    "noCreditCard": "無需信用卡 · 無需登入",
+    "pricing": "年費 $99 或終身 $199",
+    "pricingLimited": "年費 $99 或終身 $199 · 限量名額",
+    "upgrade": "升級方案",
+    "analyses": "分析",
+    "analysesRemaining": "剩餘 {remaining}/{limit} 次",
+    "yes": "是",
+    "no": "否",
+    "currentVideo": "當前影片",
+    "copy": "複製",
+    "copied": "已複製！"
+  },
+  "nav": {
+    "home": "首頁",
+    "analyzer": "分析器",
+    "build": "製作",
+    "library": "資料庫"
+  },
+  "landing": {
+    "hero": {
+      "title": "您的 AI 短影片導演",
+      "subtitle": "分析。改進。創作。"
+    },
+    "sections": {
+      "useCases": "誰在使用 Shorta",
+      "differentiation": "Shorta vs ChatGPT",
+      "faq": "常見問題",
+      "founder": "Shorta 改變了我的工作流程",
+      "timeline": "發布時程"
+    },
+    "faq": {
+      "aiGenerator": {
+        "question": "Shorta 只是另一個 AI 腳本生成器嗎？",
+        "answer": "不是。Shorta 首先專注於分析和回饋。生成是可選的，並根據實際需要修復的內容來指導。"
+      },
+      "monthlyPlan": {
+        "question": "為什麼不提供月付方案？",
+        "answer": "建立成功的 YouTube Shorts 頻道是長期事業，而非快速實驗。年費定價確保您對過程的承諾，並給予您足夠的時間看到真正的成果。我們是為認真追求成長的創作者而建。"
+      },
+      "chatgpt": {
+        "question": "我不能直接用 ChatGPT 嗎？",
+        "answer1": "可以——但 ChatGPT 是用舊數據訓練的，給你的是通用的開場白。",
+        "answer2": "Shorta 分析最近的爆紅短影片，提取現在有效的元素，並將最佳開場白與您的特定內容匹配——而非隨機的爆紅模式。",
+        "answer3": "就像有一位研究員每天觀看熱門短影片，並準確告訴您哪種開場白適合您的主題。"
+      },
+      "niche": {
+        "question": "如果我的領域不是生產力或 AI 怎麼辦？",
+        "answer": "Shorta 分析的是結構和觀眾行為模式，而非領域特定的流行詞。"
+      },
+      "creativity": {
+        "question": "這會取代我的創意嗎？",
+        "answer": "不會。它消除不確定性，讓您能專注於重要的創意決策。"
+      },
+      "generateTime": {
+        "question": "生成腳本需要多長時間？",
+        "answer": "不到 5 分鐘。貼上您的參考資料，輸入您的主題，立即獲得高品質的分鏡腳本。"
+      },
+      "otherPlatforms": {
+        "question": "我可以用於 TikTok 或 Instagram Reels 嗎？",
+        "answer": "可以——爆紅短影片的原則適用於所有平台。但是，我們目前的重點是 YouTube Shorts，因此分析和模式是針對該平台優化的。"
+      },
+      "dataStorage": {
+        "question": "你們會儲存我的頻道數據嗎？",
+        "answer": "我們儲存摘要的頻道數據（非原始影片），以便 AI 能為您的受眾和風格生成最佳內容。您的數據絕不會與第三方分享。"
+      }
+    },
+    "timeline": {
+      "underway": "開發進行中。",
+      "launch": "發布：2026 年 2 月底。",
+      "calloutTitle": "開發進行中。在發布前加入。",
+      "calloutText": "在公開發布前試用測試版。"
+    }
+  },
+  "dashboard": {
+    "welcome": "歡迎回來",
+    "recentAnalyses": "最近的分析",
+    "noAnalyses": "尚無分析",
+    "startAnalyzing": "開始分析您的第一個影片",
+    "breadcrumb": {
+      "overview": "總覽",
+      "dashboard": "儀表板"
+    },
+    "status": {
+      "aiOnline": "AI 資料庫已連線"
+    },
+    "hero": {
+      "title": "從成功的開場開始。",
+      "subtitle": "分析爆紅影片或用 AI 指導草擬新概念。"
+    },
+    "analyzeCard": {
+      "label": "分析內容",
+      "title": "分析短影片",
+      "description": "貼上 YouTube Short 網址或上傳影片，提取開場白、腳本結構和留存分數。",
+      "urlTab": "網址",
+      "uploadTab": "上傳",
+      "placeholder": "https://youtube.com/shorts/...",
+      "button": "執行分析"
+    },
+    "createCard": {
+      "label": "新專案",
+      "title": "從主題創建",
+      "description": "從簡單的主題或原始想法生成分鏡腳本。",
+      "placeholder": "例如：設計師的 AI 生產力工具...",
+      "button": "生成分鏡腳本"
+    },
+    "activity": {
+      "title": "最近活動",
+      "viewAll": "查看所有歷史",
+      "loading": "正在載入活動...",
+      "empty": "沒有最近的活動。開始分析一個影片吧！"
+    }
+  },
+  "analyzer": {
+    "title": "分析：{title}",
+    "uploadedVideo": "已上傳影片",
+    "subtitle": "分析結果是根據類似主題的高留存率影片模式生成的。",
+    "pasteUrl": "貼上 YouTube Shorts 網址進行分析",
+    "analyze": "分析",
+    "analyzing": "分析中...",
+    "results": "分析結果",
+    "score": "評分",
+    "compare": "對比",
+    "export": {
+      "subtitle": "匯出字幕",
+      "storyboard": "匯出分鏡表"
+    },
+    "breadcrumb": {
+      "projects": "專案",
+      "analysis": "分析"
+    },
+    "status": {
+      "analyzing": "正在分析",
+      "complete": "分析完成",
+      "failed": "分析失敗",
+      "tryAgain": "重試",
+      "loadingVideo": "正在載入影片...",
+      "starting": "正在開始分析...",
+      "classifying": "正在分類影片格式...",
+      "linting": "正在分析留存模式...",
+      "storyboarding": "正在生成分鏡腳本...",
+      "classificationComplete": "分類完成",
+      "lintingComplete": "分析完成",
+      "step": "第 {current} 步，共 {total} 步",
+      "remainingStart": "剩餘約 2 分鐘",
+      "remainingClassification": "剩餘約 90 秒",
+      "remainingLinting": "剩餘約 60 秒",
+      "remainingStoryboarding": "即將完成..."
+    },
+    "found": "{count} 個",
+    "scores": {
+      "overall": "總分",
+      "howCalculated": "評分是如何計算的？",
+      "calculationExplanation": "總分 (0-100) 是根據 4 個加權類別計算的：",
+      "hookWeight": "開場 (35%) - 吸引注意力的速度",
+      "structureWeight": "結構 (25%) - 流程和價值傳遞",
+      "clarityWeight": "清晰度 (25%) - 說話節奏和簡潔度",
+      "deliveryWeight": "表達 (15%) - 音訊品質和能量",
+      "deterministic": "確定性：相同的影片將始終獲得相同的評分。",
+      "grades": "等級：S (100+), A (80-99), B (70-79), C (60-69), D (50-59), F (<50)",
+      "comments": {
+        "S": "爆紅預備",
+        "A": "表現優異",
+        "B": "基礎紮實",
+        "C": "仍有改進空間",
+        "D": "需要注意",
+        "F": "需要大幅修改"
+      },
+      "perfectBeats": "{total} 個節拍中有 {perfect} 個節拍完美"
+    },
+    "director": {
+      "take": "導演點評",
+      "niche": "領域",
+      "contentType": "內容類型"
+    },
+    "metadata": {
+      "title": "標題與描述",
+      "suggest": "建議標題與描述",
+      "noSuggestions": "尚未生成建議",
+      "suggesting": "正在生成建議...",
+      "titleOptions": "標題選項",
+      "description": "描述"
+    },
+    "hooks": {
+      "title": "開場變體",
+      "aiSuggested": "AI 建議",
+      "currentHook": "當前開場",
+      "variant": "變體 {letter}",
+      "whyThisWorks": "為何有效",
+      "apply": "使用變體 {letter}",
+      "applied": "變體 {letter} 已使用",
+      "orTryDifferent": "或嘗試不同風格",
+      "pickType": "選擇特定開場類型",
+      "addStyle": "新增開場風格",
+      "generating": "正在生成...",
+      "styles": {
+        "emotional": "更有情感",
+        "specific": "更具體",
+        "shorter": "更短小",
+        "question": "提問式"
+      },
+      "types": {
+        "Outcome-first": {
+          "label": "結果優先",
+          "description": "預先承諾結果/益處"
+        },
+        "Relatable pain": {
+          "label": "共鳴痛點",
+          "description": "觸及觀眾未言說的困擾"
+        },
+        "Contradiction / Myth-busting": {
+          "label": "矛盾 / 破除迷思",
+          "description": "挑戰普遍認知"
+        },
+        "Shock / Bold claim": {
+          "label": "震撼 / 大膽主張",
+          "description": "極端或反直覺的陳述"
+        },
+        "Curiosity gap": {
+          "label": "好奇心缺口",
+          "description": "不完整的資訊迫使繼續觀看"
+        },
+        "Authority / Credibility": {
+          "label": "權威 / 公信力",
+          "description": "迅速建立專業形象"
+        },
+        "Specific number / specificity": {
+          "label": "具體數字 / 特殊性",
+          "description": "使用具體數據/指標"
+        },
+        "Direct call-out": {
+          "label": "直接點名",
+          "description": "針對特定受眾群體"
+        },
+        "Pattern interrupt (verbal)": {
+          "label": "模式中斷 (言語)",
+          "description": "不尋常的表達/措辭"
+        },
+        "Before / After contrast": {
+          "label": "前後對比",
+          "description": "展示轉變"
+        },
+        "Time-bound promise": {
+          "label": "時間限制承諾",
+          "description": "強調速度/緊迫性"
+        },
+        "Negative framing": {
+          "label": "負面框架",
+          "description": "以錯誤/風險開場"
+        },
+        "Question hook": {
+          "label": "問題開場",
+          "description": "提出觀眾心中未言說的問題"
+        },
+        "Other": {
+          "label": "其他",
+          "description": "混合或獨特的方式"
+        }
+      }
+    },
+    "whatToFix": {
+      "title": "待修復項目",
+      "beat": "第 {number} 個節拍",
+      "beats": "第 {numbers} 個節拍",
+      "view": "點擊查看",
+      "apply": "套用修復",
+      "applied": "已套用",
+      "critical": {
+        "title": "嚴重問題",
+        "description": "這些問題會嚴重影響留存率，應優先處理。"
+      },
+      "moderate": {
+        "title": "一般問題",
+        "description": "這些問題可能會降低觀眾參與度。"
+      },
+      "minor": {
+        "title": "輕微問題",
+        "description": "優化這些細節可以提升影片質感。"
+      }
+    },
+    "changes": {
+      "title": "已批准的修改",
+      "noChanges": "尚未批准任何修改",
+      "noChangesSub": "在分析面板中查看建議並批准操作以將其新增至此。",
+      "generate": "使用批准的修改進行生成",
+      "generating": "正在生成...",
+      "estTime": "預計處理時間：{time}",
+      "fix": "修復",
+      "rehook": "重新開場",
+      "variant": "變體 {label}",
+      "generateNew": "生成新內容"
+    },
+    "metrics": {
+      "labels": {
+        "excellent": "優異",
+        "good": "良好",
+        "fair": "尚可",
+        "weak": "較弱",
+        "poor": "極差",
+        "clear": "清晰",
+        "somewhat": "部分清晰",
+        "unclear": "模糊"
+      },
+      "hook": {
+        "title": "開場",
+        "timeToClaim": "價值主張時間",
+        "patternBreak": "模式打破",
+        "specifics": "具體要素",
+        "hookQuestion": "開場提問",
+        "duration": "開場時長",
+        "viralPattern": "爆紅模式",
+        "loopStrength": "循環強度",
+        "tooltips": {
+          "timeToClaim": "直到第一個承諾/主張出現的主播秒數。目標：1.5 秒以內。",
+          "patternBreak": "前 1-3 秒的能量/視覺變化。越高越好。",
+          "specifics": "開場中的數字、時間框架、名稱。越多越具吸引力。",
+          "hookQuestion": "以問題或矛盾開場以吸引觀眾。"
+        }
+      },
+      "structure": {
+        "title": "結構",
+        "beatCount": "節拍數量",
+        "beats": "{count} 個節拍",
+        "progressMarkers": "進度標記",
+        "hasPayoff": "是否有結果",
+        "loopCue": "循環提示",
+        "videoLength": "影片時長",
+        "pacingConsistency": "節奏一致性",
+        "payoffTiming": "結果呈現時機",
+        "tooltips": {
+          "beatCount": "內容章節的數量。理想：Shorts 為 3-6 個。",
+          "progressMarkers": "引導觀眾的文字，如「第一」、「接下來」、「最後」。",
+          "hasPayoff": "影片是否兌現了開場的承諾？",
+          "loopCue": "結尾是否呼應開頭 or 鼓勵重複觀看？"
+        }
+      },
+      "clarity": {
+        "title": "清晰度",
+        "valueClarity": "價值清晰度",
+        "uniqueness": "獨特性",
+        "speakingPace": "語速",
+        "wps": "{count} 字/秒",
+        "complexity": "複雜度",
+        "topicJumps": "主題跳躍",
+        "redundancy": "冗餘度",
+        "tooltips": {
+          "speakingPace": "每秒單詞數。理想：每秒 3-4 個單詞以利理解。",
+          "complexity": "句子複雜度。越低越容易理解。",
+          "topicJumps": "突然的語境切換。越少越容易理解。",
+          "redundancy": "無新資訊的重複。越低越簡潔。"
+        }
+      },
+      "delivery": {
+        "title": "表達",
+        "energyLevel": "能量水平",
+        "vocalClarity": "人聲清晰度",
+        "presence": "表現力",
+        "volumeConsistency": "音量穩定性",
+        "audioQuality": "音訊品質",
+        "fillerWords": "贅詞",
+        "energyVariation": "能量變化",
+        "tooltips": {
+          "volumeConsistency": "大聲穩定性。越高表示音量水平越一致。",
+          "audioQuality": "噪音水平和清晰度。越高表示音訊越乾淨。",
+          "fillerWords": "「嗯」、「啊」、「那個」等贅詞數量。越低表示表達越乾淨。",
+          "energyVariation": "維持聽覺興趣的語氣能量變化。單調則較枯燥。"
+        }
+      }
+    },
+    "beatsbybeat": {
+      "title": "節拍詳解",
+      "beatsCount": "{count} 個節拍",
+      "noIssues": "查無問題",
+      "showDetails": "顯示詳情",
+      "hideDetails": "隱藏詳情",
+      "retentionDrop": "預估留存降幅",
+      "beatMini": "節拍 {number}",
+      "transcript": "逐字稿",
+      "visual": "視覺",
+      "audio": "音訊",
+      "shotList": "導演分鏡表",
+      "severity": {
+        "critical": "嚴重",
+        "moderate": "一般",
+        "minor": "輕微",
+        "ignored": "已忽略"
+      },
+      "retention": {
+        "high": "高流失風險",
+        "moderate": "中度流失",
+        "minor": "輕微流失",
+        "strong": "留存優異"
+      }
+    },
+    "comparison": {
+      "title": "影片對比",
+      "base": "基準",
+      "vs": "vs",
+      "current": "目前",
+      "loadingStats": "載入數據中...",
+      "today": "今天",
+      "yesterday": "昨天",
+      "analyzedAt": "分析時間：{date}",
+      "baseScore": "基準得分",
+      "currentScore": "目前得分",
+      "overall": "總體",
+      "noSignals": "無詳細 {type} 數據可供對比",
+      "issues": {
+        "title": "問題對比",
+        "fixed": "已修復 {count} 個",
+        "new": "新增 {count} 個",
+        "unchanged": "未變動 {count} 個",
+        "none": "無可對比的問題",
+        "status": {
+          "fixed": "已修復",
+          "new": "新增",
+          "unchanged": "未變動"
+        }
+      }
+    },
+    "upgrade": {
+      "title": "升級以解鎖",
+      "feature": "此功能",
+      "message": "升級以解鎖所有進階功能，包括詳細的表現分析、AI 建議的修復方案以及爆紅開場變體。",
+      "cta": "查看方案",
+      "features": {
+        "performance-cards": "查看詳細表現分析",
+        "apply-fix": "套用 AI 修復建議",
+        "suggest-metadata": "生成優化的標題與描述",
+        "re-hook": "獲取爆紅開場變體"
+      }
+    },
+    "picker": {
+      "title": "選擇對比的基準影片",
+      "searchPlaceholder": "搜尋標題、領域或內容類型...",
+      "loading": "載入影片中...",
+      "noResults": "找不到符合搜尋的影片",
+      "noVideos": "找不到其他已分析的影片",
+      "noVideosHint": "分析更多影片以進行對比",
+      "tryAgain": "重試"
+    },
+    "share": {
+      "button": "分享",
+      "generating": "產生中...",
+      "copyLink": "複製連結",
+      "openLink": "在新分頁開啟",
+      "error": "建立連結失敗"
+    },
+    "create": {
+      "title": "建立短影片分析",
+      "subtitle": "輸入 YouTube 網址或上傳影片以使用 AI 分析",
+      "breadcrumb": {
+        "projects": "專案",
+        "myNewShort": "我的新短影片",
+        "createAnalysis": "建立分析"
+      },
+      "urlTab": "網址",
+      "uploadTab": "上傳",
+      "urlLabel": "YouTube Short 網址",
+      "uploadLabel": "上傳影片檔案",
+      "placeholder": "https://youtube.com/shorts/...",
+      "button": "分析短影片",
+      "generating": "正在生成分鏡腳本...",
+      "errors": {
+        "enterUrl": "請輸入網址",
+        "invalidUrl": "請輸入有效的網址",
+        "youtubeOnly": "僅支援 YouTube 網址"
+      }
+    }
+  },
+  "storyboard": {
+    "title": "分鏡腳本製作",
+    "create": "建立分鏡腳本",
+    "chat": {
+      "placeholder": "描述您的影片構想...",
+      "send": "發送",
+      "generating": "正在生成分鏡腳本...",
+      "ready": "準備生成！",
+      "generate": "生成分鏡腳本"
+    },
+    "createPage": {
+      "title": "建立分鏡腳本",
+      "subtitle": "告訴我您的影片構想",
+      "welcomeMessage": "嗨！我會幫助您建立影片分鏡腳本。您想製作什麼類型的影片？",
+      "inputPlaceholder": "輸入您的訊息...",
+      "inputWithFiles": "為您的檔案添加訊息...",
+      "tryAnyway": "仍然嘗試生成",
+      "generating": "正在生成您的分鏡腳本...",
+      "attachments": {
+        "title": "附件",
+        "addFiles": "添加檔案",
+        "noFiles": "沒有附加檔案。點擊「添加檔案」附加 PDF 或圖片。"
+      },
+      "errors": {
+        "fileType": "不支援的檔案類型：{name}。請使用 PDF 或圖片。",
+        "fileSize": "檔案太大：{name}。最大大小為 10MB。",
+        "chatFailed": "抱歉，發生錯誤。請再試一次。",
+        "generateFailed": "抱歉，生成分鏡腳本失敗。請再試一次。"
+      }
+    },
+    "beats": {
+      "title": "節拍",
+      "add": "新增節拍",
+      "delete": "刪除節拍",
+      "duplicate": "複製節拍",
+      "regenerate": "重新生成節拍",
+      "edit": "編輯節拍",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "insertBeat": "插入節拍",
+      "newBeatTitle": "新節拍",
+      "newBeatNotes": "• 在此新增您的說明",
+      "newBeatScript": "在此新增您的腳本...",
+      "newBeatVisual": "• 描述視覺畫面",
+      "newBeatAudio": "• 描述音訊內容",
+      "copySuffix": "複製"
+    },
+    "export": {
+      "subtitle": "匯出字幕",
+      "storyboard": "匯出分鏡表"
+    },
+    "compare": "比較",
+    "fields": {
+      "script": "腳本",
+      "visual": "視覺",
+      "audio": "音訊",
+      "directorNotes": "導演筆記"
+    },
+    "hookVariants": {
+      "title": "開場變體",
+      "bold": "大膽直接",
+      "question": "好奇開場",
+      "emotional": "痛點",
+      "specific": "數據驅動",
+      "selected": "已選擇",
+      "whyThisWorks": "為何有效",
+      "options": "選項"
+    },
+    "resultPage": {
+      "title": "您的分鏡腳本",
+      "subtitle": "拍攝影片的導演指南",
+      "loading": "正在載入分鏡腳本...",
+      "failedToLoad": "無法載入資料",
+      "backToCreate": "返回建立",
+      "overview": {
+        "title": "影片概覽",
+        "titleLabel": "標題",
+        "format": "格式",
+        "niche": "領域",
+        "length": "長度"
+      },
+      "hookSelector": {
+        "title": "選擇您的開場",
+        "description": "選擇最適合您內容的開場風格。這將更新節拍 1。"
+      },
+      "shotList": {
+        "title": "導演鏡頭清單"
+      },
+      "beatContent": {
+        "whatToSay": "說什麼",
+        "visual": "視覺",
+        "audio": "音訊",
+        "textOverlays": "文字疊加",
+        "bRollIdeas": "B-Roll 靈感",
+        "retentionTip": "留存技巧",
+        "directorNotes": "導演筆記",
+        "shootingGuidance": "拍攝指導"
+      },
+      "editPanel": {
+        "title": "編輯節拍",
+        "subtitle": "使用 AI 優化此節拍",
+        "sending": "編輯中...",
+        "quickActions": "快速操作",
+        "makeShorter": "縮短內容",
+        "addDetail": "添加細節",
+        "simplify": "簡化",
+        "energize": "增加活力",
+        "proposedChanges": "建議的修改",
+        "apply": "套用",
+        "discard": "捨棄",
+        "placeholder": "描述您想要做的更改...",
+        "error": "抱歉，發生了一些錯誤。請再試一次。",
+        "welcomeMessage": "我會協助您優化節拍 {beatNumber}。您想做什麼更改呢？",
+        "quickActionPrompts": {
+          "shorter": "讓這個節拍更短、更簡潔",
+          "longer": "為這個節拍添加更多細節",
+          "simplify": "簡化語言，使其更易於理解",
+          "energize": "讓這個節拍更有活力且令人興奮"
+        }
+      }
+    },
+    "technicalBadge": {
+      "shotTypes": {
+        "ECU": "超特寫：非常緊密的特定細節鏡頭（眼睛、手、物體）",
+        "CU": "特寫：臉部或物體的緊密鏡頭，展現情感或細節",
+        "MCU": "中特寫：頭部和肩膀構圖，常用於對話",
+        "MS": "中景：腰部以上構圖，平衡主體和環境",
+        "MWS": "中遠景：膝蓋以上構圖，展示肢體語言",
+        "MLS": "中長景：顯示大部分身體及部分環境",
+        "WS": "遠景：全身加上部分環境",
+        "EWS": "超遠景：建立場景，主體顯得較小",
+        "POV": "主觀鏡頭：攝影機呈現角色所見",
+        "OTS": "過肩鏡頭：從一個人背後看向另一個人",
+        "2-shot": "雙人鏡頭：畫面包含兩個人",
+        "INSERT": "插入鏡頭：與場景相關的物體或細節特寫",
+        "insert": "插入鏡頭：與場景相關的物體或細節特寫"
+      },
+      "cameraMovements": {
+        "static": "固定：攝影機保持固定位置",
+        "pan": "橫搖：攝影機水平左右旋轉",
+        "tilt": "俯仰：攝影機垂直上下旋轉",
+        "dolly": "推軌：攝影機向主體移動或遠離",
+        "truck": "橫移：攝影機左右移動",
+        "track": "追蹤鏡頭：攝影機跟隨移動中的主體",
+        "zoom": "變焦：鏡頭調整使主體看起來更近或更遠",
+        "push": "推進：攝影機或變焦靠近主體以強調",
+        "pull": "拉出：攝影機或變焦遠離主體",
+        "tracking": "追蹤鏡頭：攝影機跟隨移動中的主體",
+        "handheld": "手持：由攝影師手持，呈現自然有機的動感",
+        "steadicam": "穩定器：穩定的攝影機，行走時保持流暢",
+        "crane": "搖臂鏡頭：使用搖臂或吊臂垂直移動攝影機",
+        "whip": "快速橫搖：非常快速的橫搖產生動態模糊，常用於轉場",
+        "arc": "弧形：攝影機沿著主體周圍的弧形路徑移動"
+      },
+      "transitions": {
+        "cut": "剪接：從一個鏡頭即時切換到另一個",
+        "jump cut": "跳接：同一鏡頭內的突然剪接，產生不連續效果",
+        "match cut": "匹配剪接：在兩個相似形狀或動作之間剪接",
+        "fade": "淡入淡出：逐漸過渡到黑色或白色",
+        "dissolve": "溶接：一個鏡頭逐漸融入另一個",
+        "wipe": "擦除：新鏡頭滑入覆蓋前一個鏡頭",
+        "swipe": "滑動：類似擦除，新鏡頭滑入覆蓋前一個鏡頭",
+        "zoom": "變焦轉場：快速變焦用於鏡頭轉場",
+        "whip": "快速轉場：非常快速的橫搖產生動態模糊用於轉場",
+        "none": "無轉場",
+        "J-cut": "J剪接：下一個場景的音訊在畫面之前開始",
+        "L-cut": "L剪接：前一個場景的音訊延續到新畫面上",
+        "smash cut": "硬切：突然剪接以產生戲劇性對比或喜劇效果"
+      }
+    }
+  },
+  "footer": {
+    "tools": "工具",
+    "blog": "部落格",
+    "pricing": "價格",
+    "privacy": "隱私",
+    "terms": "條款",
+    "contact": "聯繫"
+  },
+  "auth": {
+    "signIn": "登入",
+    "signOut": "登出",
+    "email": "電子郵件",
+    "password": "密碼",
+    "forgotPassword": "忘記密碼？",
+    "noAccount": "還沒有帳戶？",
+    "hasAccount": "已有帳戶？"
+  },
+  "tier": {
+    "anonymous": "試用版",
+    "free": "免費",
+    "founder": "創始會員",
+    "lifetime": "終身"
+  },
+  "time": {
+    "year": "{count} 年前",
+    "years": "{count} 年前",
+    "month": "{count} 個月前",
+    "months": "{count} 個月前",
+    "week": "{count} 週前",
+    "weeks": "{count} 週前",
+    "day": "{count} 天前",
+    "days": "{count} 天前",
+    "hour": "{count} 小時前",
+    "hours": "{count} 小時前",
+    "minute": "{count} 分鐘前",
+    "minutes": "{count} 分鐘前",
+    "justNow": "剛才",
+    "m_ago": "{count} 分鐘前",
+    "h_ago": "{count} 小時前",
+    "d_ago": "{count} 天前"
+  },
+  "sharedAnalysis": {
+    "readOnly": "這是共享分析 - 唯讀檢視",
+    "notFound": {
+      "title": "找不到分析",
+      "subtitle": "此共享連結不可用",
+      "reasonsTitle": "可能原因：",
+      "reason1": "分析尚未共享",
+      "reason2": "連結不正確或已過期",
+      "reason3": "需要應用資料庫遷移"
+    }
+  }
+}

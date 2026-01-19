@@ -4,6 +4,7 @@ import { Home, BarChart3, Hammer, BookOpen, ChevronLeft, ChevronRight } from "lu
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTranslations } from 'next-intl';
 import SignOutButton from "@/app/(dashboard)/home/sign-out-button";
 import {
   Sidebar,
@@ -17,6 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const shortaLogo = "/shorta-logo.png";
 
@@ -52,6 +54,9 @@ function CollapseButton() {
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
   const [usageData, setUsageData] = useState<UsageData | null>(null);
+  const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
+  const tTier = useTranslations('tier');
 
   const initials = user.email?.split("@")[0].slice(0, 2).toUpperCase() || "JD";
 
@@ -64,10 +69,10 @@ export function AppSidebar({ user }: AppSidebarProps) {
   }, []);
 
   const navItems = [
-    { name: "Home", icon: Home, path: "/home" },
-    { name: "Analyzer", icon: BarChart3, path: "/analyzer" },
-    { name: "Build", icon: Hammer, path: "/build" },
-    { name: "Library", icon: BookOpen, path: "/library" },
+    { name: t('home'), icon: Home, path: "/home" },
+    { name: t('analyzer'), icon: BarChart3, path: "/analyzer" },
+    { name: t('build'), icon: Hammer, path: "/build" },
+    { name: t('library'), icon: BookOpen, path: "/library" },
   ];
 
   return (
@@ -114,17 +119,26 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarContent>
 
-      {/* Footer - Credits + User Profile */}
+      {/* Footer - Language, Credits + User Profile */}
       <SidebarFooter className="p-4 border-t border-gray-800">
+        {/* Language switcher - hidden when collapsed */}
+        <div className="mb-4 group-data-[collapsible=icon]:hidden">
+          <LanguageSwitcher />
+        </div>
+        {/* Compact language switcher - only show when collapsed */}
+        <div className="hidden group-data-[collapsible=icon]:flex justify-center mb-4">
+          <LanguageSwitcher variant="compact" />
+        </div>
+
         {/* Credits section - only show for free/anonymous tiers, hidden when collapsed */}
         {usageData && (usageData.tier === 'free' || usageData.tier === 'anonymous') && (
           <div className="mb-4 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-500 uppercase tracking-wider">
-                Analyses
+                {tCommon('analyses')}
               </span>
               <span className="text-sm font-semibold text-white">
-                {usageData.analyses_remaining} of {usageData.analyses_limit} left
+                {tCommon('analysesRemaining', { remaining: usageData.analyses_remaining, limit: usageData.analyses_limit })}
               </span>
             </div>
             <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
@@ -139,7 +153,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
               href="/pricing"
               className="block text-sm text-orange-500 hover:text-orange-400 font-medium mt-2"
             >
-              Upgrade Plan
+              {tCommon('upgrade')}
             </Link>
           </div>
         )}
@@ -157,9 +171,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <p>{user.email?.split("@")[0]}</p>
                 {usageData && (
                   <p className="text-xs text-gray-400 capitalize">
-                    {usageData.tier === 'founder' ? 'Founding Member' :
-                     usageData.tier === 'lifetime' ? 'Lifetime' :
-                     usageData.tier === 'free' ? 'Free' : 'Trial'}
+                    {tTier(usageData.tier)}
                   </p>
                 )}
               </TooltipContent>
@@ -170,9 +182,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
               </div>
               {usageData && (
                 <div className="text-xs text-gray-500 capitalize">
-                  {usageData.tier === 'founder' ? 'Founding Member' :
-                   usageData.tier === 'lifetime' ? 'Lifetime' :
-                   usageData.tier === 'free' ? 'Free' : 'Trial'}
+                  {tTier(usageData.tier)}
                 </div>
               )}
             </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Search, Loader2, Video } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface UserVideo {
     id: string;
@@ -50,7 +51,7 @@ const getLetterGrade = (score: number | null): { label: string; color: string } 
 };
 
 // Format relative time
-const formatRelativeTime = (dateString: string): string => {
+const formatRelativeTime = (dateString: string, tTime: any): string => {
     const now = new Date();
     const date = new Date(dateString);
     const diffMs = now.getTime() - date.getTime();
@@ -58,13 +59,17 @@ const formatRelativeTime = (dateString: string): string => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 60) return tTime('m_ago', { count: diffMins });
+    if (diffHours < 24) return tTime('h_ago', { count: diffHours });
+    if (diffDays < 7) return tTime('d_ago', { count: diffDays });
     return date.toLocaleDateString();
 };
 
 export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: VideoPickerModalProps) {
+    const tPicker = useTranslations('picker');
+    const tAnalyzer = useTranslations('analyzer');
+    const tTime = useTranslations('time');
+
     const [videos, setVideos] = useState<UserVideo[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -128,7 +133,7 @@ export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: Vi
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-800">
                     <h2 id="picker-modal-title" className="text-lg font-semibold text-white">
-                        Select Base Video to Compare
+                        {tPicker('title')}
                     </h2>
                     <button
                         onClick={onClose}
@@ -145,7 +150,7 @@ export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: Vi
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                         <input
                             type="text"
-                            placeholder="Search by title, niche, or content type..."
+                            placeholder={tPicker('searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:border-orange-500"
@@ -158,7 +163,7 @@ export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: Vi
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-12 gap-3">
                             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-                            <p className="text-sm text-gray-400">Loading your videos...</p>
+                            <p className="text-sm text-gray-400">{tPicker('loading')}</p>
                         </div>
                     ) : error ? (
                         <div className="text-center py-12">
@@ -167,18 +172,18 @@ export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: Vi
                                 onClick={() => window.location.reload()}
                                 className="text-sm text-orange-500 hover:underline"
                             >
-                                Try again
+                                {tPicker('tryAgain')}
                             </button>
                         </div>
                     ) : filteredVideos.length === 0 ? (
                         <div className="text-center py-12">
                             <Video className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                             <p className="text-gray-400">
-                                {searchQuery ? 'No videos match your search' : 'No other analyzed videos found'}
+                                {searchQuery ? tPicker('noResults') : tPicker('noVideos')}
                             </p>
                             {!searchQuery && (
                                 <p className="text-sm text-gray-500 mt-2">
-                                    Analyze more videos to compare them
+                                    {tPicker('noVideosHint')}
                                 </p>
                             )}
                         </div>
@@ -213,7 +218,7 @@ export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: Vi
                                                 {video.title}
                                             </h3>
                                             <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                                                <span>{formatRelativeTime(video.completedAt)}</span>
+                                                <span>{formatRelativeTime(video.completedAt, tTime)}</span>
                                                 {video.metadata.niche && (
                                                     <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded">
                                                         {video.metadata.niche}
@@ -225,7 +230,7 @@ export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: Vi
                                         {/* Score */}
                                         <div className={`flex-shrink-0 w-10 h-10 rounded-lg bg-${grade.color}-500/10 flex items-center justify-center`}>
                                             <span className={`text-lg font-bold text-${grade.color}-500`}>
-                                                {grade.label}
+                                                {tAnalyzer(`grades.letters.${grade.label as any}`)}
                                             </span>
                                         </div>
                                     </button>
