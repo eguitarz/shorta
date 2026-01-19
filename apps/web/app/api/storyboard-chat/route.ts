@@ -5,9 +5,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+interface FileAttachment {
+  mimeType: string;
+  data: string; // base64 encoded
+  name?: string;
+}
+
 interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  files?: FileAttachment[];
 }
 
 interface ExtractedData {
@@ -39,6 +46,7 @@ Guidelines:
 3. If user provides everything upfront, confirm details
 4. If user is vague, ask specific follow-up questions
 5. When you have all required info, say "Ready to generate!" and show a summary
+6. If the user attaches files (PDFs, images), analyze them carefully to extract relevant information for the storyboard. Reference specific content from the files in your responses.
 
 Example conversation:
 User: "I want to make a video about sales mistakes"

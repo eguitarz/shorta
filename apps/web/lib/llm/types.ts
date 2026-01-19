@@ -1,6 +1,13 @@
+export interface FileAttachment {
+  mimeType: string;
+  data: string; // base64 encoded
+  name?: string;
+}
+
 export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  files?: FileAttachment[];
 }
 
 export interface LLMResponse {

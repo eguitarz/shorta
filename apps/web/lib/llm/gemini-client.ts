@@ -15,11 +15,29 @@ export class GeminiClient implements LLMClient {
   async chat(messages: Message[], config?: LLMConfig): Promise<LLMResponse> {
     const modelName = config?.model || this.defaultModel;
 
-    // Build contents from messages
-    const contents = messages.map((msg) => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }],
-    }));
+    // Build contents from messages, including file attachments
+    const contents = messages.map((msg) => {
+      const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
+        { text: msg.content },
+      ];
+
+      // Add file attachments if present
+      if (msg.files && msg.files.length > 0) {
+        for (const file of msg.files) {
+          parts.push({
+            inlineData: {
+              mimeType: file.mimeType,
+              data: file.data,
+            },
+          });
+        }
+      }
+
+      return {
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts,
+      };
+    });
 
     const response = await this.ai.models.generateContent({
       model: modelName,
