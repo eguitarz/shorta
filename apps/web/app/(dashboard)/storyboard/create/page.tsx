@@ -2,11 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Send, Sparkles, ArrowLeft } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowLeft, Paperclip, X, FileText, Image as ImageIcon } from "lucide-react";
+
+interface FileAttachment {
+  mimeType: string;
+  data: string;
+  name: string;
+}
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  files?: FileAttachment[];
 }
 
 interface ExtractedData {
@@ -50,7 +57,9 @@ export default function CreateStoryboardPage() {
   const hasAutoSubmittedRef = useRef(false);
   const [viralPatterns, setViralPatterns] = useState<ViralPatterns | null>(null);
   const [isAnalyzingPatterns, setIsAnalyzingPatterns] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -74,12 +83,66 @@ export default function CreateStoryboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const handleSendWithMessage = async (messageText: string) => {
-    if (!messageText.trim() || isLoading) return;
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
 
-    const userMessage: Message = { role: "user", content: messageText };
+    const allowedTypes = [
+      'application/pdf',
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/gif',
+      'image/webp',
+    ];
+
+    for (const file of Array.from(files)) {
+      if (!allowedTypes.includes(file.type)) {
+        alert(`File type not supported: ${file.name}. Please use PDF or images.`);
+        continue;
+      }
+
+      // Max 10MB per file
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File too large: ${file.name}. Maximum size is 10MB.`);
+        continue;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        setAttachedFiles(prev => [...prev, {
+          mimeType: file.type,
+          data: base64,
+          name: file.name,
+        }]);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSendWithMessage = async (messageText: string, filesToSend?: FileAttachment[]) => {
+    const hasFiles = filesToSend && filesToSend.length > 0;
+    if ((!messageText.trim() && !hasFiles) || isLoading) return;
+
+    // If only files are attached, add a default message
+    const finalMessage = messageText.trim() || (hasFiles ? "Please analyze these files for my video storyboard." : "");
+
+    const userMessage: Message = {
+      role: "user",
+      content: finalMessage,
+      files: hasFiles ? filesToSend : undefined,
+    };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    // Keep attached files - user can remove them manually from the toolbar
     setIsLoading(true);
 
     try {
@@ -128,7 +191,7 @@ export default function CreateStoryboardPage() {
   };
 
   const handleSend = async () => {
-    await handleSendWithMessage(input);
+    await handleSendWithMessage(input, attachedFiles.length > 0 ? attachedFiles : undefined);
   };
 
   const handleGenerate = async () => {
@@ -367,19 +430,71 @@ Incorporating these into your storyboard...`;
             </div>
           )}
 
+          {/* Attachment toolbar - always visible */}
+          <div className="mb-3 p-3 bg-gray-900/50 border border-gray-800 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-gray-500 uppercase tracking-wide">Attachments</span>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading || isGenerating}
+                className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                <Paperclip className="w-3 h-3" />
+                Add files
+              </button>
+            </div>
+            {attachedFiles.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                  >
+                    {file.mimeType === 'application/pdf' ? (
+                      <FileText className="w-4 h-4 text-red-400" />
+                    ) : (
+                      <ImageIcon className="w-4 h-4 text-blue-400" />
+                    )}
+                    <span className="max-w-[150px] truncate text-gray-300">{file.name}</span>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="p-0.5 hover:bg-gray-700 rounded"
+                    >
+                      <X className="w-3.5 h-3.5 text-gray-400 hover:text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-600 py-2">
+                No files attached. Click "Add files" to attach PDFs or images.
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-2">
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,application/pdf,image/*"
+              multiple
+              className="hidden"
+            />
+
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
+              placeholder={attachedFiles.length > 0 ? "Add a message about your files..." : "Type your message..."}
               disabled={isLoading || isGenerating}
               className="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 disabled:opacity-50"
             />
             <button
               onClick={handleSend}
-              disabled={!input.trim() || isLoading || isGenerating}
+              disabled={(!input.trim() && attachedFiles.length === 0) || isLoading || isGenerating}
               className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-5 h-5" />
