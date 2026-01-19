@@ -47,7 +47,7 @@ export default function CreateStoryboardPage() {
   const [isReady, setIsReady] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [hasAutoSubmitted, setHasAutoSubmitted] = useState(false);
+  const hasAutoSubmittedRef = useRef(false);
   const [viralPatterns, setViralPatterns] = useState<ViralPatterns | null>(null);
   const [isAnalyzingPatterns, setIsAnalyzingPatterns] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -63,8 +63,8 @@ export default function CreateStoryboardPage() {
   // Auto-submit topic from query parameter
   useEffect(() => {
     const topic = searchParams.get('topic');
-    if (topic && !hasAutoSubmitted) {
-      setHasAutoSubmitted(true);
+    if (topic && !hasAutoSubmittedRef.current) {
+      hasAutoSubmittedRef.current = true; // Synchronous update prevents double submission
       setInput(topic);
       // Auto-submit after a brief delay to ensure UI is ready
       setTimeout(() => {
@@ -72,7 +72,7 @@ export default function CreateStoryboardPage() {
       }, 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, hasAutoSubmitted]);
+  }, [searchParams]);
 
   const handleSendWithMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -237,8 +237,10 @@ Incorporating these into your storyboard...`;
 
       const data = await response.json();
 
-      // Store in sessionStorage
-      const id = Date.now().toString();
+      // Use the database ID if available, otherwise fall back to timestamp
+      const id = data.id || Date.now().toString();
+
+      // Store in sessionStorage for faster access
       sessionStorage.setItem(`created_${id}`, JSON.stringify(data));
 
       // Navigate to results
