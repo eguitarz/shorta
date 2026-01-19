@@ -86,7 +86,11 @@ export async function GET(
             appliedChanges: storyboard.applied_changes || [],
             generatedAt: storyboard.created_at,
 
+            // Hook variants (for created storyboards)
+            hookVariants: storyboard.hook_variants || [],
+
             // Additional metadata
+            source: storyboard.source || 'analyzed',
             analysisJobId: storyboard.analysis_job_id,
             title: storyboard.title,
             nicheCategory: storyboard.niche_category,

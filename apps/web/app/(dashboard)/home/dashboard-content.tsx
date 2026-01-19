@@ -15,7 +15,7 @@ interface Activity {
   type: string;
   timeAgo: string;
   status: string;
-  activityType?: 'analysis' | 'generated';
+  activityType?: 'analysis' | 'generated' | 'created';
 }
 
 export default function DashboardContent() {
@@ -91,9 +91,14 @@ export default function DashboardContent() {
   }, []);
 
   const handleActivityClick = (activity: Activity) => {
-    if (activity.activityType === 'generated') {
+    if (activity.activityType === 'created') {
+      // Created from scratch - navigate to storyboard generate page
+      router.push(`/storyboard/generate/${activity.id}`);
+    } else if (activity.activityType === 'generated') {
+      // Generated from analysis - navigate to analyzer generate page
       router.push(`/analyzer/generate/${activity.id}`);
     } else {
+      // Analysis job - navigate to analyzer page
       router.push(`/analyzer/${activity.id}`);
     }
   };
@@ -273,9 +278,13 @@ export default function DashboardContent() {
                     onClick={() => handleActivityClick(activity)}
                     className="w-full flex items-center gap-4 p-4 hover:bg-gray-800/50 rounded-lg transition-colors group"
                   >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${activity.activityType === 'generated' ? 'bg-purple-500/10' : 'bg-orange-500/10'
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      activity.activityType === 'created' ? 'bg-green-500/10' :
+                      activity.activityType === 'generated' ? 'bg-purple-500/10' : 'bg-orange-500/10'
                       }`}>
-                      {activity.activityType === 'generated' ? (
+                      {activity.activityType === 'created' ? (
+                        <Hammer className="w-5 h-5 text-green-500" />
+                      ) : activity.activityType === 'generated' ? (
                         <Hammer className="w-5 h-5 text-purple-500" />
                       ) : (
                         <BarChart3 className="w-5 h-5 text-orange-500" />

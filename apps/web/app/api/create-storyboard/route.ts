@@ -1,7 +1,9 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
-import { requireAuth } from '@/lib/auth-helpers';
+import { requireAuth, getAuthenticatedUser } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,6 +91,15 @@ export async function POST(request: NextRequest) {
     return authError;
   }
 
+  // Get authenticated user for database save
+  const user = await getAuthenticatedUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     const input: CreateStoryboardInput = await request.json();
 
@@ -160,7 +171,81 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Save to database
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // API route - ignore cookie setting errors
+            }
+          },
+        },
+      }
+    );
+
+    const overview = storyboard.overview;
+    const title = overview?.title || input.topic || 'Untitled Storyboard';
+
+    const insertData = {
+      user_id: user.id,
+      analysis_job_id: null, // Created from scratch, not from analysis
+      source: 'created', // Distinguish from 'analyzed' storyboards
+      title,
+      original_overview: overview,
+      original_beats: storyboard.beats, // Store generated beats as original too
+      generated_overview: overview,
+      generated_beats: storyboard.beats,
+      applied_changes: [], // No changes applied
+      hook_variants: storyboard.hookVariants || null, // Store hook variants
+      // Searchable metadata
+      niche_category: overview?.nicheCategory || null,
+      content_type: overview?.contentType || input.contentType || null,
+      hook_pattern: null,
+      video_length_seconds: overview?.length || input.targetLength || null,
+      changes_count: 0,
+    };
+
+    console.log('Inserting storyboard with data:', {
+      user_id: insertData.user_id,
+      source: insertData.source,
+      title: insertData.title,
+      beats_count: insertData.generated_beats?.length,
+      hook_variants_count: insertData.hook_variants?.length,
+    });
+
+    const { data: savedStoryboard, error: saveError } = await supabase
+      .from('generated_storyboards')
+      .insert(insertData)
+      .select('id')
+      .single();
+
+    if (saveError) {
+      console.error('Failed to save storyboard:', saveError);
+      console.error('Save error details:', {
+        code: saveError.code,
+        message: saveError.message,
+        details: saveError.details,
+        hint: saveError.hint,
+      });
+      // Continue without failing - still return the generated data
+    }
+
+    const storyboardId = savedStoryboard?.id;
+    console.log('Saved created storyboard with ID:', storyboardId);
+
     return NextResponse.json({
+      id: storyboardId,
       overview: storyboard.overview,
       beats: storyboard.beats,
       hookVariants: storyboard.hookVariants || [],

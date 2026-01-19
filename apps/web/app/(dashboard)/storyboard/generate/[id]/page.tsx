@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp, Camera, Move, Film, Type, Video, Zap, Trash2, Copy, ArrowUp, ArrowDown, Plus } from "lucide-react";
+import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp, Camera, Move, Film, Type, Video, Zap, Trash2, Copy, ArrowUp, ArrowDown, Plus, RefreshCw } from "lucide-react";
 import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
 import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
 import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
@@ -75,24 +75,69 @@ export default function StoryboardResultsPage() {
   const [proposedChanges, setProposedChanges] = useState<ProposedChanges | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Regenerate and highlight state
+  const [regeneratingBeat, setRegeneratingBeat] = useState<number | null>(null);
+  const [highlightedBeatNumber, setHighlightedBeatNumber] = useState<number | null>(null);
+  const beatRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
   useEffect(() => {
-    const id = params.id as string;
-    const stored = sessionStorage.getItem(`created_${id}`);
+    const loadStoryboard = async () => {
+      const id = params.id as string;
 
-    if (!stored) {
-      router.push("/storyboard/create");
-      return;
-    }
+      // First try sessionStorage
+      const stored = sessionStorage.getItem(`created_${id}`);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setStoryboardData(parsed);
+          setLoading(false);
+          return;
+        } catch (err) {
+          console.error("Error parsing sessionStorage data:", err);
+        }
+      }
 
-    try {
-      const parsed = JSON.parse(stored);
-      setStoryboardData(parsed);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error loading storyboard data:", err);
-      setError("Failed to load storyboard");
-      setLoading(false);
-    }
+      // If not in sessionStorage, fetch from database
+      try {
+        const response = await fetch(`/api/storyboards/generated/${id}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            router.push("/storyboard/create");
+            return;
+          }
+          throw new Error("Failed to fetch storyboard");
+        }
+
+        const data = await response.json();
+
+        // Transform API response to match expected format
+        const transformedData: GeneratedData = {
+          overview: data.generated?.overview || data.original?.overview || {
+            title: data.title || "Untitled",
+            contentType: data.contentType || "",
+            nicheCategory: data.nicheCategory || "",
+            targetAudience: "",
+            length: 0,
+          },
+          beats: data.generated?.beats || data.original?.beats || [],
+          hookVariants: data.hookVariants || [],
+          selectedHookId: data.selectedHookId,
+          generatedAt: data.generatedAt || new Date().toISOString(),
+        };
+
+        setStoryboardData(transformedData);
+
+        // Cache in sessionStorage for faster access
+        sessionStorage.setItem(`created_${id}`, JSON.stringify(transformedData));
+        setLoading(false);
+      } catch (err) {
+        console.error("Error loading storyboard:", err);
+        setError("Failed to load storyboard");
+        setLoading(false);
+      }
+    };
+
+    loadStoryboard();
   }, [params.id, router]);
 
   const formatTime = (seconds: number): string => {
@@ -323,6 +368,9 @@ export default function StoryboardResultsPage() {
       ...storyboardData,
       beats: reorderedBeats,
     });
+
+    // Scroll to and highlight the new beat (beatIndex + 2 because beatNumber is 1-indexed)
+    scrollToBeat(beatIndex + 2);
   };
 
   // Move beat up
@@ -400,6 +448,60 @@ export default function StoryboardResultsPage() {
 
     // Open edit panel for the new beat
     handleEditBeat(beatIndex + 2); // +2 because beatNumber is 1-indexed and we inserted after
+  };
+
+  // Regenerate a single beat
+  const handleRegenerateBeat = async (beatNumber: number) => {
+    if (!storyboardData || regeneratingBeat !== null) return;
+
+    setRegeneratingBeat(beatNumber);
+
+    try {
+      const response = await fetch("/api/regenerate-beat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storyboard: storyboardData,
+          beatNumber,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to regenerate beat");
+
+      const data = await response.json();
+
+      // Update the beat in the storyboard
+      const updatedBeats = storyboardData.beats.map(beat =>
+        beat.beatNumber === beatNumber ? data.beat : beat
+      );
+
+      const updatedData = {
+        ...storyboardData,
+        beats: updatedBeats,
+      };
+
+      saveStoryboardData(updatedData);
+
+      // Highlight the regenerated beat briefly
+      setHighlightedBeatNumber(beatNumber);
+      setTimeout(() => setHighlightedBeatNumber(null), 2000);
+    } catch (error) {
+      console.error("Regenerate beat error:", error);
+    } finally {
+      setRegeneratingBeat(null);
+    }
+  };
+
+  // Scroll to and highlight a beat
+  const scrollToBeat = (beatNumber: number) => {
+    setTimeout(() => {
+      const beatElement = beatRefs.current.get(beatNumber);
+      if (beatElement) {
+        beatElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedBeatNumber(beatNumber);
+        setTimeout(() => setHighlightedBeatNumber(null), 2000);
+      }
+    }, 100); // Small delay to ensure DOM is updated
   };
 
   if (loading) {
@@ -518,7 +620,14 @@ export default function StoryboardResultsPage() {
             {storyboardData.beats.map((beat, index) => (
               <div key={beat.beatNumber} className="space-y-3">
               <div
-                className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden"
+                ref={(el) => {
+                  if (el) beatRefs.current.set(beat.beatNumber, el);
+                }}
+                className={`bg-gray-900 rounded-lg border overflow-hidden transition-all duration-500 ${
+                  highlightedBeatNumber === beat.beatNumber
+                    ? "border-purple-500 ring-2 ring-purple-500/50 shadow-lg shadow-purple-500/20"
+                    : "border-gray-800"
+                }`}
               >
                 {/* Beat Header */}
                 <div className="bg-gradient-to-r from-purple-900/30 to-transparent p-4 border-b border-gray-800">
@@ -578,6 +687,19 @@ export default function StoryboardResultsPage() {
                         title="Duplicate beat"
                       >
                         <Copy className="w-4 h-4 text-gray-400" />
+                      </button>
+                      {/* Regenerate */}
+                      <button
+                        onClick={() => handleRegenerateBeat(beat.beatNumber)}
+                        disabled={regeneratingBeat !== null}
+                        className="p-1.5 hover:bg-green-900/30 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Regenerate beat"
+                      >
+                        {regeneratingBeat === beat.beatNumber ? (
+                          <Loader2 className="w-4 h-4 text-green-400 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-4 h-4 text-green-400" />
+                        )}
                       </button>
                       {/* Edit */}
                       <button

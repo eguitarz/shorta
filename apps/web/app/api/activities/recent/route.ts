@@ -99,9 +99,10 @@ export async function GET(request: NextRequest) {
 		}
 
 		// Fetch recent generated storyboards (up to 5)
+		// Include analysis_job_id to distinguish between created and analyzed
 		const { data: storyboards, error: storyboardsError } = await supabase
 			.from('generated_storyboards')
-			.select('id, title, niche_category, content_type, created_at')
+			.select('id, title, niche_category, content_type, created_at, analysis_job_id')
 			.eq('user_id', user.id)
 			.order('created_at', { ascending: false })
 			.limit(5);
@@ -156,13 +157,14 @@ export async function GET(request: NextRequest) {
 		});
 
 		// Format generated storyboard activities
+		// Distinguish between created from scratch (analysis_job_id is null) and from analysis
 		const storyboardActivities = (storyboards || []).map((sb) => ({
 			id: sb.id,
 			title: sb.title || 'Generated Storyboard',
-			type: 'Generated',
+			type: sb.analysis_job_id ? 'Generated' : 'Created',
 			timeAgo: getTimeAgo(sb.created_at),
 			status: 'completed',
-			activityType: 'generated' as const,
+			activityType: sb.analysis_job_id ? 'generated' as const : 'created' as const,
 			createdAt: sb.created_at,
 		}));
 
