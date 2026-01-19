@@ -26,6 +26,8 @@ export interface LLMConfig {
   // Video-specific options
   videoDuration?: number; // Duration in seconds, used to optimize FPS
   fps?: number; // Override FPS (default: 1, auto-adjusted for long videos)
+  // i18n options
+  language?: string; // Language code for AI responses (e.g., 'en', 'es', 'ko', 'zh-TW')
 }
 
 // Edge-compatible: env passed as parameter

@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Sparkles, Link as LinkIcon, Upload } from "lucide-react";
 import { VideoUpload } from "@/components/video-upload";
+import { useTranslations } from "next-intl";
 
 type InputMode = "url" | "upload";
 
 export default function CreateAnalysisPage() {
   const router = useRouter();
+  const t = useTranslations('analyzer.create');
   const [inputMode, setInputMode] = useState<InputMode>("url");
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,7 +20,7 @@ export default function CreateAnalysisPage() {
     e.preventDefault();
 
     if (!url.trim()) {
-      setError("Please enter a URL");
+      setError(t('errors.enterUrl'));
       return;
     }
 
@@ -26,14 +28,14 @@ export default function CreateAnalysisPage() {
     try {
       new URL(url.trim());
     } catch {
-      setError("Please enter a valid URL");
+      setError(t('errors.invalidUrl'));
       return;
     }
 
     // Check if it's a YouTube URL
     const youtubeRegex = /(?:youtube\.com\/(?:shorts\/|watch\?v=)|youtu\.be\/)/;
     if (!youtubeRegex.test(url.trim())) {
-      setError("Only YouTube URLs are supported");
+      setError(t('errors.youtubeOnly'));
       return;
     }
 
@@ -75,13 +77,13 @@ export default function CreateAnalysisPage() {
       <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
         <div className="flex items-center gap-6">
           <button className="text-sm text-gray-400 hover:text-white transition-colors">
-            Projects
+            {t('breadcrumb.projects')}
           </button>
           <button className="text-sm text-gray-400 hover:text-white transition-colors">
-            My New Short
+            {t('breadcrumb.myNewShort')}
           </button>
           <button className="text-sm text-white font-medium border-b-2 border-orange-500 pb-[22px] -mb-[17px]">
-            Create Analysis
+            {t('breadcrumb.createAnalysis')}
           </button>
         </div>
       </header>
@@ -91,9 +93,9 @@ export default function CreateAnalysisPage() {
         <div className="max-w-4xl mx-auto p-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Create Short Analysis</h1>
+            <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
             <p className="text-gray-400">
-              Enter a YouTube URL or upload a video to analyze with AI
+              {t('subtitle')}
             </p>
           </div>
 
@@ -104,22 +106,22 @@ export default function CreateAnalysisPage() {
               <button
                 onClick={() => { setInputMode("url"); setError(null); }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${inputMode === "url"
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-400 hover:text-white"
+                  ? "bg-gray-800 text-white"
+                  : "text-gray-400 hover:text-white"
                   }`}
               >
                 <LinkIcon className="w-4 h-4" />
-                URL
+                {t('urlTab')}
               </button>
               <button
                 onClick={() => { setInputMode("upload"); setError(null); }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${inputMode === "upload"
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-400 hover:text-white"
+                  ? "bg-gray-800 text-white"
+                  : "text-gray-400 hover:text-white"
                   }`}
               >
                 <Upload className="w-4 h-4" />
-                Upload
+                {t('uploadTab')}
               </button>
             </div>
 
@@ -127,7 +129,7 @@ export default function CreateAnalysisPage() {
               <form onSubmit={handleSubmit}>
                 <label className="block mb-3">
                   <span className="text-sm text-gray-400 mb-2 block">
-                    YouTube Short URL
+                    {t('urlLabel')}
                   </span>
                   <div className="relative">
                     <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -135,7 +137,7 @@ export default function CreateAnalysisPage() {
                       type="url"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      placeholder="https://youtube.com/shorts/..."
+                      placeholder={t('placeholder')}
                       className="w-full bg-black border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
                       disabled={loading}
                     />
@@ -150,12 +152,12 @@ export default function CreateAnalysisPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Generating storyboard...
+                      {t('generating')}
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5" />
-                      Analyze Short
+                      {t('button')}
                     </>
                   )}
                 </button>
@@ -163,7 +165,7 @@ export default function CreateAnalysisPage() {
             ) : (
               <div>
                 <span className="text-sm text-gray-400 mb-3 block">
-                  Upload Video File
+                  {t('uploadLabel')}
                 </span>
                 <VideoUpload
                   onUploadComplete={handleUploadComplete}

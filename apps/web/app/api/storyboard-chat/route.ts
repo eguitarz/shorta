@@ -2,6 +2,7 @@ import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
 import { requireAuth } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
+import { appendLanguageInstruction } from '@/lib/i18n-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { messages } = await request.json();
+    const { messages, locale } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
@@ -151,9 +152,10 @@ export async function POST(request: NextRequest) {
 
     const client = createDefaultLLMClient(env);
 
-    // Build conversation with system prompt
+    // Build conversation with system prompt (with language instruction if needed)
+    const systemPromptWithLanguage = appendLanguageInstruction(SYSTEM_PROMPT, locale);
     const conversation = [
-      { role: 'system' as const, content: SYSTEM_PROMPT },
+      { role: 'system' as const, content: systemPromptWithLanguage },
       ...messages,
     ];
 

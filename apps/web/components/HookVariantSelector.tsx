@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Zap, HelpCircle, Heart, Hash, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific';
 
@@ -50,6 +51,9 @@ const STYLE_CONFIG: Record<HookVariantStyle, { icon: typeof Zap; color: string; 
 };
 
 export function HookVariantSelector({ variants, selectedId, onSelect }: HookVariantSelectorProps) {
+  const t = useTranslations('storyboard.resultPage.hookSelector');
+  const tVariants = useTranslations('storyboard.hookVariants');
+  const tFields = useTranslations('storyboard.fields');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (!variants || variants.length === 0) {
@@ -64,12 +68,12 @@ export function HookVariantSelector({ variants, selectedId, onSelect }: HookVari
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="w-5 h-5 text-purple-400" />
-        <h2 className="text-lg font-semibold">Choose Your Hook</h2>
-        <span className="text-sm text-gray-500">({variants.length} options)</span>
+        <h2 className="text-lg font-semibold">{t('title')}</h2>
+        <span className="text-sm text-gray-500">({variants.length} {tVariants('options')})</span>
       </div>
 
       <p className="text-sm text-gray-400 mb-4">
-        Select the hook style that best fits your content. This will update Beat 1.
+        {t('description')}
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,7 +113,7 @@ export function HookVariantSelector({ variants, selectedId, onSelect }: HookVari
                         {isSelected && (
                           <span className="flex items-center gap-1 text-xs text-purple-400 bg-purple-900/30 px-2 py-0.5 rounded-full">
                             <Check className="w-3 h-3" />
-                            Selected
+                            {tVariants('selected')}
                           </span>
                         )}
                       </div>
@@ -130,7 +134,7 @@ export function HookVariantSelector({ variants, selectedId, onSelect }: HookVari
                   }}
                   className="w-full px-4 py-2 flex items-center justify-between text-xs text-gray-400 hover:text-gray-300 hover:bg-gray-800/50 transition-colors"
                 >
-                  <span>Why this works</span>
+                  <span>{tVariants('whyThisWorks')}</span>
                   {isExpanded ? (
                     <ChevronUp className="w-4 h-4" />
                   ) : (
@@ -144,7 +148,7 @@ export function HookVariantSelector({ variants, selectedId, onSelect }: HookVari
 
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
-                        <p className="text-gray-500 uppercase tracking-wider mb-1">Visual</p>
+                        <p className="text-gray-500 uppercase tracking-wider mb-1">{tFields('visual')}</p>
                         <ul className="space-y-0.5">
                           {variant.visual.split('\n').filter(l => l.trim()).map((line, i) => (
                             <li key={i} className="text-gray-400">
@@ -154,7 +158,7 @@ export function HookVariantSelector({ variants, selectedId, onSelect }: HookVari
                         </ul>
                       </div>
                       <div>
-                        <p className="text-gray-500 uppercase tracking-wider mb-1">Audio</p>
+                        <p className="text-gray-500 uppercase tracking-wider mb-1">{tFields('audio')}</p>
                         <ul className="space-y-0.5">
                           {variant.audio.split('\n').filter(l => l.trim()).map((line, i) => (
                             <li key={i} className="text-gray-400">

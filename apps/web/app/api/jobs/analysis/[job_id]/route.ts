@@ -20,6 +20,8 @@ export async function GET(
 
   try {
     const { job_id } = await params;
+    const searchParams = request.nextUrl.searchParams;
+    const locale = searchParams.get('locale') || 'en';
 
     if (!job_id) {
       return NextResponse.json(
@@ -97,8 +99,8 @@ export async function GET(
 
       } else if (job.current_step === 1) {
         // Run Step 2: Linting (30-45s)
-        console.log(`[Poll] Triggering linting for job ${job_id}`);
-        await processLinting(job_id);
+        console.log(`[Poll] Triggering linting for job ${job_id} (locale: ${locale})`);
+        await processLinting(job_id, locale);
 
         // Refetch job after processing
         const { data: updatedJob } = await supabase
@@ -111,8 +113,8 @@ export async function GET(
 
       } else if (job.current_step === 2) {
         // Run Step 3: Storyboard (60-90s)
-        console.log(`[Poll] Triggering storyboard for job ${job_id}`);
-        await processStoryboard(job_id);
+        console.log(`[Poll] Triggering storyboard for job ${job_id} (locale: ${locale})`);
+        await processStoryboard(job_id, locale);
 
         // Refetch job after processing
         const { data: updatedJob } = await supabase

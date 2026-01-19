@@ -1,6 +1,37 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const locales = ['en', 'es', 'ko', 'zh-TW'] as const;
+const defaultLocale = 'en';
+
+function getPreferredLocale(request: NextRequest): string {
+  // 1. Check cookie (user preference)
+  const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
+  if (cookieLocale && locales.includes(cookieLocale as typeof locales[number])) {
+    return cookieLocale;
+  }
+
+  // 2. Check Accept-Language header
+  const acceptLanguage = request.headers.get('Accept-Language');
+  if (acceptLanguage) {
+    const browserLocales = acceptLanguage.split(',').map(l => l.split(';')[0].trim());
+    for (const browserLocale of browserLocales) {
+      // Exact match
+      const exactMatch = locales.find(l => browserLocale === l || browserLocale.toLowerCase() === l.toLowerCase());
+      if (exactMatch) return exactMatch;
+
+      // Prefix match (e.g., 'zh' matches 'zh-TW', 'es-MX' matches 'es')
+      const prefixMatch = locales.find(l =>
+        browserLocale.startsWith(l.split('-')[0]) || l.startsWith(browserLocale.split('-')[0])
+      );
+      if (prefixMatch) return prefixMatch;
+    }
+  }
+
+  // 3. Fallback to default
+  return defaultLocale;
+}
+
 export async function middleware(request: NextRequest) {
   // Force HTTPS redirect (skip for localhost/development)
   const host = request.headers.get('host') || '';
@@ -20,6 +51,10 @@ export async function middleware(request: NextRequest) {
 
   // Inject pathname for layout to access
   supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
+
+  // Inject locale for i18n
+  const locale = getPreferredLocale(request);
+  supabaseResponse.headers.set('x-locale', locale);
 
   // Allow anonymous access to /try page (trial form)
   const isTryPage = request.nextUrl.pathname.startsWith('/try');

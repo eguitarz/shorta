@@ -1,6 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -14,13 +15,15 @@ interface UpgradeModalProps {
  * Prompts users to upgrade to unlock premium features
  */
 export function UpgradeModal({ isOpen, onClose, feature, tier }: UpgradeModalProps) {
+  const t = useTranslations('upgrade');
+
   if (!isOpen) return null;
 
   const featureNames: Record<string, string> = {
-    'performance-cards': 'View Detailed Performance Insights',
-    'apply-fix': 'Apply AI-Suggested Fixes',
-    'suggest-metadata': 'Generate Optimized Titles & Descriptions',
-    're-hook': 'Get Viral Hook Variants',
+    'performance-cards': t('features.performance-cards'),
+    'apply-fix': t('features.apply-fix'),
+    'suggest-metadata': t('features.suggest-metadata'),
+    're-hook': t('features.re-hook'),
   };
 
   return (
@@ -53,17 +56,17 @@ export function UpgradeModal({ isOpen, onClose, feature, tier }: UpgradeModalPro
           id="upgrade-modal-title"
           className="text-xl font-bold text-white mb-2"
         >
-          Upgrade to Unlock
+          {t('title')}
         </h3>
 
         {/* Feature name */}
         <p className="text-gray-400 mb-4">
-          {featureNames[feature] || 'This feature'}
+          {featureNames[feature] || t('feature')}
         </p>
 
         {/* Message */}
         <p className="text-gray-300 mb-6">
-          Upgrade to unlock all premium features including detailed performance insights, AI-suggested fixes, and viral hook variants.
+          {t('message')}
         </p>
 
         {/* CTA button */}
@@ -71,7 +74,7 @@ export function UpgradeModal({ isOpen, onClose, feature, tier }: UpgradeModalPro
           href="/pricing"
           className="block w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-center font-semibold transition-colors"
         >
-          View Pricing
+          {t('cta')}
         </a>
       </div>
     </>

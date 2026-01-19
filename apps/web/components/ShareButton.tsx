@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { Share2, Copy, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ShareButtonProps {
   jobId: string;
 }
 
 export function ShareButton({ jobId }: ShareButtonProps) {
+  const t = useTranslations('analyzer');
   const [sharing, setSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -77,7 +79,7 @@ export function ShareButton({ jobId }: ShareButtonProps) {
         <button
           onClick={handleCopy}
           className="p-1.5 hover:bg-gray-700 rounded transition-colors"
-          title="Copy link"
+          title={t('share.copyLink')}
         >
           {copied ? (
             <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -90,7 +92,7 @@ export function ShareButton({ jobId }: ShareButtonProps) {
           target="_blank"
           rel="noopener noreferrer"
           className="p-1.5 hover:bg-gray-700 rounded transition-colors"
-          title="Open in new tab"
+          title={t('share.openLink')}
         >
           <ExternalLink className="w-4 h-4 text-gray-400" />
         </a>
@@ -107,12 +109,12 @@ export function ShareButton({ jobId }: ShareButtonProps) {
       {sharing ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-          <span className="text-sm text-gray-400">Generating...</span>
+          <span className="text-sm text-gray-400">{t('share.generating')}</span>
         </>
       ) : (
         <>
           <Share2 className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-400">Share</span>
+          <span className="text-sm text-gray-400">{t('share.button')}</span>
         </>
       )}
     </button>

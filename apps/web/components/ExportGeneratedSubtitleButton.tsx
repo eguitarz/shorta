@@ -1,6 +1,7 @@
 'use client';
 
 import { FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface GeneratedBeat {
   beatNumber: number;
@@ -24,6 +25,8 @@ function formatTime(seconds: number): string {
 }
 
 export function ExportGeneratedSubtitleButton({ beats, videoTitle = 'video' }: ExportGeneratedSubtitleButtonProps) {
+  const t = useTranslations('storyboard.export');
+
   const handleExport = () => {
     // Generate SRT format
     let srtContent = '';
@@ -50,10 +53,10 @@ export function ExportGeneratedSubtitleButton({ beats, videoTitle = 'video' }: E
     <button
       onClick={handleExport}
       className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-      title="Export subtitles with timestamps"
+      title={t('subtitle')}
     >
       <FileText className="w-4 h-4 text-gray-400" />
-      <span className="text-sm text-gray-400">Export Subtitle</span>
+      <span className="text-sm text-gray-400">{t('subtitle')}</span>
     </button>
   );
 }

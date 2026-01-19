@@ -1,0 +1,711 @@
+{
+  "common": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "logout": "Log out",
+    "settings": "Settings",
+    "language": "Language",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "tryFree": "Try Free",
+    "joinNow": "Join Now",
+    "joinAsMember": "Join as a Founding Member",
+    "noCreditCard": "No credit card · No login",
+    "pricing": "$99/year or $199 lifetime",
+    "pricingLimited": "$99/year or $199 lifetime · limited seats available",
+    "upgrade": "Upgrade Plan",
+    "analyses": "Analyses",
+    "analysesRemaining": "{remaining} of {limit} left",
+    "yes": "Yes",
+    "no": "No",
+    "currentVideo": "Current Video",
+    "copy": "Copy",
+    "copied": "Copied!"
+  },
+  "nav": {
+    "home": "Home",
+    "analyzer": "Analyzer",
+    "build": "Build",
+    "library": "Library"
+  },
+  "landing": {
+    "hero": {
+      "title": "Your AI Shorts Director",
+      "subtitle": "Analyze. Improve. Create."
+    },
+    "sections": {
+      "useCases": "Who uses Shorta",
+      "differentiation": "Shorta vs ChatGPT",
+      "faq": "Frequently asked questions",
+      "founder": "What Shorta changed in my workflow",
+      "timeline": "Launch timeline"
+    },
+    "faq": {
+      "aiGenerator": {
+        "question": "Is Shorta just another AI script generator?",
+        "answer": "No. Shorta focuses on analysis and feedback first. Generation is optional and guided by what actually needs fixing."
+      },
+      "monthlyPlan": {
+        "question": "Why don't you offer a monthly plan?",
+        "answer": "Building a successful YouTube Shorts channel is a long-term business, not a quick experiment. Annual pricing ensures you're committed to the process and gives you enough runway to see real results. We're building for creators who are serious about growth."
+      },
+      "chatgpt": {
+        "question": "Can't I just use ChatGPT?",
+        "answer1": "You can — but ChatGPT is trained on old data and gives you generic hooks.",
+        "answer2": "Shorta analyzes recent viral Shorts, extracts what's working now, and matches the best hook to your specific content — not just random viral patterns.",
+        "answer3": "It's like having a researcher who watches trending Shorts daily and tells you exactly which hook will work for your topic."
+      },
+      "niche": {
+        "question": "What if my niche isn't productivity or AI?",
+        "answer": "Shorta analyzes structure and viewer behavior patterns, not niche-specific buzzwords."
+      },
+      "creativity": {
+        "question": "Will this replace my creativity?",
+        "answer": "No. It removes uncertainty so you can focus on creative decisions that matter."
+      },
+      "generateTime": {
+        "question": "How long does it take to generate scripts?",
+        "answer": "Less than 5 minutes. Paste your references, enter your topic, and get high quality storyboard instantly."
+      },
+      "otherPlatforms": {
+        "question": "Can I use this for TikTok or Instagram Reels?",
+        "answer": "You can — the principles of viral short-form content apply across platforms. However, our current focus is on YouTube Shorts, so the analysis and patterns are optimized for that platform."
+      },
+      "dataStorage": {
+        "question": "Do you store my channel data?",
+        "answer": "We store summarized channel data (not raw videos) so the AI can generate the best content specifically for your audience and style. Your data is never shared with third parties."
+      }
+    },
+    "timeline": {
+      "underway": "Development is underway.",
+      "launch": "Launch: End of February 2026.",
+      "calloutTitle": "Development is underway. Join before launch.",
+      "calloutText": "Try the beta before public release."
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "recentAnalyses": "Recent Analyses",
+    "noAnalyses": "No analyses yet",
+    "startAnalyzing": "Start analyzing your first video",
+    "breadcrumb": {
+      "overview": "Overview",
+      "dashboard": "Dashboard"
+    },
+    "status": {
+      "aiOnline": "AI Directory Online"
+    },
+    "hero": {
+      "title": "Start with a proven hook.",
+      "subtitle": "Analyze viral hits or draft new concepts with AI-powered direction."
+    },
+    "analyzeCard": {
+      "label": "Analyze Content",
+      "title": "Analyze Short",
+      "description": "Paste a YouTube Short URL or upload a video to extract the hook, script structure, and retention score.",
+      "urlTab": "URL",
+      "uploadTab": "Upload",
+      "placeholder": "https://youtube.com/shorts/...",
+      "button": "Run Analysis"
+    },
+    "createCard": {
+      "label": "New Project",
+      "title": "Create from Topic",
+      "description": "Generate a storyboard and script from a simple topic or raw idea.",
+      "placeholder": "e.g., AI productivity tools for designers...",
+      "button": "Generate Storyboard"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "viewAll": "View All History",
+      "loading": "Loading activities...",
+      "empty": "No recent activities. Start by analyzing a video!"
+    }
+  },
+  "analyzer": {
+    "title": "Analysis: {title}",
+    "uploadedVideo": "Uploaded video",
+    "subtitle": "Insights are generated using patterns learned from high-retention Shorts in similar topic categories.",
+    "pasteUrl": "Paste a YouTube Shorts URL to analyze",
+    "analyze": "Analyze",
+    "analyzing": "Analyzing...",
+    "results": "Analysis Results",
+    "score": "Score",
+    "compare": "Compare",
+    "export": {
+      "subtitle": "Export Subtitle",
+      "storyboard": "Export Storyboard"
+    },
+    "breadcrumb": {
+      "projects": "Projects",
+      "analysis": "Analysis"
+    },
+    "status": {
+      "analyzing": "Analyzing",
+      "complete": "Analysis Complete",
+      "failed": "Analysis Failed",
+      "tryAgain": "Try Again",
+      "loadingVideo": "Loading video...",
+      "starting": "Starting analysis...",
+      "classifying": "Classifying video format...",
+      "linting": "Analyzing retention patterns...",
+      "storyboarding": "Generating storyboard...",
+      "classificationComplete": "Classification complete",
+      "lintingComplete": "Linting complete",
+      "step": "Step {current} of {total}",
+      "remainingStart": "~2 minutes remaining",
+      "remainingClassification": "~90 seconds remaining",
+      "remainingLinting": "~60 seconds remaining",
+      "remainingStoryboarding": "Almost done..."
+    },
+    "found": "{count} found",
+    "scores": {
+      "overall": "Overall Score",
+      "howCalculated": "How is this score calculated?",
+      "calculationExplanation": "The Overall Score (0-100) is calculated from 4 weighted categories:",
+      "hookWeight": "Hook (35%) - How quickly you grab attention",
+      "structureWeight": "Structure (25%) - Flow and payoff delivery",
+      "clarityWeight": "Clarity (25%) - Speaking pace and simplicity",
+      "deliveryWeight": "Delivery (15%) - Audio quality and energy",
+      "deterministic": "Deterministic: Same video always gets the same score.",
+      "grades": "Grades: S (100+), A (80-99), B (70-79), C (60-69), D (50-59), F (<50)",
+      "comments": {
+        "S": "Viral Ready",
+        "A": "Strong Performance",
+        "B": "Solid Foundation",
+        "C": "Room to Improve",
+        "D": "Needs Attention",
+        "F": "Major Rework Needed"
+      },
+      "perfectBeats": "{perfect} of {total} beats perfect"
+    },
+    "whatToFix": {
+      "title": "🎯 What to Fix",
+      "critical": {
+        "title": "CRITICAL FIXES",
+        "subtitle": "(Do these first)"
+      },
+      "moderate": {
+        "title": "SECONDARY IMPROVEMENTS"
+      },
+      "minor": {
+        "title": "OPTIONAL POLISH"
+      },
+      "view": "View →",
+      "beats": "Beats {numbers}",
+      "beat": "Beat {number}",
+      "apply": "Apply Fix",
+      "applied": "Applied"
+    },
+    "metadata": {
+      "title": "Title & Description",
+      "suggest": "Suggest Title & Description",
+      "noSuggestions": "No suggestions generated yet",
+      "suggesting": "Suggesting...",
+      "titleOptions": "Title Options",
+      "description": "Description"
+    },
+    "hooks": {
+      "title": "Re-hook Variants",
+      "aiSuggested": "AI SUGGESTED",
+      "currentHook": "Current Hook",
+      "variant": "Variant {letter}",
+      "whyThisWorks": "Why This Works",
+      "apply": "Approve Variant {letter}",
+      "applied": "Variant {letter} Applied",
+      "orTryDifferent": "OR TRY A DIFFERENT STYLE",
+      "pickType": "Pick specific hook type",
+      "addStyle": "Add Re-hook Style",
+      "generating": "Generating...",
+      "styles": {
+        "emotional": "More Emotional",
+        "specific": "More Specific",
+        "shorter": "Shorter",
+        "question": "Question"
+      },
+      "types": {
+        "Outcome-first": {
+          "label": "Outcome-first",
+          "description": "Promises result/benefit upfront"
+        },
+        "Relatable pain": {
+          "label": "Relatable pain",
+          "description": "Surfaces unspoken viewer struggle"
+        },
+        "Contradiction / Myth-busting": {
+          "label": "Contradiction / Myth-busting",
+          "description": "Challenges common belief"
+        },
+        "Shock / Bold claim": {
+          "label": "Shock / Bold claim",
+          "description": "Extreme/counterintuitive statement"
+        },
+        "Curiosity gap": {
+          "label": "Curiosity gap",
+          "description": "Incomplete info forces continuation"
+        },
+        "Authority / Credibility": {
+          "label": "Authority / Credibility",
+          "description": "Establishes expertise quickly"
+        },
+        "Specific number / specificity": {
+          "label": "Specific number / specificity",
+          "description": "Uses concrete data/metrics"
+        },
+        "Direct call-out": {
+          "label": "Direct call-out",
+          "description": "Targets specific audience segment"
+        },
+        "Pattern interrupt (verbal)": {
+          "label": "Pattern interrupt (verbal)",
+          "description": "Unusual delivery/phrasing"
+        },
+        "Before / After contrast": {
+          "label": "Before / After contrast",
+          "description": "Shows transformation"
+        },
+        "Time-bound promise": {
+          "label": "Time-bound promise",
+          "description": "Emphasizes speed/urgency"
+        },
+        "Negative framing": {
+          "label": "Negative framing",
+          "description": "Leads with mistake/risk"
+        },
+        "Question hook": {
+          "label": "Question hook",
+          "description": "Poses unspoken viewer question"
+        },
+        "Other": {
+          "label": "Other",
+          "description": "Mixed or unique approach"
+        }
+      }
+    },
+    "director": {
+      "take": "Director's Take",
+      "niche": "Niche",
+      "contentType": "Content Type"
+    },
+    "changes": {
+      "title": "Approved Changes",
+      "noChanges": "No changes approved yet",
+      "noChangesSub": "Review suggestions in the Analysis panel and approve actions to add them here.",
+      "generate": "Generate using approved changes",
+      "generating": "Generating...",
+      "estTime": "Est. Processing Time: {time}",
+      "fix": "Fix",
+      "rehook": "Re-hook",
+      "variant": "Variant {label}",
+      "generateNew": "Generate New"
+    },
+    "metrics": {
+      "labels": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "weak": "Weak",
+        "poor": "Poor",
+        "clear": "Clear",
+        "somewhat": "Somewhat",
+        "unclear": "Unclear"
+      },
+      "hook": {
+        "title": "Hook",
+        "timeToClaim": "Time to Claim",
+        "patternBreak": "Pattern Break",
+        "specifics": "Specifics",
+        "hookQuestion": "Hook Question",
+        "duration": "Hook Duration",
+        "viralPattern": "Viral Pattern",
+        "loopStrength": "Loop Strength",
+        "tooltips": {
+          "timeToClaim": "Seconds until first promise/claim. Target: under 1.5s.",
+          "patternBreak": "Energy/visual variation in first 1-3 seconds. Higher is better.",
+          "specifics": "Numbers, timeframes, names in hook. More = more compelling.",
+          "hookQuestion": "Opens with a question or contradiction to hook viewers."
+        }
+      },
+      "structure": {
+        "title": "Structure",
+        "beatCount": "Beat Count",
+        "beats": "{count} beats",
+        "progressMarkers": "Progress Markers",
+        "hasPayoff": "Has Payoff",
+        "loopCue": "Loop Cue",
+        "videoLength": "Video Length",
+        "pacingConsistency": "Pacing Consistency",
+        "payoffTiming": "Payoff Timing",
+        "tooltips": {
+          "beatCount": "Number of content sections. Ideal: 3-6 for Shorts.",
+          "progressMarkers": "Words like \"first\", \"next\", \"finally\" that guide viewers.",
+          "hasPayoff": "Does the video deliver on its hook promise?",
+          "loopCue": "Does ending reference the start or encourage rewatch?"
+        }
+      },
+      "clarity": {
+        "title": "Clarity",
+        "valueClarity": "Value Clarity",
+        "uniqueness": "Uniqueness",
+        "speakingPace": "Speaking Pace",
+        "wps": "{count} w/s",
+        "complexity": "Complexity",
+        "topicJumps": "Topic Jumps",
+        "redundancy": "Redundancy",
+        "tooltips": {
+          "speakingPace": "Words per second. Ideal: 3-4 WPS for comprehension.",
+          "complexity": "Sentence complexity. Lower is easier to follow.",
+          "topicJumps": "Sudden context switches. Fewer = easier to follow.",
+          "redundancy": "Repetition without new info. Lower is more concise."
+        }
+      },
+      "delivery": {
+        "title": "Delivery",
+        "energyLevel": "Energy Level",
+        "vocalClarity": "Vocal Clarity",
+        "presence": "Presence",
+        "volumeConsistency": "Volume Consistency",
+        "audioQuality": "Audio Quality",
+        "fillerWords": "Filler Words",
+        "energyVariation": "Energy Variation",
+        "tooltips": {
+          "volumeConsistency": "Loudness stability. Higher = more consistent audio levels.",
+          "audioQuality": "Noise level and clarity. Higher = cleaner audio.",
+          "fillerWords": "Count of \"um\", \"uh\", \"like\", etc. Lower = cleaner delivery.",
+          "energyVariation": "Vocal energy changes to maintain interest. Monotone = less engaging."
+        }
+      }
+    },
+    "beatsbybeat": {
+      "title": "🎬 Beat-by-Beat Breakdown",
+      "beatsCount": "{count} beats",
+      "transcript": "Transcript",
+      "visual": "Visual",
+      "audio": "Audio",
+      "shotList": "Director's Shot List",
+      "issues": "Issues",
+      "suggestions": "Suggestions",
+      "severity": {
+        "critical": "CRITICAL",
+        "moderate": "MODERATE",
+        "minor": "MINOR",
+        "ignored": "IGNORED"
+      },
+      "noIssues": "No issues",
+      "showDetails": "Show Details",
+      "hideDetails": "Hide Details",
+      "retentionDrop": "Retention Drop Estimate",
+      "beatMini": "Beat {number}",
+      "retention": {
+        "high": "High Drop Risk",
+        "moderate": "Moderate Drop",
+        "minor": "Minor Drop",
+        "strong": "Strong Retention"
+      }
+    },
+    "comparison": {
+      "title": "Video Comparison",
+      "base": "Base",
+      "vs": "vs",
+      "current": "Current",
+      "loadingStats": "Loading stats...",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "analyzedAt": "Analyzed {date}",
+      "baseScore": "Base Score",
+      "currentScore": "Current Score",
+      "overall": "Overall",
+      "noSignals": "Detailed {type} signals not available for comparison",
+      "issues": {
+        "title": "Issues Comparison",
+        "fixed": "{count} Fixed",
+        "new": "{count} New",
+        "unchanged": "{count} Unchanged",
+        "none": "No issues to compare",
+        "status": {
+          "fixed": "FIXED",
+          "new": "NEW",
+          "unchanged": "UNCHANGED"
+        }
+      }
+    },
+    "upgrade": {
+      "title": "Upgrade to Unlock",
+      "feature": "This feature",
+      "message": "Upgrade to unlock all premium features including detailed performance insights, AI-suggested fixes, and viral hook variants.",
+      "cta": "View Pricing",
+      "features": {
+        "performance-cards": "View Detailed Performance Insights",
+        "apply-fix": "Apply AI-Suggested Fixes",
+        "suggest-metadata": "Generate Optimized Titles & Descriptions",
+        "re-hook": "Get Viral Hook Variants"
+      }
+    },
+    "picker": {
+      "title": "Select Base Video to Compare",
+      "searchPlaceholder": "Search by title, niche, or content type...",
+      "loading": "Loading your videos...",
+      "noResults": "No videos match your search",
+      "noVideos": "No other analyzed videos found",
+      "noVideosHint": "Analyze more videos to compare them",
+      "tryAgain": "Try again"
+    },
+    "share": {
+      "button": "Share",
+      "generating": "Generating...",
+      "copyLink": "Copy link",
+      "openLink": "Open in new tab",
+      "error": "Failed to create share link"
+    },
+    "create": {
+      "title": "Create Short Analysis",
+      "subtitle": "Enter a YouTube URL or upload a video to analyze with AI",
+      "breadcrumb": {
+        "projects": "Projects",
+        "myNewShort": "My New Short",
+        "createAnalysis": "Create Analysis"
+      },
+      "urlTab": "URL",
+      "uploadTab": "Upload",
+      "urlLabel": "YouTube Short URL",
+      "uploadLabel": "Upload Video File",
+      "placeholder": "https://youtube.com/shorts/...",
+      "button": "Analyze Short",
+      "generating": "Generating storyboard...",
+      "errors": {
+        "enterUrl": "Please enter a URL",
+        "invalidUrl": "Please enter a valid URL",
+        "youtubeOnly": "Only YouTube URLs are supported"
+      }
+    }
+  },
+  "storyboard": {
+    "title": "Storyboard Creator",
+    "create": "Create Storyboard",
+    "chat": {
+      "placeholder": "Describe your video idea...",
+      "send": "Send",
+      "generating": "Generating storyboard...",
+      "ready": "Ready to generate!",
+      "generate": "Generate Storyboard"
+    },
+    "createPage": {
+      "title": "Create Storyboard",
+      "subtitle": "Tell me about your video idea",
+      "welcomeMessage": "Hi! I'll help you create a video storyboard. What kind of video do you want to make?",
+      "inputPlaceholder": "Type your message...",
+      "inputWithFiles": "Add a message about your files...",
+      "tryAnyway": "Try to Generate Anyway",
+      "generating": "Generating your storyboard...",
+      "attachments": {
+        "title": "Attachments",
+        "addFiles": "Add files",
+        "noFiles": "No files attached. Click \"Add files\" to attach PDFs or images."
+      },
+      "errors": {
+        "fileType": "File type not supported: {name}. Please use PDF or images.",
+        "fileSize": "File too large: {name}. Maximum size is 10MB.",
+        "chatFailed": "Sorry, something went wrong. Please try again.",
+        "generateFailed": "Sorry, failed to generate storyboard. Please try again."
+      }
+    },
+    "beats": {
+      "title": "Beats",
+      "add": "Add Beat",
+      "delete": "Delete Beat",
+      "duplicate": "Duplicate Beat",
+      "regenerate": "Regenerate Beat",
+      "edit": "Edit Beat",
+      "moveUp": "Move Up",
+      "moveDown": "Move Down",
+      "insertBeat": "Insert Beat",
+      "newBeatTitle": "New Beat",
+      "newBeatNotes": "• Add your instructions here",
+      "newBeatScript": "Add your script here...",
+      "newBeatVisual": "• Describe the visual",
+      "newBeatAudio": "• Describe the audio",
+      "copySuffix": "Copy"
+    },
+    "export": {
+      "subtitle": "Export Subtitle",
+      "storyboard": "Export Storyboard"
+    },
+    "compare": "Compare",
+    "fields": {
+      "script": "Script",
+      "visual": "Visual",
+      "audio": "Audio",
+      "directorNotes": "Director Notes"
+    },
+    "hookVariants": {
+      "title": "Hook Variants",
+      "bold": "Bold & Direct",
+      "question": "Curiosity Hook",
+      "emotional": "Pain Point",
+      "specific": "Data-Driven",
+      "selected": "Selected",
+      "whyThisWorks": "Why this works",
+      "options": "options"
+    },
+    "resultPage": {
+      "title": "Your Storyboard",
+      "subtitle": "Director's guide for shooting your video",
+      "loading": "Loading storyboard...",
+      "failedToLoad": "Failed to load data",
+      "backToCreate": "Back to Create",
+      "overview": {
+        "title": "Video Overview",
+        "titleLabel": "Title",
+        "format": "Format",
+        "niche": "Niche",
+        "length": "Length"
+      },
+      "hookSelector": {
+        "title": "Choose Your Hook",
+        "description": "Select the hook style that best fits your content. This will update Beat 1."
+      },
+      "shotList": {
+        "title": "Director's Shot List"
+      },
+      "beatContent": {
+        "whatToSay": "What to Say",
+        "visual": "Visual",
+        "audio": "Audio",
+        "textOverlays": "Text Overlays",
+        "bRollIdeas": "B-Roll Ideas",
+        "retentionTip": "Retention Tip",
+        "directorNotes": "Director's Notes",
+        "shootingGuidance": "shooting guidance"
+      },
+      "editPanel": {
+        "title": "Edit Beat",
+        "subtitle": "Refine this beat with AI",
+        "sending": "Editing...",
+        "quickActions": "Quick Actions",
+        "makeShorter": "Make Shorter",
+        "addDetail": "Add Detail",
+        "simplify": "Simplify",
+        "energize": "Energize",
+        "proposedChanges": "PROPOSED CHANGES",
+        "apply": "Apply",
+        "discard": "Discard",
+        "placeholder": "Describe the changes you want...",
+        "error": "Sorry, something went wrong. Please try again.",
+        "welcomeMessage": "I'll help you refine Beat {beatNumber}. What would you like to change?",
+        "quickActionPrompts": {
+          "shorter": "Make this beat shorter and more concise",
+          "longer": "Add more detail to this beat",
+          "simplify": "Simplify the language and make it easier to understand",
+          "energize": "Make this beat more energetic and exciting"
+        }
+      }
+    },
+    "technicalBadge": {
+      "shotTypes": {
+        "ECU": "Extreme Close-Up: Very tight shot on a specific detail (eyes, hands, object)",
+        "CU": "Close-Up: Tight shot of a face or object, showing emotion or detail",
+        "MCU": "Medium Close-Up: Head and shoulders framing, common for dialogue",
+        "MS": "Medium Shot: Waist-up framing, balances subject and environment",
+        "MWS": "Medium Wide Shot: Knee-up framing, shows body language",
+        "MLS": "Medium Long Shot: Shows most of the body with some environment",
+        "WS": "Wide Shot: Full body with some environment visible",
+        "EWS": "Extreme Wide Shot: Establishes location, subject appears small",
+        "POV": "Point of View: Camera shows what a character sees",
+        "OTS": "Over the Shoulder: Shot from behind one person looking at another",
+        "2-shot": "Two Shot: Frame includes two people",
+        "INSERT": "Insert Shot: Close-up of an object or detail relevant to the scene",
+        "insert": "Insert Shot: Close-up of an object or detail relevant to the scene"
+      },
+      "cameraMovements": {
+        "static": "Static: Camera stays fixed in position",
+        "pan": "Pan: Camera rotates horizontally left or right",
+        "tilt": "Tilt: Camera rotates vertically up or down",
+        "dolly": "Dolly: Camera physically moves toward or away from subject",
+        "truck": "Truck: Camera physically moves left or right",
+        "track": "Tracking Shot: Camera follows a moving subject",
+        "zoom": "Zoom: Lens adjusts to make subject appear closer/farther",
+        "push": "Push In: Camera or zoom moves closer to subject for emphasis",
+        "pull": "Pull Out: Camera or zoom moves away from subject",
+        "tracking": "Tracking Shot: Camera follows a moving subject",
+        "handheld": "Handheld: Camera held by operator for natural, organic movement",
+        "steadicam": "Steadicam: Stabilized camera for smooth movement while walking",
+        "crane": "Crane Shot: Camera moves vertically using a crane or jib",
+        "whip": "Whip Pan: Very fast pan creating motion blur, often used for transitions",
+        "arc": "Arc: Camera moves in a curved path around the subject"
+      },
+      "transitions": {
+        "cut": "Cut: Instant switch from one shot to another",
+        "jump cut": "Jump Cut: Abrupt cut within the same shot, creates jarring effect",
+        "match cut": "Match Cut: Cut between two similar shapes or actions",
+        "fade": "Fade: Gradual transition to/from black or white",
+        "dissolve": "Dissolve: One shot gradually blends into another",
+        "wipe": "Wipe: New shot slides in over the previous shot",
+        "swipe": "Swipe: Similar to wipe, new shot slides in over the previous shot",
+        "zoom": "Zoom Transition: Quick zoom used to transition between shots",
+        "whip": "Whip Transition: Very fast pan creating motion blur for transitions",
+        "none": "No transition",
+        "J-cut": "J-Cut: Audio from next scene starts before the visual",
+        "L-cut": "L-Cut: Audio from previous scene continues over new visual",
+        "smash cut": "Smash Cut: Abrupt cut for dramatic contrast or comedic effect"
+      }
+    }
+  },
+  "footer": {
+    "tools": "Tools",
+    "blog": "Blog",
+    "pricing": "Pricing",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "tier": {
+    "anonymous": "Trial",
+    "free": "Free",
+    "founder": "Founding Member",
+    "lifetime": "Lifetime"
+  },
+  "sharedAnalysis": {
+    "readOnly": "This is a shared analysis - Read-only view",
+    "notFound": {
+      "title": "Analysis Not Found",
+      "subtitle": "This shared link is not available",
+      "reasonsTitle": "Possible reasons:",
+      "reason1": "The analysis has not been shared yet",
+      "reason2": "The link is incorrect or expired",
+      "reason3": "Database migrations need to be applied"
+    }
+  },
+  "time": {
+    "year": "{count} year ago",
+    "years": "{count} years ago",
+    "month": "{count} month ago",
+    "months": "{count} months ago",
+    "day": "{count} day ago",
+    "days": "{count} days ago",
+    "week": "{count} week ago",
+    "weeks": "{count} weeks ago",
+    "hour": "{count} hour ago",
+    "hours": "{count} hours ago",
+    "minute": "{count} minute ago",
+    "minutes": "{count} minutes ago",
+    "justNow": "Just now",
+    "m_ago": "{count}m ago",
+    "h_ago": "{count}h ago",
+    "d_ago": "{count}d ago"
+  }
+}

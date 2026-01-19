@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://shorta.ai"),
@@ -82,11 +84,14 @@ export const viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -194,7 +199,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
         <link rel="icon" href="/icon-48x48.png" type="image/png" sizes="48x48" />
@@ -215,10 +220,12 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <PostHogProvider>
-          {children}
-          <Toaster />
-        </PostHogProvider>
+        <NextIntlClientProvider messages={messages}>
+          <PostHogProvider>
+            {children}
+            <Toaster />
+          </PostHogProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

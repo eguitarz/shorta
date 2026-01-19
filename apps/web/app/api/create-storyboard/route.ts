@@ -4,6 +4,7 @@ import { requireAuth, getAuthenticatedUser } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getLanguageName } from '@/lib/i18n-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,7 @@ interface CreateStoryboardInput {
   targetAudience?: string;
   contentType?: string;
   viralPatterns?: ViralPatterns;
+  locale?: string;
 }
 
 // Shot types for professional video production
@@ -435,6 +437,7 @@ IMPORTANT:
 - All 4 hookVariants must have COMPLETELY DIFFERENT scripts that achieve the same goal differently
 - Each hookVariant.whyItWorks should be specific to the topic, not generic
 - Make each hook genuinely distinct - not just word variations
+${input.locale && input.locale !== 'en' ? `- ALL text content (scripts, titles, director notes, etc.) must be written in ${getLanguageName(input.locale)}` : ''}
 
 NO markdown code blocks. Return ONLY the JSON object.`;
 }

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Send, Sparkles, ArrowLeft, Paperclip, X, FileText, Image as ImageIcon } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 
 interface FileAttachment {
   mimeType: string;
@@ -43,12 +44,10 @@ interface ViralPatterns {
 export default function CreateStoryboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hi! I'll help you create a video storyboard. What kind of video do you want to make?",
-    },
-  ]);
+  const t = useTranslations('storyboard.createPage');
+  const tChat = useTranslations('storyboard.chat');
+  const locale = useLocale();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -64,6 +63,16 @@ export default function CreateStoryboardPage() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Initialize with welcome message
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{
+        role: "assistant",
+        content: t('welcomeMessage'),
+      }]);
+    }
+  }, [t, messages.length]);
 
   useEffect(() => {
     scrollToBottom();
@@ -98,13 +107,13 @@ export default function CreateStoryboardPage() {
 
     for (const file of Array.from(files)) {
       if (!allowedTypes.includes(file.type)) {
-        alert(`File type not supported: ${file.name}. Please use PDF or images.`);
+        alert(t('errors.fileType', { name: file.name }));
         continue;
       }
 
       // Max 10MB per file
       if (file.size > 10 * 1024 * 1024) {
-        alert(`File too large: ${file.name}. Maximum size is 10MB.`);
+        alert(t('errors.fileSize', { name: file.name }));
         continue;
       }
 
@@ -151,6 +160,7 @@ export default function CreateStoryboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, userMessage],
+          locale,
         }),
       });
 
@@ -182,7 +192,7 @@ export default function CreateStoryboardPage() {
         ...prev,
         {
           role: "assistant",
-          content: "Sorry, something went wrong. Please try again.",
+          content: t('errors.chatFailed'),
         },
       ]);
     } finally {
@@ -293,7 +303,7 @@ Incorporating these into your storyboard...`;
       const response = await fetch("/api/create-storyboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify({ ...dataToSend, locale }),
       });
 
       if (!response.ok) throw new Error("Failed to generate storyboard");
@@ -346,9 +356,9 @@ Incorporating these into your storyboard...`;
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold">Create Storyboard</h1>
+                  <h1 className="text-xl font-bold">{t('title')}</h1>
                   <p className="text-sm text-gray-400">
-                    Tell me about your video idea
+                    {t('subtitle')}
                   </p>
                 </div>
               </div>
@@ -363,16 +373,14 @@ Incorporating these into your storyboard...`;
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"
+                }`}
             >
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                  message.role === "user"
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-800 text-gray-100"
-                }`}
+                className={`max-w-[80%] rounded-lg px-4 py-3 ${message.role === "user"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-800 text-gray-100"
+                  }`}
               >
                 <p className="whitespace-pre-wrap">{message.content}</p>
               </div>
@@ -409,14 +417,13 @@ Incorporating these into your storyboard...`;
               {/* Generate Button - Visible after first user message */}
               <button
                 onClick={handleGenerate}
-                className={`w-full px-6 py-4 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 ${
-                  isReady
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
-                    : 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700'
-                }`}
+                className={`w-full px-6 py-4 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 ${isReady
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                  : 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700'
+                  }`}
               >
                 <Sparkles className="w-5 h-5" />
-                {isReady ? 'Generate Storyboard' : 'Try to Generate Anyway'}
+                {isReady ? tChat('generate') : t('tryAnyway')}
               </button>
             </div>
           )}
@@ -425,7 +432,7 @@ Incorporating these into your storyboard...`;
             <div className="mb-4 text-center">
               <div className="flex items-center justify-center gap-3 text-purple-400">
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Generating your storyboard...</span>
+                <span>{t('generating')}</span>
               </div>
             </div>
           )}
@@ -433,14 +440,14 @@ Incorporating these into your storyboard...`;
           {/* Attachment toolbar - always visible */}
           <div className="mb-3 p-3 bg-gray-900/50 border border-gray-800 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-500 uppercase tracking-wide">Attachments</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wide">{t('attachments.title')}</span>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading || isGenerating}
                 className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <Paperclip className="w-3 h-3" />
-                Add files
+                {t('attachments.addFiles')}
               </button>
             </div>
             {attachedFiles.length > 0 ? (
@@ -467,7 +474,7 @@ Incorporating these into your storyboard...`;
               </div>
             ) : (
               <div className="text-sm text-gray-600 py-2">
-                No files attached. Click "Add files" to attach PDFs or images.
+                {t('attachments.noFiles')}
               </div>
             )}
           </div>
@@ -488,7 +495,7 @@ Incorporating these into your storyboard...`;
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={attachedFiles.length > 0 ? "Add a message about your files..." : "Type your message..."}
+              placeholder={attachedFiles.length > 0 ? t('inputWithFiles') : t('inputPlaceholder')}
               disabled={isLoading || isGenerating}
               className="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 disabled:opacity-50"
             />

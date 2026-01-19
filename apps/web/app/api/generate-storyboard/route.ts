@@ -4,6 +4,7 @@ import { requireAuth, getAuthenticatedUser } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getLanguageName } from '@/lib/i18n-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { storyboard, approvedChanges, url, analysisJobId } = await request.json();
+    const { storyboard, approvedChanges, url, analysisJobId, locale } = await request.json();
 
     if (!storyboard || !approvedChanges) {
       return NextResponse.json(
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
     const updatedBeats = applyApprovedChanges(storyboard.beats, approvedChanges);
 
     // Generate director-style storyboard
-    const generationPrompt = createGenerationPrompt(updatedBeats, storyboard.overview);
+    const generationPrompt = createGenerationPrompt(updatedBeats, storyboard.overview, locale);
 
     console.log('Generating director storyboard...');
     console.log('Number of beats:', updatedBeats.length);
@@ -289,7 +290,7 @@ function getRehookInstruction(rehookRequest: any): string {
   return '';
 }
 
-function createGenerationPrompt(beats: Beat[], overview: any): string {
+function createGenerationPrompt(beats: Beat[], overview: any, locale?: string): string {
   const beatsDescription = beats.map(beat => {
     const appliedFix = (beat as any).appliedFix;
     const appliedVariant = (beat as any).appliedVariant;
@@ -364,5 +365,5 @@ Return a JSON object with this structure:
       "audio": "• Upbeat acoustic music\n• Subtle whoosh effect"
     }
   ]
-}`;
+}${locale && locale !== 'en' ? `\n\nIMPORTANT LANGUAGE REQUIREMENT: ALL output (directorNotes, script, visual, audio, title) MUST be written in ${getLanguageName(locale)}.` : ''}`;
 }

@@ -1,6 +1,7 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
 import { NextRequest, NextResponse } from 'next/server';
+import { getLanguageName } from '@/lib/i18n-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,11 +42,30 @@ interface ProposedChanges {
 
 export async function POST(request: NextRequest) {
   try {
-    const { storyboard, beatNumber, currentBeat, messages } = await request.json();
+    const body = await request.json();
+    const { storyboard, beatNumber, messages, locale } = body;
+    let { currentBeat } = body;
 
-    if (!storyboard || !beatNumber || !currentBeat || !messages) {
+    if (!storyboard || !beatNumber || !messages) {
+      const missing = [];
+      if (!storyboard) missing.push('storyboard');
+      if (!beatNumber) missing.push('beatNumber');
+      if (!messages) missing.push('messages');
+
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: `Missing required fields: ${missing.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // If currentBeat is missing, find it from the storyboard
+    if (!currentBeat) {
+      currentBeat = storyboard.beats.find((b: any) => b.beatNumber === Number(beatNumber));
+    }
+
+    if (!currentBeat) {
+      return NextResponse.json(
+        { error: `Beat ${beatNumber} not found in storyboard data` },
         { status: 400 }
       );
     }
@@ -59,7 +79,7 @@ export async function POST(request: NextRequest) {
     const client = createDefaultLLMClient(env);
 
     // Build prompt with full context
-    const editPrompt = createEditPrompt(storyboard, beatNumber, currentBeat, messages);
+    const editPrompt = createEditPrompt(storyboard, beatNumber, currentBeat, messages, locale);
 
     console.log('Editing beat:', beatNumber);
 
@@ -103,7 +123,8 @@ function createEditPrompt(
   storyboard: Storyboard,
   beatNumber: number,
   currentBeat: Beat,
-  messages: EditMessage[]
+  messages: EditMessage[],
+  locale?: string
 ): string {
   const conversation = messages.map(m => `${m.role}: ${m.content}`).join('\n');
 
@@ -157,5 +178,7 @@ Response format:
 }
 \`\`\`
 
-Only include fields that actually changed. If just refining wording without major changes, you can omit the JSON and just provide conversational feedback.`;
+Only include fields that actually changed. If just refining wording without major changes, you can omit the JSON and just provide conversational feedback.
+
+${locale && locale !== 'en' ? `IMPORTANT LANGUAGE REQUIREMENT: Your conversational response AND all content within the JSON (directorNotes, script, visual, audio) MUST be written in ${getLanguageName(locale)}. This is CRITICAL.` : ''}`;
 }
