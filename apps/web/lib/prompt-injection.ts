@@ -209,3 +209,120 @@ export function validateLLMInput(
 
   return { valid: true, sanitized };
 }
+
+/**
+ * Patterns that indicate off-topic questions
+ * These questions are not related to video content creation
+ */
+const OFF_TOPIC_PATTERNS = [
+  // Questions about the AI itself
+  /what\s+(model|llm|ai|gpt|gemini|claude)\s+(are\s+you|do\s+you\s+use)/gi,
+  /which\s+(model|llm|ai)\s+(are\s+you|is\s+this)/gi,
+  /are\s+you\s+(gpt|gemini|claude|chatgpt|llama)/gi,
+  /what\s+are\s+you\s+(made|built|trained|based)\s+(of|on|with)/gi,
+  /who\s+(made|created|built|trained)\s+you/gi,
+  /what\s+(is|are)\s+your\s+(context|training|knowledge|capabilities)/gi,
+  /how\s+(were|are)\s+you\s+(trained|built|made)/gi,
+  /what\s+version\s+(are\s+you|of\s+ai)/gi,
+
+  // Security probing
+  /what\s+(is|are)\s+your\s+(system\s+)?(prompt|instructions?|rules|guidelines)/gi,
+  /show\s+(me\s+)?(the\s+)?(your\s+)?(system\s+)?(context|prompt|instructions)/gi,
+  /print\s+(your\s+)?(system\s+)?(prompt|instructions|context)/gi,
+  /repeat\s+(your\s+)?(system\s+)?(prompt|instructions|context)/gi,
+  /what\s+were\s+you\s+told/gi,
+
+  // General knowledge questions (not video-related)
+  /what\s+is\s+the\s+(capital|population|president|prime\s+minister)\s+of/gi,
+  /who\s+(is|was)\s+the\s+(president|king|queen|prime\s+minister|ceo)/gi,
+  /when\s+(did|was|is)\s+.{3,50}\s+(born|die|founded|start|happen)/gi,
+  /tell\s+me\s+about\s+(history|science|math|geography|politics)/gi,
+  /explain\s+(what|how)\s+(is|does|are)\s+.{3,50}\s+(work|mean)/gi,
+  /what\s+is\s+the\s+(meaning|definition)\s+of/gi,
+  /solve\s+this\s+(math|equation|problem)/gi,
+  /calculate\s+(\d|what)/gi,
+
+  // Fun/personal questions
+  /tell\s+me\s+a\s+(joke|story|riddle)/gi,
+  /let'?s\s+play\s+a\s+game/gi,
+  /can\s+you\s+(sing|rap|write\s+a\s+poem|write\s+poetry)/gi,
+  /what\s+(is|are)\s+your\s+(favorite|opinion|thoughts\s+on)/gi,
+  /do\s+you\s+(like|love|hate|prefer)/gi,
+  /how\s+do\s+you\s+feel/gi,
+  /are\s+you\s+(sentient|conscious|alive|real)/gi,
+
+  // Code/programming unrelated to video
+  /write\s+(me\s+)?(a\s+)?(python|javascript|code|program|script)\s+(to|that|for)/gi,
+  /debug\s+this\s+(code|program|script)/gi,
+  /fix\s+this\s+(code|bug|error)/gi,
+
+  // Other off-topic requests
+  /translate\s+.{3,50}\s+(to|into)\s+(spanish|french|german|chinese|japanese)/gi,
+  /summarize\s+this\s+(article|document|text|book)/gi,
+  /help\s+me\s+with\s+(my\s+)?(homework|essay|assignment)/gi,
+  /write\s+(me\s+)?(a\s+)?(essay|letter|email|resume)/gi,
+];
+
+/**
+ * Keywords that indicate video content creation context
+ */
+const VIDEO_CONTENT_KEYWORDS = [
+  'video', 'storyboard', 'script', 'hook', 'viral', 'shorts', 'tiktok',
+  'youtube', 'content', 'creator', 'edit', 'beat', 'scene', 'shot',
+  'thumbnail', 'title', 'description', 'niche', 'audience', 'format',
+  'engagement', 'retention', 'views', 'analytics', 'performance',
+  'b-roll', 'talking head', 'tutorial', 'vlog', 'intro', 'outro',
+  'transition', 'cta', 'call to action', 'library', 'analysis',
+  'generate', 'create', 'make', 'improve', 'optimize'
+];
+
+/**
+ * Validates that user input is relevant to video content creation
+ * @param input - User input to check
+ * @returns Object with relevance result and reason
+ */
+export function validateTopicRelevance(input: string): {
+  isRelevant: boolean;
+  reason?: string;
+} {
+  if (!input || typeof input !== 'string') {
+    return { isRelevant: true }; // Empty input is handled elsewhere
+  }
+
+  const lowerInput = input.toLowerCase();
+
+  // Check if input contains video-related keywords
+  const hasVideoContext = VIDEO_CONTENT_KEYWORDS.some(keyword =>
+    lowerInput.includes(keyword.toLowerCase())
+  );
+
+  // Check for off-topic patterns
+  for (const pattern of OFF_TOPIC_PATTERNS) {
+    // Reset regex lastIndex for global patterns
+    pattern.lastIndex = 0;
+    if (pattern.test(input)) {
+      // If it has video context, allow it (e.g., "what model works best for video hooks")
+      if (!hasVideoContext) {
+        return {
+          isRelevant: false,
+          reason: 'off_topic_question',
+        };
+      }
+    }
+  }
+
+  return { isRelevant: true };
+}
+
+/**
+ * Standard refusal message for off-topic queries
+ */
+export const SHORTA_AI_REFUSAL_MESSAGE = `Hi! I'm Shorta AI, your video content creation assistant. 🎬
+
+I'm here to help you with:
+• Creating viral video storyboards and scripts
+• Analyzing your video content performance
+• Generating engaging hooks and titles
+• Optimizing your shorts for better engagement
+
+Is there anything related to your video content I can help with?`;

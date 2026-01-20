@@ -24,6 +24,10 @@ interface ViralPatterns {
   averageViews: number;
   videosAnalyzed: number;
   timestamp: string;
+  videos?: Array<{
+    title: string;
+    views: number;
+  }>;
 }
 
 interface CachedPattern extends ViralPatterns {
@@ -134,7 +138,12 @@ export async function POST(request: NextRequest) {
       ...patterns,
       averageViews: Math.round(videos.reduce((sum, v) => sum + v.views, 0) / videos.length),
       videosAnalyzed: videos.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      // Include top 5 videos with individual views
+      videos: videos.slice(0, 5).map(v => ({
+        title: v.title,
+        views: v.views,
+      })),
     };
 
     // 3. Cache the results (48 hours)

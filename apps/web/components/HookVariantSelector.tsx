@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Zap, HelpCircle, Heart, Hash, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { Check, Zap, HelpCircle, Heart, Hash, ChevronDown, ChevronUp, Sparkles, Library } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific';
+export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific' | 'library';
 
 export interface HookVariant {
   id: string;
@@ -47,6 +47,12 @@ const STYLE_CONFIG: Record<HookVariantStyle, { icon: typeof Zap; color: string; 
     color: 'text-green-400',
     bgColor: 'bg-green-900/20',
     borderColor: 'border-green-700/50'
+  },
+  library: {
+    icon: Library,
+    color: 'text-purple-400',
+    bgColor: 'bg-purple-900/20',
+    borderColor: 'border-purple-700/50'
   },
 };
 
