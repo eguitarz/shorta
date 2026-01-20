@@ -15,6 +15,17 @@ interface ViralPatterns {
   averageViews: number;
   videosAnalyzed: number;
   timestamp: string;
+  videos?: Array<{
+    title: string;
+    views: number;
+  }>;
+}
+
+interface LibraryInsight {
+  recommendedHookStyle?: string;
+  referenceVideoTitle?: string;
+  referenceHookText?: string;
+  insightSummary?: string;
 }
 
 interface CreateStoryboardInput {
@@ -25,6 +36,7 @@ interface CreateStoryboardInput {
   targetAudience?: string;
   contentType?: string;
   viralPatterns?: ViralPatterns;
+  libraryInsights?: LibraryInsight;
   locale?: string;
 }
 
@@ -252,6 +264,11 @@ export async function POST(request: NextRequest) {
       beats: storyboard.beats,
       hookVariants: storyboard.hookVariants || [],
       generatedAt: new Date().toISOString(),
+      // Pass through input insights for display/debugging
+      inputInsights: {
+        viralPatterns: input.viralPatterns || null,
+        libraryInsights: input.libraryInsights || null,
+      },
     });
   } catch (error) {
     console.error('Create storyboard error:', error);
@@ -270,7 +287,10 @@ function createGenerationPrompt(input: CreateStoryboardInput): string {
 
 VIRAL PATTERNS ANALYSIS:
 Based on analysis of ${input.viralPatterns.videosAnalyzed} recent viral videos in this niche (avg views: ${input.viralPatterns.averageViews.toLocaleString()}), incorporate these proven patterns:
-
+${input.viralPatterns.videos && input.viralPatterns.videos.length > 0 ? `
+Top Performing Videos (for reference):
+${input.viralPatterns.videos.map((v, i) => `${i + 1}. "${v.title}" (${v.views.toLocaleString()} views)`).join('\n')}
+` : ''}
 Hook Patterns:
 ${input.viralPatterns.hookPatterns.map(p => `• ${p}`).join('\n')}
 
@@ -280,7 +300,23 @@ ${input.viralPatterns.structurePatterns.map(p => `• ${p}`).join('\n')}
 Common Successful Elements:
 ${input.viralPatterns.commonElements.map(p => `• ${p}`).join('\n')}
 
-IMPORTANT: Your storyboard should naturally incorporate these viral patterns. Don't force them, but use them as a blueprint for success.
+IMPORTANT: Your storyboard should naturally incorporate these viral patterns. Priority goes to patterns from higher-view videos. Don't force them, but use them as a blueprint for success.
+` : '';
+
+  // Build library insights section if available
+  const libraryInsightsSection = input.libraryInsights ? `
+
+USER'S LIBRARY INSIGHTS (PRIORITIZE THIS):
+Based on analysis of the user's own past videos, here's what has worked well for them:
+${input.libraryInsights.recommendedHookStyle ? `• **Recommended Hook Style**: ${input.libraryInsights.recommendedHookStyle} - This style has performed well in their past content` : ''}
+${input.libraryInsights.referenceVideoTitle ? `• **Reference Video**: "${input.libraryInsights.referenceVideoTitle}"` : ''}
+${input.libraryInsights.referenceHookText ? `• **Successful Hook Example**: "${input.libraryInsights.referenceHookText}"` : ''}
+${input.libraryInsights.insightSummary ? `• **Key Insight**: ${input.libraryInsights.insightSummary}` : ''}
+
+CRITICAL: The user's own successful patterns should be the PRIMARY influence on this storyboard.
+- If a hook style is recommended (e.g., "Authority", "Question"), make that style the DEFAULT Beat 1 hook
+- Model the new hook after their successful reference hook if provided
+- Adapt their proven patterns to this new topic
 ` : '';
 
   const hookDuration = Math.min(5, Math.floor(input.targetLength * 0.15));
@@ -297,7 +333,7 @@ VIDEO DETAILS:
 - Target Audience: ${input.targetAudience || 'general audience'}
 
 KEY POINTS TO COVER:
-${keyPointsList}${viralPatternsSection}
+${keyPointsList}${viralPatternsSection}${libraryInsightsSection}
 
 STRUCTURE REQUIREMENTS:
 1. Break the video into ${getBeatCount(input.targetLength, input.keyPoints.length)} beats (hook, setup, main points, payoff, CTA)
@@ -323,11 +359,15 @@ Generate 4 different hook options with distinct styles. Each variant should:
 - Have the same timing as Beat 1 but with different approaches
 - Include a brief explanation of why it works
 
-The 4 hook styles are:
+${input.libraryInsights?.recommendedHookStyle ? `The 4 hook styles are:
+1. LIBRARY (PRIORITIZE - based on user's past success): Use the "${input.libraryInsights.recommendedHookStyle}" style that worked well in their past content.${input.libraryInsights.referenceHookText ? ` Model after their successful hook: "${input.libraryInsights.referenceHookText}"` : ''} This should be the DEFAULT/SELECTED hook.
+2. BOLD: Make a confident claim or promise. Lead with the result or outcome. Be assertive and direct. Use power words.
+3. QUESTION: Open with a thought-provoking question or create a curiosity gap. Make viewers NEED to know the answer.
+4. SPECIFIC: Lead with concrete numbers, data, timeframes, or specific results. Ground the hook in measurable outcomes.` : `The 4 hook styles are:
 1. BOLD: Make a confident claim or promise. Lead with the result or outcome. Be assertive and direct. Use power words.
 2. QUESTION: Open with a thought-provoking question or create a curiosity gap. Make viewers NEED to know the answer.
 3. EMOTIONAL: Connect with the viewer's struggle, pain point, or desire. Use empathy, urgency, and relatability.
-4. SPECIFIC: Lead with concrete numbers, data, timeframes, or specific results. Ground the hook in measurable outcomes.
+4. SPECIFIC: Lead with concrete numbers, data, timeframes, or specific results. Ground the hook in measurable outcomes.`}
 
 DIRECTOR NOTES GUIDELINES:
 - Start with action verbs (Start, Show, Cut, Maintain, etc.)
@@ -368,7 +408,46 @@ Return VALID JSON ONLY in this format:
     "length": ${input.targetLength}
   },
   "hookVariants": [
+${input.libraryInsights?.recommendedHookStyle ? `    {
+      "id": "library",
+      "style": "library",
+      "label": "From Your Library",
+      "script": "Hook modeled after your successful '${input.libraryInsights.recommendedHookStyle}' style",
+      "visual": "• Match the visual style of your reference video\\n• Familiar framing\\n• Proven setup",
+      "audio": "• Similar audio approach to reference\\n• Consistent with past success",
+      "directorNotes": "• **Model after your proven ${input.libraryInsights.recommendedHookStyle} hook**\\n• Maintain what worked\\n• Adapt to new topic",
+      "whyItWorks": "This style performed well in your past videos - stick with what works for your audience"
+    },
     {
+      "id": "bold",
+      "style": "bold",
+      "label": "Bold & Direct",
+      "script": "The direct, confident opening script",
+      "visual": "• Close-up shot\\n• Confident posture\\n• Direct eye contact",
+      "audio": "• Powerful intro beat\\n• Quick sound effect",
+      "directorNotes": "• **Lead with confidence**\\n• Maintain strong eye contact\\n• Speak with authority",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    },
+    {
+      "id": "question",
+      "style": "question",
+      "label": "Curiosity Hook",
+      "script": "The question or curiosity-gap opening",
+      "visual": "• Medium shot\\n• Curious expression\\n• Lean in slightly",
+      "audio": "• Intriguing music\\n• Pause for effect",
+      "directorNotes": "• **Pause after the question**\\n• Show genuine curiosity\\n• Create tension",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    },
+    {
+      "id": "specific",
+      "style": "specific",
+      "label": "Data-Driven",
+      "script": "The opening with specific numbers or metrics",
+      "visual": "• Text overlay with number\\n• Medium shot\\n• Authoritative stance",
+      "audio": "• Clean, professional intro\\n• Subtle emphasis sound",
+      "directorNotes": "• **Emphasize the number clearly**\\n• Let the data speak\\n• Show credibility",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    }` : `    {
       "id": "bold",
       "style": "bold",
       "label": "Bold & Direct",
@@ -407,7 +486,7 @@ Return VALID JSON ONLY in this format:
       "audio": "• Clean, professional intro\\n• Subtle emphasis sound",
       "directorNotes": "• **Emphasize the number clearly**\\n• Let the data speak\\n• Show credibility",
       "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    }
+    }`}
   ],
   "beats": [
     {

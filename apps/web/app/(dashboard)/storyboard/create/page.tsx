@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Send, Sparkles, ArrowLeft, Paperclip, X, FileText, Image as ImageIcon } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface FileAttachment {
   mimeType: string;
@@ -17,6 +19,13 @@ interface Message {
   files?: FileAttachment[];
 }
 
+interface LibraryInsight {
+  recommendedHookStyle?: string;
+  referenceVideoTitle?: string;
+  referenceHookText?: string;
+  insightSummary?: string;
+}
+
 interface ExtractedData {
   topic: string;
   format: string;
@@ -24,6 +33,7 @@ interface ExtractedData {
   keyPoints: string[];
   targetAudience?: string;
   contentType?: string;
+  libraryInsights?: LibraryInsight;
 }
 
 interface ChatResponse {
@@ -39,6 +49,10 @@ interface ViralPatterns {
   averageViews: number;
   videosAnalyzed: number;
   timestamp: string;
+  videos?: Array<{
+    title: string;
+    views: number;
+  }>;
 }
 
 export default function CreateStoryboardPage() {
@@ -296,6 +310,7 @@ Incorporating these into your storyboard...`;
         targetAudience: extractedData?.targetAudience,
         contentType: extractedData?.contentType || "educational",
         viralPatterns: patterns, // Pass patterns to generation
+        libraryInsights: extractedData?.libraryInsights, // Pass library insights from tool calls
       };
 
       console.log('Sending to generation:', dataToSend);
@@ -382,7 +397,25 @@ Incorporating these into your storyboard...`;
                   : "bg-gray-800 text-gray-100"
                   }`}
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                {message.role === "user" ? (
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                ) : (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                      li: ({ children }) => <li className="ml-2">{children}</li>,
+                      strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                      em: ({ children }) => <em className="italic">{children}</em>,
+                      code: ({ children }) => <code className="bg-gray-700 px-1 py-0.5 rounded text-sm">{children}</code>,
+                      a: ({ href, children }) => <a href={href} className="text-purple-400 hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                )}
               </div>
             </div>
           ))}

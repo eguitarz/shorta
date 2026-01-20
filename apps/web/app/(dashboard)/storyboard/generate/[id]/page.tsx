@@ -46,6 +46,21 @@ interface GeneratedData {
   hookVariants?: HookVariant[];
   selectedHookId?: string;
   generatedAt: string;
+  inputInsights?: {
+    viralPatterns?: {
+      hookPatterns: string[];
+      structurePatterns: string[];
+      commonElements: string[];
+      averageViews: number;
+      videosAnalyzed: number;
+    } | null;
+    libraryInsights?: {
+      recommendedHookStyle?: string;
+      referenceVideoTitle?: string;
+      referenceHookText?: string;
+      insightSummary?: string;
+    } | null;
+  };
 }
 
 interface EditMessage {
@@ -612,6 +627,27 @@ export default function StoryboardResultsPage() {
               </div>
             </div>
 
+            {/* Insights Used (Collapsible Debug Display) */}
+            {storyboardData.inputInsights && (storyboardData.inputInsights.viralPatterns || storyboardData.inputInsights.libraryInsights) && (
+              <details className="mb-6 group">
+                <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-400 flex items-center gap-2">
+                  <Lightbulb className="w-3 h-3" />
+                  <span>Insights used for generation</span>
+                  <ChevronDown className="w-3 h-3 group-open:rotate-180 transition-transform" />
+                </summary>
+                <ul className="mt-2 ml-5 text-xs text-gray-400 space-y-1 list-disc">
+                  {storyboardData.inputInsights.libraryInsights?.recommendedHookStyle && (
+                    <li><span className="text-purple-400">Library:</span> Hook style "{storyboardData.inputInsights.libraryInsights.recommendedHookStyle}"</li>
+                  )}
+                  {storyboardData.inputInsights.libraryInsights?.referenceVideoTitle && (
+                    <li><span className="text-purple-400">Reference:</span> {storyboardData.inputInsights.libraryInsights.referenceVideoTitle}</li>
+                  )}
+                  {storyboardData.inputInsights.viralPatterns && (
+                    <li><span className="text-orange-400">Viral:</span> {storyboardData.inputInsights.viralPatterns.videosAnalyzed} videos analyzed (avg {storyboardData.inputInsights.viralPatterns.averageViews.toLocaleString()} views)</li>
+                  )}
+                </ul>
+              </details>
+            )}
             {/* Hook Variant Selector */}
             {storyboardData.hookVariants && storyboardData.hookVariants.length > 0 && (
               <HookVariantSelector

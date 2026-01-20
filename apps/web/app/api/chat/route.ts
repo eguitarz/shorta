@@ -2,7 +2,7 @@ import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv, Message } from '@/lib/llm';
 import { requireAuthWithCsrf } from '@/lib/auth-helpers';
 import { ApiSchemas, validateRequestBody } from '@/lib/validation';
-import { validateLLMInput } from '@/lib/prompt-injection';
+import { validateLLMInput, validateTopicRelevance, SHORTA_AI_REFUSAL_MESSAGE } from '@/lib/prompt-injection';
 import { safeParseJSON, createErrorResponse, ErrorCode } from '@/lib/error-handler';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -28,9 +28,18 @@ export async function POST(request: NextRequest) {
   const { messages, config } = validation.data;
 
   try {
-    // Validate each message for prompt injection
+    // Validate each message for prompt injection and topic relevance
     for (const message of messages) {
       if (message.role === 'user') {
+        // Check topic relevance first
+        const topicValidation = validateTopicRelevance(message.content);
+        if (!topicValidation.isRelevant) {
+          return NextResponse.json({
+            content: SHORTA_AI_REFUSAL_MESSAGE,
+            role: 'assistant',
+          });
+        }
+
         const llmValidation = validateLLMInput(message.content);
         if (!llmValidation.valid) {
           return NextResponse.json(
