@@ -31,7 +31,7 @@
   "nav": {
     "home": "Home",
     "analyzer": "Analyzer",
-    "build": "Build",
+    "draft": "Draft",
     "library": "Library"
   },
   "landing": {
