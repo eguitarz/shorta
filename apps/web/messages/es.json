@@ -27,7 +27,7 @@
   "nav": {
     "home": "Inicio",
     "analyzer": "Analizador",
-    "build": "Crear",
+    "draft": "Borrador",
     "library": "Biblioteca"
   },
   "landing": {

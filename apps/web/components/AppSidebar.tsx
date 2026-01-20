@@ -70,8 +70,8 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const navItems = [
     { name: t('home'), icon: Home, path: "/home" },
+    { name: t('draft'), icon: Hammer, path: "/draft" },
     { name: t('analyzer'), icon: BarChart3, path: "/analyzer" },
-    { name: t('build'), icon: Hammer, path: "/build" },
     { name: t('library'), icon: BookOpen, path: "/library" },
   ];
 
