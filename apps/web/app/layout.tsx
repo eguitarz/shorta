@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { PostHogProvider } from "@/components/PostHogProvider";
@@ -130,9 +131,17 @@ export default async function RootLayout({
       },
       {
         "@type": "Organization",
+        "@id": "https://shorta.ai/#organization",
         "name": "Shorta",
         "url": "https://shorta.ai",
-        "logo": "https://shorta.ai/shorta-logo.png",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://shorta.ai/icon-512x512.png",
+          "width": 512,
+          "height": 512,
+          "contentUrl": "https://shorta.ai/icon-512x512.png"
+        },
+        "image": "https://shorta.ai/icon-512x512.png",
         "description": "YouTube Shorts analysis and storyboard system for content creators",
         "founder": {
           "@type": "Person",
@@ -145,12 +154,12 @@ export default async function RootLayout({
       },
       {
         "@type": "WebSite",
+        "@id": "https://shorta.ai/#website",
         "name": "Shorta - Shorts Analyzer",
         "url": "https://shorta.ai",
         "description": "AI-powered shorts analyzer tool for YouTube creators",
         "publisher": {
-          "@type": "Organization",
-          "name": "Shorta",
+          "@id": "https://shorta.ai/#organization"
         },
         "potentialAction": {
           "@type": "SearchAction",
@@ -201,10 +210,11 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" type="image/png" />
         <link rel="icon" href="/icon-48x48.png" type="image/png" sizes="48x48" />
         <link rel="icon" href="/icon-96x96.png" type="image/png" sizes="96x96" />
         <link rel="icon" href="/icon-192x192.png" type="image/png" sizes="192x192" />
+        <link rel="icon" href="/icon-512x512.png" type="image/png" sizes="512x512" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="canonical" href="https://shorta.ai" />
@@ -217,6 +227,11 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+        <Script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="3jIjAxKJqlI/m7xMcGkFLg"
+          strategy="afterInteractive"
         />
       </head>
       <body>
