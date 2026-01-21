@@ -9,24 +9,27 @@ import { getLocale, getMessages } from 'next-intl/server';
 export const metadata: Metadata = {
   metadataBase: new URL("https://shorta.ai"),
   title: {
-    default: "Shorts Analyzer — AI-Powered YouTube Shorts Analysis Tool | Shorta",
+    default: "AI Script Generator & YouTube Shorts Analyzer | Shorta",
     template: "%s | Shorta",
   },
-  description: "The best shorts analyzer for YouTube creators. Analyze shorts for retention issues, hook performance, and viral potential. AI-powered shorts analyzer with beat-by-beat feedback and optimization suggestions.",
+  description: "AI script generator and YouTube video analyzer for creators. Try free — generate video storyboards, analyze shorts for retention issues, and grow your YouTube channel with AI-powered insights.",
   keywords: [
+    // Primary target keywords
+    "free script generator",
+    "free ai script generator",
+    "ai script generator free",
+    "youtube shorts storyboard generator",
+    "short form video storyboard tool",
+    "storyboard",
+    "storyboard ai",
+    "video storyboard",
+    "video analyzer",
+    "youtube video analyzer",
+    "grow youtube channel",
+    // Supporting keywords
     "shorts analyzer",
-    "YouTube shorts analyzer",
-    "shorts analysis tool",
-    "analyze shorts",
-    "short form video analyzer",
     "YouTube Shorts",
-    "video analysis",
-    "shorts optimization",
-    "video retention analyzer",
-    "YouTube analytics",
-    "viral shorts analyzer",
-    "shorts performance analyzer",
-    "content analysis tool",
+    "video retention",
     "creator tools",
   ],
   authors: [{ name: "Dale Ma", url: "https://twitter.com/eguitarz" }],
@@ -38,8 +41,8 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Shorts Analyzer — AI-Powered YouTube Shorts Analysis Tool",
-    description: "The best shorts analyzer for YouTube creators. Analyze shorts for retention issues, hook performance, and viral potential with AI-powered beat-by-beat feedback.",
+    title: "AI Script Generator & Storyboard Tool for YouTube Shorts",
+    description: "AI script generator and video storyboard tool for YouTube creators. Try free — analyze shorts, generate scripts, and grow your YouTube channel.",
     type: "website",
     locale: "en_US",
     url: "https://shorta.ai",
@@ -55,8 +58,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shorts Analyzer — AI-Powered YouTube Shorts Analysis Tool",
-    description: "The best shorts analyzer for YouTube creators. Analyze shorts for retention, hook performance, and viral potential.",
+    title: "AI Script Generator & Storyboard Tool | Shorta",
+    description: "AI script generator and video storyboard tool. Try free — analyze YouTube Shorts and grow your channel.",
     site: "@eguitarz",
     creator: "@eguitarz",
     images: ["https://shorta.ai/og-image.svg"],
@@ -101,14 +104,17 @@ export default async function RootLayout({
         "name": "Shorta - Shorts Analyzer",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
-        "description": "AI-powered shorts analyzer for YouTube creators. Analyze shorts for retention issues, hook performance, and viral potential with beat-by-beat feedback and optimization suggestions.",
+        "description": "Free AI script generator and YouTube video analyzer for creators. Generate video storyboards, analyze shorts for retention, and grow your YouTube channel with AI-powered insights.",
         "featureList": [
+          "Free AI script generator for YouTube Shorts",
+          "YouTube Shorts storyboard generator",
+          "Video storyboard AI tool",
+          "YouTube video analyzer",
           "Shorts analyzer with AI-powered insights",
           "Beat-by-beat retention analysis",
           "Hook performance analyzer",
           "Viral potential scoring",
-          "Automated shorts optimization suggestions",
-          "Real-time shorts analysis"
+          "Tools to grow your YouTube channel"
         ],
         "offers": {
           "@type": "Offer",
@@ -200,6 +206,22 @@ export default async function RootLayout({
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Yes, the shorts analyzer works with any public YouTube Short. Simply paste the URL and get instant AI-powered analysis with retention insights, hook scoring, and optimization suggestions."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a free AI script generator?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes! Shorta offers a free AI script generator for YouTube Shorts. Our storyboard AI helps you generate video scripts by analyzing viral patterns and creating beat-by-beat storyboards optimized for retention."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is a video storyboard generator?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A video storyboard generator is an AI tool that creates structured scripts for short form videos. Shorta's YouTube Shorts storyboard generator analyzes successful videos and generates beat-by-beat plans including hooks, content flow, and calls-to-action to help you grow your YouTube channel."
             }
           }
         ]
