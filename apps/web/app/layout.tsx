@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { PostHogProvider } from "@/components/PostHogProvider";
@@ -250,10 +249,10 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <Script
+        <script
           src="https://analytics.ahrefs.com/analytics.js"
           data-key="3jIjAxKJqlI/m7xMcGkFLg"
-          strategy="afterInteractive"
+          async
         />
       </head>
       <body>
