@@ -13,7 +13,7 @@ export default function PricingPage() {
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-400">
-            Analyze viral shorts and master retention-focused storytelling
+            The production system for YouTube Shorts creators
           </p>
         </div>
 
@@ -65,38 +65,31 @@ export default function PricingPage() {
             </p>
 
             <div className="mb-6">
-              <span className="text-4xl font-bold">$99</span>
-              <span className="text-gray-400">/year</span>
+              <span className="text-4xl font-bold">$8.25</span>
+              <span className="text-gray-400">/month</span>
+              <p className="text-sm text-gray-500 mt-1">Billed annually at $99/year</p>
             </div>
 
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Full performance insights</span>
+                <span className="text-sm font-medium">100 storyboards per month</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">AI-powered fix suggestions</span>
+                <span className="text-sm">Storyboard AI with viral hook generator</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Video upload support</span>
+                <span className="text-sm">YouTube Shorts Performance Analyzer</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Title & description generator</span>
+                <span className="text-sm">Personal analysis library</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Viral hook variants</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-medium text-orange-400">Price locked forever at $99/year</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-medium text-orange-400">Limited seats available</span>
+                <span className="text-sm font-medium text-orange-400">Price locked at $99/year forever</span>
               </li>
             </ul>
 
@@ -130,11 +123,7 @@ export default function PricingPage() {
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-medium">Lifetime access</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-medium">No recurring fees</span>
+                <span className="text-sm">Lifetime access — no recurring fees</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" />

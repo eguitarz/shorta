@@ -23,11 +23,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.youtube.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.youtube.com https://challenges.cloudflare.com https://static.cloudflareinsights.com https://analytics.ahrefs.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com wss://*.supabase.co https://challenges.cloudflare.com",
+              "connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com wss://*.supabase.co https://challenges.cloudflare.com https://analytics.ahrefs.com",
               "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://challenges.cloudflare.com",
               "frame-ancestors 'self' https://rankinpublic.xyz",
               "base-uri 'self'",

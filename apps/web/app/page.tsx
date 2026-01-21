@@ -100,9 +100,16 @@ export default function HomePage() {
         <SectionTitle>Frequently asked questions</SectionTitle>
         <div className="space-y-6 md:space-y-8 lg:space-y-10">
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Is Shorta just another AI script generator?</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Is Shorta a free AI script generator?</h3>
             <p className="text-base md:text-lg text-muted-foreground">
-              No. Shorta focuses on analysis and feedback first. Generation is optional and guided by what actually needs fixing.
+              Shorta offers a free trial to try our storyboard AI and video analyzer. Unlike basic script generators, Shorta focuses on analysis first—understanding what works before generating. You can create storyboards from scratch, guided by real insights from viral videos.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">How does the video storyboard generator work?</h3>
+            <p className="text-base md:text-lg text-muted-foreground">
+              Our storyboard AI searches viral videos on YouTube and your personal library to find proven hooks and structures. It then generates beat-by-beat storyboards with hooks, content flow, and CTAs—helping you create videos based on patterns that actually perform.
             </p>
           </div>
 
@@ -143,7 +150,7 @@ export default function HomePage() {
           </div>
 
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">How long does it take to generate scripts?</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">How long does it take to generate storyboards?</h3>
             <p className="text-base md:text-lg text-muted-foreground">
               Less than 5 minutes. Paste your references, enter your topic, and get high quality storyboard instantly.
             </p>
