@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (error) {
       console.error('Classification error, using fallback:', error);
-      
+
       // Fallback to 'other' format with generic rules - don't block analysis
       classification = {
         format: 'other' as const,
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
           confidence: 0,
         },
       };
-      
+
       console.log('Using fallback classification:', JSON.stringify(classification, null, 2));
     }
 
@@ -326,11 +326,11 @@ function buildStoryboardPrompt(violations: any[]) {
   // Format violations for context
   const violationsContext = violations.length > 0
     ? `\n\nLINT VIOLATIONS DETECTED:\n${violations.map((v, idx) =>
-        `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName} (${v.ruleId})
+      `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName}
    Timestamp: ${v.timestamp || 'N/A'}
    Message: ${v.message}
    Suggestion: ${v.suggestion || 'N/A'}`
-      ).join('\n\n')}`
+    ).join('\n\n')}`
     : '';
 
   return `You are an expert YouTube Shorts director. Analyze the provided YouTube Short and generate a structured JSON storyboard.

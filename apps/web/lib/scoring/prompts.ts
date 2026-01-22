@@ -152,7 +152,7 @@ export function buildAnalysisPrompt(
       ? `\n\nLINT VIOLATIONS DETECTED:\n${violations
         .map(
           (v, idx) =>
-            `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName} (${v.ruleId})
+            `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName}
    Timestamp: ${v.timestamp || 'N/A'}
    Message: ${v.message}
    Suggestion: ${v.suggestion || 'N/A'}`
@@ -311,6 +311,7 @@ CRITICAL INSTRUCTIONS:
 4. Suggestions should directly address the lowest-scoring components
 5. Map lint violations to appropriate beats based on timestamp
 6. For AI-discovered issues, OMIT ruleId and ruleName fields
+7. NEVER include technical rule IDs (like th_hook_energy, gen_hook_clear_promise, etc.) in analysis text - use only human-readable descriptions
 
 LANGUAGE ALIGNMENT - CRITICAL:
 ${locale && locale !== 'en'

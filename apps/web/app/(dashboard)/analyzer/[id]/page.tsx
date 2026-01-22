@@ -996,7 +996,24 @@ export default function AnalyzerResultsPage() {
   };
 
   // Render analysis text with bullet points (clean, no bold)
+  // Also renders backticks as styled inline code
   const renderAnalysis = (text: string) => {
+    // Helper to parse inline backticks into styled spans
+    const parseInlineCode = (str: string) => {
+      const parts = str.split(/(`[^`]+`)/g);
+      return parts.map((part, i) => {
+        if (part.startsWith('`') && part.endsWith('`')) {
+          const code = part.slice(1, -1);
+          return (
+            <span key={i} className="px-1 py-0.5 bg-purple-500/10 text-purple-300 rounded text-[11px] font-mono">
+              {code}
+            </span>
+          );
+        }
+        return part;
+      });
+    };
+
     // First try splitting by newlines
     let lines = text.split('\n').filter(line => line.trim().length > 0);
 
@@ -1020,7 +1037,7 @@ export default function AnalyzerResultsPage() {
           return (
             <li key={idx} className="flex gap-2">
               <span className="text-gray-600 mt-0.5">•</span>
-              <span>{trimmedLine}</span>
+              <span>{parseInlineCode(trimmedLine)}</span>
             </li>
           );
         })}
@@ -1033,18 +1050,9 @@ export default function AnalyzerResultsPage() {
       {/* Top Bar */}
       <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
         <div className="flex items-center gap-6">
-          <button
-            onClick={() => router.push("/analyzer/create")}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            {t('breadcrumb.projects')}
-          </button>
-          <button className="text-sm text-gray-400 hover:text-white transition-colors">
-            {analysisData?.storyboard.overview.title || "My New Short"}
-          </button>
-          <button className="text-sm text-white font-medium border-b-2 border-orange-500 pb-[22px] -mb-[17px]">
+          <span className="text-sm text-white font-medium border-b-2 border-orange-500 pb-[22px] -mb-[17px]">
             {t('breadcrumb.analysis')}
-          </button>
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -1315,6 +1323,22 @@ export default function AnalyzerResultsPage() {
                             const text = analysisData.storyboard.performance.directorAssessment;
                             const lines = text.split('\n').filter(line => line.trim().length > 0);
 
+                            // Helper to parse inline backticks into styled spans
+                            const parseInlineCode = (str: string) => {
+                              const parts = str.split(/(`[^`]+`)/g);
+                              return parts.map((part, i) => {
+                                if (part.startsWith('`') && part.endsWith('`')) {
+                                  const code = part.slice(1, -1);
+                                  return (
+                                    <span key={i} className="px-1 py-0.5 bg-purple-500/10 text-purple-300 rounded text-[11px] font-mono">
+                                      {code}
+                                    </span>
+                                  );
+                                }
+                                return part;
+                              });
+                            };
+
                             return lines.map((line, idx) => {
                               const trimmedLine = line.trim();
 
@@ -1323,7 +1347,7 @@ export default function AnalyzerResultsPage() {
                                 return (
                                   <div key={idx} className="flex gap-2 ml-2">
                                     <span className="text-gray-600 mt-0.5">•</span>
-                                    <span className="text-gray-400">{trimmedLine.substring(1).trim()}</span>
+                                    <span className="text-gray-400">{parseInlineCode(trimmedLine.substring(1).trim())}</span>
                                   </div>
                                 );
                               }
@@ -1331,7 +1355,7 @@ export default function AnalyzerResultsPage() {
                               // Main diagnosis line (not a bullet)
                               return (
                                 <div key={idx} className="text-gray-300 font-medium">
-                                  {trimmedLine}
+                                  {parseInlineCode(trimmedLine)}
                                 </div>
                               );
                             });
