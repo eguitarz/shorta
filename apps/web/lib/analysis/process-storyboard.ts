@@ -221,7 +221,7 @@ function buildStoryboardPrompt(violations: any[]) {
   // Format violations for context
   const violationsContext = violations.length > 0
     ? `\n\nLINT VIOLATIONS DETECTED:\n${violations.map((v, idx) =>
-      `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName} (${v.ruleId})
+      `${idx + 1}. [${v.severity.toUpperCase()}] ${v.ruleName}
    Timestamp: ${v.timestamp || 'N/A'}
    Message: ${v.message}
    Suggestion: ${v.suggestion || 'N/A'}`
