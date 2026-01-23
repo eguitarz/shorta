@@ -238,6 +238,8 @@ export default function LibraryContent() {
   const [search, setSearch] = useState("");
   const [starredOnly, setStarredOnly] = useState(false);
   const [scoreRange, setScoreRange] = useState<[number, number]>([0, 100]);
+  const [datePreset, setDatePreset] = useState<"all" | "7" | "30" | "90" | "custom">("all");
+  const [customDateRange, setCustomDateRange] = useState<[string, string]>(["", ""]);
   const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
   const [selectedHookTypes, setSelectedHookTypes] = useState<string[]>([]);
   const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>([]);
@@ -282,6 +284,21 @@ export default function LibraryContent() {
     if (starredOnly) params.set("starred", "true");
     if (scoreRange[0] > 0) params.set("minScore", scoreRange[0].toString());
     if (scoreRange[1] < 100) params.set("maxScore", scoreRange[1].toString());
+
+    // Date filter
+    if (datePreset !== "all") {
+      if (datePreset === "custom") {
+        if (customDateRange[0]) params.set("dateFrom", customDateRange[0]);
+        if (customDateRange[1]) params.set("dateTo", customDateRange[1]);
+      } else {
+        // Calculate date from preset (days ago)
+        const days = parseInt(datePreset);
+        const dateFrom = new Date();
+        dateFrom.setDate(dateFrom.getDate() - days);
+        params.set("dateFrom", dateFrom.toISOString().split("T")[0]);
+      }
+    }
+
     if (selectedNiches.length > 0) params.set("niches", selectedNiches.join(","));
     if (selectedHookTypes.length > 0) params.set("hookTypes", selectedHookTypes.join(","));
     if (selectedContentTypes.length > 0) params.set("contentTypes", selectedContentTypes.join(","));
@@ -297,7 +314,7 @@ export default function LibraryContent() {
     } finally {
       setLoading(false);
     }
-  }, [search, starredOnly, scoreRange, selectedNiches, selectedHookTypes, selectedContentTypes, sortBy, sortOrder]);
+  }, [search, starredOnly, scoreRange, datePreset, customDateRange, selectedNiches, selectedHookTypes, selectedContentTypes, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchItems();
@@ -397,6 +414,8 @@ export default function LibraryContent() {
     setSearch("");
     setStarredOnly(false);
     setScoreRange([0, 100]);
+    setDatePreset("all");
+    setCustomDateRange(["", ""]);
     setSelectedNiches([]);
     setSelectedHookTypes([]);
     setSelectedContentTypes([]);
@@ -407,6 +426,7 @@ export default function LibraryContent() {
     starredOnly ||
     scoreRange[0] > 0 ||
     scoreRange[1] < 100 ||
+    datePreset !== "all" ||
     selectedNiches.length > 0 ||
     selectedHookTypes.length > 0 ||
     selectedContentTypes.length > 0;
@@ -572,6 +592,56 @@ export default function LibraryContent() {
               className="w-16 h-8 bg-gray-800 border-gray-700 text-center text-sm"
             />
           </div>
+        </div>
+
+        {/* Date Filter */}
+        <div>
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Created
+          </h3>
+          <div className="space-y-1">
+            {[
+              { value: "all", label: "All time" },
+              { value: "7", label: "Last 7 days" },
+              { value: "30", label: "Last 30 days" },
+              { value: "90", label: "Last 90 days" },
+              { value: "custom", label: "Custom range" },
+            ].map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setDatePreset(value as typeof datePreset)}
+                className={`w-full text-left px-3 py-1.5 rounded text-sm transition-colors ${
+                  datePreset === value
+                    ? "bg-orange-500/10 text-orange-500"
+                    : "text-gray-400 hover:bg-gray-800"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {datePreset === "custom" && (
+            <div className="mt-3 space-y-2">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">From</label>
+                <Input
+                  type="date"
+                  value={customDateRange[0]}
+                  onChange={(e) => setCustomDateRange([e.target.value, customDateRange[1]])}
+                  className="h-8 bg-gray-800 border-gray-700 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">To</label>
+                <Input
+                  type="date"
+                  value={customDateRange[1]}
+                  onChange={(e) => setCustomDateRange([customDateRange[0], e.target.value])}
+                  className="h-8 bg-gray-800 border-gray-700 text-sm"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Niche Filter - only show if there are valid (non-empty) values */}

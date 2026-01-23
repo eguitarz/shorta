@@ -51,6 +51,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const minScore = searchParams.get('minScore');
     const maxScore = searchParams.get('maxScore');
+    const dateFrom = searchParams.get('dateFrom');
+    const dateTo = searchParams.get('dateTo');
     const niches = searchParams.get('niches')?.split(',').filter(Boolean);
     const hookTypes = searchParams.get('hookTypes')?.split(',').filter(Boolean);
     const contentTypes = searchParams.get('contentTypes')?.split(',').filter(Boolean);
@@ -101,6 +103,14 @@ export async function GET(request: NextRequest) {
 
     if (maxScore) {
       query = query.lte('deterministic_score', parseInt(maxScore));
+    }
+
+    if (dateFrom) {
+      query = query.gte('created_at', `${dateFrom}T00:00:00.000Z`);
+    }
+
+    if (dateTo) {
+      query = query.lte('created_at', `${dateTo}T23:59:59.999Z`);
     }
 
     if (niches && niches.length > 0) {
