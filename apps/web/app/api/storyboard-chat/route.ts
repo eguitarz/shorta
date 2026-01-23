@@ -116,7 +116,7 @@ You are ONLY here to help with video content creation. If users ask about:
 Your goal: Extract the following information through natural conversation:
 - Topic/title (what the video is about)
 - Format (talking_head, b_roll, vlog, tutorial)
-- Target length (15, 30, 60, or 90 seconds)
+- Target length (15-180 seconds, user can specify any length)
 - Key points (3-5 main ideas to cover)
 
 Guidelines:
@@ -160,7 +160,7 @@ You: "Great topic! I checked your library and found 2 videos about sales. Your b
 
 To create your storyboard, a few questions:
 • What format works best? (talking head, b-roll, demo)
-• How long should it be? (15s, 30s, 60s, 90s)
+• How long should it be? (anywhere from 15s to 3 minutes)
 • What specific mistakes do you want to cover?"
 
 Keep responses natural and conversational. Don't return JSON.`;
@@ -180,7 +180,7 @@ assistant: ${latestResponse}
 Extract the following information:
 - topic: The main topic/title of the video (empty string if not mentioned)
 - format: One of "talking_head", "b_roll", "vlog", "tutorial" (empty string if not mentioned)
-- targetLength: Video length in seconds - use 15, 30, 60, or 90 (0 if not mentioned)
+- targetLength: Video length in seconds between 15-180 (0 if not mentioned)
 - keyPoints: Array of main points to cover (empty array if not mentioned)
 - targetAudience: Who the video is for (omit if not mentioned)
 - contentType: One of "educational", "entertaining", "inspirational" (default to "educational")
@@ -194,7 +194,7 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
 {
   "topic": "string or empty",
   "format": "talking_head|b_roll|vlog|tutorial or empty",
-  "targetLength": 15|30|60|90|0,
+  "targetLength": "number between 15-180, or 0 if not mentioned",
   "keyPoints": ["point1", "point2"] or [],
   "targetAudience": "string",
   "contentType": "educational|entertaining|inspirational",
@@ -458,13 +458,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { messages, locale } = await request.json();
+    const { messages, locale, referenceVideoId } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
         { error: 'Messages array is required' },
         { status: 400 }
       );
+    }
+
+    // Fetch reference video details if provided
+    let referenceVideoContext = '';
+    if (referenceVideoId) {
+      console.log('[Reference] Fetching details for video:', referenceVideoId);
+      const referenceDetails = await executeGetAnalysisDetails(user.id, {
+        analysisId: referenceVideoId,
+        include: ['overview', 'hooks', 'beats', 'scores'],
+      });
+
+      if (!referenceDetails.error) {
+        console.log('[Reference] Got details:', referenceDetails.title);
+        referenceVideoContext = `
+
+## User's Priority Reference Video (USE THIS FIRST)
+The user explicitly selected this video as their primary reference:
+- Title: ${referenceDetails.title}
+- Score: ${referenceDetails.scores?.overall || 'N/A'}
+- Niche: ${referenceDetails.overview?.niche || 'N/A'}
+- Hook Style: ${referenceDetails.overview?.hookCategory || 'N/A'} (${referenceDetails.overview?.hookPattern || 'N/A'})
+- Hook Text: "${referenceDetails.hooks?.hookText || 'N/A'}"
+- Director's Take: ${referenceDetails.overview?.directorTake || 'N/A'}
+
+Use this as your PRIMARY inspiration for hook style, structure, and tone. Reference it naturally in your suggestions. You may still search the library for additional context if relevant, but prioritize patterns from this reference.
+`;
+      } else {
+        console.warn('[Reference] Failed to fetch details:', referenceDetails.error);
+      }
     }
 
     // Validate topic relevance for the latest user message
@@ -492,7 +521,11 @@ export async function POST(request: NextRequest) {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
     // Build conversation with system prompt (with language instruction if needed)
-    const systemPromptWithLanguage = appendLanguageInstruction(SYSTEM_PROMPT, locale);
+    // Include reference video context if available
+    const basePrompt = referenceVideoContext
+      ? SYSTEM_PROMPT + referenceVideoContext
+      : SYSTEM_PROMPT;
+    const systemPromptWithLanguage = appendLanguageInstruction(basePrompt, locale);
 
     // Convert messages to Gemini format, handling file attachments
     const contents: any[] = messages.map((msg: Message) => {

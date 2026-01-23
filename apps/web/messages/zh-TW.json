@@ -456,6 +456,20 @@
       "noVideosHint": "分析更多影片以進行對比",
       "tryAgain": "重試"
     },
+    "referencePicker": {
+      "title": "選擇參考影片",
+      "tabs": {
+        "starred": "已收藏",
+        "all": "全部"
+      },
+      "searchPlaceholder": "搜尋影片...",
+      "loading": "載入影片中...",
+      "noResults": "找不到符合搜尋的影片",
+      "noStarred": "尚無收藏影片",
+      "noVideos": "資料庫中沒有影片",
+      "starHint": "在資料庫中收藏影片即可在此查看",
+      "tryAgain": "重試"
+    },
     "share": {
       "button": "分享",
       "generating": "產生中...",
@@ -505,8 +519,10 @@
       "generating": "正在生成您的分鏡腳本...",
       "attachments": {
         "title": "附件",
-        "addFiles": "添加檔案",
-        "noFiles": "沒有附加檔案。點擊「添加檔案」附加 PDF 或圖片。"
+        "addReference": "參考影片",
+        "addFiles": "檔案",
+        "reference": "參考",
+        "empty": "添加資料庫中的參考影片或附加檔案（PDF、圖片）。"
       },
       "errors": {
         "fileType": "不支援的檔案類型：{name}。請使用 PDF 或圖片。",
