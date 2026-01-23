@@ -451,6 +451,20 @@
       "noVideosHint": "Analiza más videos para compararlos",
       "tryAgain": "Intentar de nuevo"
     },
+    "referencePicker": {
+      "title": "Seleccionar Video de Referencia",
+      "tabs": {
+        "starred": "Favoritos",
+        "all": "Todos"
+      },
+      "searchPlaceholder": "Buscar videos...",
+      "loading": "Cargando tus videos...",
+      "noResults": "Ningún video coincide con tu búsqueda",
+      "noStarred": "No hay videos favoritos aún",
+      "noVideos": "No hay videos en tu biblioteca",
+      "starHint": "Marca videos como favoritos en tu biblioteca para verlos aquí",
+      "tryAgain": "Intentar de nuevo"
+    },
     "share": {
       "button": "Compartir",
       "generating": "Generando...",
@@ -500,8 +514,10 @@
       "generating": "Generando tu storyboard...",
       "attachments": {
         "title": "Adjuntos",
-        "addFiles": "Agregar archivos",
-        "noFiles": "Sin archivos adjuntos. Haz clic en \"Agregar archivos\" para adjuntar PDFs o imágenes."
+        "addReference": "Referencia",
+        "addFiles": "Archivos",
+        "reference": "Referencia",
+        "empty": "Agrega un video de referencia de tu biblioteca o adjunta archivos (PDFs, imágenes)."
       },
       "errors": {
         "fileType": "Tipo de archivo no soportado: {name}. Por favor usa PDF o imágenes.",

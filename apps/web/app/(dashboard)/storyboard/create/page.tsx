@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Send, Sparkles, ArrowLeft, Paperclip, X, FileText, Image as ImageIcon } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowLeft, Paperclip, X, FileText, Image as ImageIcon, Film } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ReferenceVideoPickerModal, ReferenceVideo } from "@/components/ReferenceVideoPickerModal";
 
 interface FileAttachment {
   mimeType: string;
@@ -71,6 +72,8 @@ export default function CreateStoryboardPage() {
   const [viralPatterns, setViralPatterns] = useState<ViralPatterns | null>(null);
   const [isAnalyzingPatterns, setIsAnalyzingPatterns] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
+  const [referenceVideo, setReferenceVideo] = useState<ReferenceVideo | null>(null);
+  const [isReferencePickerOpen, setIsReferencePickerOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -175,6 +178,7 @@ export default function CreateStoryboardPage() {
         body: JSON.stringify({
           messages: [...messages, userMessage],
           locale,
+          referenceVideoId: referenceVideo?.id,
         }),
       });
 
@@ -470,21 +474,60 @@ Incorporating these into your storyboard...`;
             </div>
           )}
 
-          {/* Attachment toolbar - always visible */}
+          {/* Unified Attachments section */}
           <div className="mb-3 p-3 bg-gray-900/50 border border-gray-800 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-500 uppercase tracking-wide">{t('attachments.title')}</span>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading || isGenerating}
-                className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-              >
-                <Paperclip className="w-3 h-3" />
-                {t('attachments.addFiles')}
-              </button>
+              <div className="flex items-center gap-3">
+                {!referenceVideo && (
+                  <button
+                    onClick={() => setIsReferencePickerOpen(true)}
+                    disabled={isLoading || isGenerating}
+                    className="text-xs text-orange-400 hover:text-orange-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                  >
+                    <Film className="w-3 h-3" />
+                    {t('attachments.addReference')}
+                  </button>
+                )}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || isGenerating}
+                  className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  <Paperclip className="w-3 h-3" />
+                  {t('attachments.addFiles')}
+                </button>
+              </div>
             </div>
-            {attachedFiles.length > 0 ? (
+            {(referenceVideo || attachedFiles.length > 0) ? (
               <div className="flex flex-wrap gap-2">
+                {/* Reference Video chip */}
+                {referenceVideo && (
+                  <div className="flex items-center gap-2 bg-gray-800 border border-orange-500/30 rounded-lg px-3 py-2">
+                    {referenceVideo.thumbnailUrl ? (
+                      <img
+                        src={referenceVideo.thumbnailUrl}
+                        alt={referenceVideo.title}
+                        className="w-10 h-7 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-7 rounded bg-gray-700 flex items-center justify-center">
+                        <Film className="w-3.5 h-3.5 text-gray-500" />
+                      </div>
+                    )}
+                    <div className="flex flex-col">
+                      <span className="text-sm text-white max-w-[120px] truncate">{referenceVideo.title}</span>
+                      <span className="text-xs text-orange-400">{t('attachments.reference')}</span>
+                    </div>
+                    <button
+                      onClick={() => setReferenceVideo(null)}
+                      className="p-0.5 hover:bg-gray-700 rounded ml-1"
+                    >
+                      <X className="w-3.5 h-3.5 text-gray-400 hover:text-white" />
+                    </button>
+                  </div>
+                )}
+                {/* File chips */}
                 {attachedFiles.map((file, index) => (
                   <div
                     key={index}
@@ -507,7 +550,7 @@ Incorporating these into your storyboard...`;
               </div>
             ) : (
               <div className="text-sm text-gray-600 py-2">
-                {t('attachments.noFiles')}
+                {t('attachments.empty')}
               </div>
             )}
           </div>
@@ -542,6 +585,16 @@ Incorporating these into your storyboard...`;
           </div>
         </div>
       </div>
+
+      {/* Reference Video Picker Modal */}
+      <ReferenceVideoPickerModal
+        isOpen={isReferencePickerOpen}
+        onClose={() => setIsReferencePickerOpen(false)}
+        onSelect={(video) => {
+          setReferenceVideo(video);
+          setIsReferencePickerOpen(false);
+        }}
+      />
     </div>
   );
 }

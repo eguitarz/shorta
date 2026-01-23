@@ -450,6 +450,20 @@
       "openLink": "새 탭에서 열기",
       "error": "링크 생성 실패"
     },
+    "referencePicker": {
+      "title": "참조 영상 선택",
+      "tabs": {
+        "starred": "즐겨찾기",
+        "all": "전체"
+      },
+      "searchPlaceholder": "영상 검색...",
+      "loading": "영상 로딩 중...",
+      "noResults": "검색 결과가 없습니다",
+      "noStarred": "즐겨찾기한 영상이 없습니다",
+      "noVideos": "라이브러리에 영상이 없습니다",
+      "starHint": "라이브러리에서 영상을 즐겨찾기하면 여기에 표시됩니다",
+      "tryAgain": "다시 시도"
+    },
     "create": {
       "title": "쇼츠 분석 만들기",
       "subtitle": "YouTube URL을 입력하거나 비디오를 업로드하여 AI로 분석하세요",
@@ -491,9 +505,11 @@
       "tryAnyway": "그래도 생성 시도",
       "generating": "스토리보드를 생성하는 중...",
       "attachments": {
-        "title": "첨부파일",
-        "addFiles": "파일 추가",
-        "noFiles": "첨부된 파일이 없습니다. \"파일 추가\"를 클릭하여 PDF나 이미지를 첨부하세요."
+        "title": "첨부",
+        "addReference": "참조 영상",
+        "addFiles": "파일",
+        "reference": "참조",
+        "empty": "라이브러리에서 참조 영상을 추가하거나 파일(PDF, 이미지)을 첨부하세요."
       },
       "errors": {
         "fileType": "지원되지 않는 파일 형식: {name}. PDF 또는 이미지를 사용하세요.",

@@ -456,6 +456,20 @@
       "noVideosHint": "Analyze more videos to compare them",
       "tryAgain": "Try again"
     },
+    "referencePicker": {
+      "title": "Select Reference Video",
+      "tabs": {
+        "starred": "Starred",
+        "all": "All"
+      },
+      "searchPlaceholder": "Search videos...",
+      "loading": "Loading your videos...",
+      "noResults": "No videos match your search",
+      "noStarred": "No starred videos yet",
+      "noVideos": "No videos in your library",
+      "starHint": "Star videos in your library to see them here",
+      "tryAgain": "Try again"
+    },
     "share": {
       "button": "Share",
       "generating": "Generating...",
@@ -505,8 +519,10 @@
       "generating": "Generating your storyboard...",
       "attachments": {
         "title": "Attachments",
-        "addFiles": "Add files",
-        "noFiles": "No files attached. Click \"Add files\" to attach PDFs or images."
+        "addReference": "Reference",
+        "addFiles": "Files",
+        "reference": "Reference",
+        "empty": "Add a reference video from your library or attach files (PDFs, images)."
       },
       "errors": {
         "fileType": "File type not supported: {name}. Please use PDF or images.",
