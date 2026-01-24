@@ -2,13 +2,28 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload } from "lucide-react";
+import { Bell, Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VideoUpload } from "@/components/video-upload";
 import { useTranslations } from "next-intl";
 
 type AnalyzeMode = "url" | "upload";
+
+interface ActivityScores {
+  overall: number | null;
+  hook: number | null;
+  structure: number | null;
+  delivery: number | null;
+  clarity: number | null;
+}
+
+interface ActivityMetadata {
+  format?: string;
+  hookCategory?: string;
+  niche?: string;
+  contentType?: string;
+}
 
 interface Activity {
   id: string;
@@ -17,7 +32,31 @@ interface Activity {
   timeAgo: string;
   status: string;
   activityType?: 'analysis' | 'generated' | 'created';
+  scores?: ActivityScores;
+  metadata?: ActivityMetadata;
 }
+
+// Letter grade helper
+function getLetterGrade(score: number | null | undefined): { label: string; color: string } {
+  if (score === null || score === undefined) return { label: '-', color: 'gray' };
+  if (score >= 100) return { label: 'S', color: 'purple' };
+  if (score >= 80) return { label: 'A', color: 'green' };
+  if (score >= 70) return { label: 'B', color: 'blue' };
+  if (score >= 60) return { label: 'C', color: 'yellow' };
+  if (score >= 50) return { label: 'D', color: 'orange' };
+  return { label: 'F', color: 'red' };
+}
+
+// Grade badge colors
+const gradeColors: Record<string, string> = {
+  purple: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  green: 'bg-green-500/20 text-green-400 border-green-500/30',
+  blue: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  yellow: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  orange: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  red: 'bg-red-500/20 text-red-400 border-red-500/30',
+  gray: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+};
 
 export default function DashboardContent() {
   const router = useRouter();
@@ -103,6 +142,19 @@ export default function DashboardContent() {
       // Analysis job - navigate to analyzer page
       router.push(`/analyzer/${activity.id}`);
     }
+  };
+
+  const handleUseAsReference = (e: React.MouseEvent, activity: Activity) => {
+    e.stopPropagation();
+    // Navigate to storyboard create with this analysis as reference
+    const params = new URLSearchParams({
+      refId: activity.id,
+      refTitle: activity.title,
+      refScore: activity.scores?.overall?.toString() || '',
+      refNiche: activity.metadata?.niche || '',
+      refHook: activity.metadata?.hookCategory || '',
+    });
+    router.push(`/storyboard/create?${params.toString()}`);
   };
 
   return (
@@ -274,30 +326,52 @@ export default function DashboardContent() {
                   {t('activity.empty')}
                 </div>
               ) : (
-                activities.map((activity) => (
-                  <button
-                    key={activity.id}
-                    onClick={() => handleActivityClick(activity)}
-                    className="w-full flex items-center gap-4 p-4 hover:bg-gray-800/50 rounded-lg transition-colors group"
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${activity.activityType === 'created' ? 'bg-green-500/10' :
-                      activity.activityType === 'generated' ? 'bg-purple-500/10' : 'bg-orange-500/10'
-                      }`}>
-                      {activity.activityType === 'created' ? (
-                        <Hammer className="w-5 h-5 text-green-500" />
-                      ) : activity.activityType === 'generated' ? (
-                        <Hammer className="w-5 h-5 text-purple-500" />
-                      ) : (
-                        <BarChart3 className="w-5 h-5 text-orange-500" />
+                activities.map((activity) => {
+                  const grade = activity.activityType === 'analysis' && activity.scores?.overall
+                    ? getLetterGrade(activity.scores.overall)
+                    : null;
+
+                  return (
+                    <div
+                      key={activity.id}
+                      className="w-full flex items-center gap-4 p-4 hover:bg-gray-800/50 rounded-lg transition-colors group cursor-pointer"
+                      onClick={() => handleActivityClick(activity)}
+                    >
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${activity.activityType === 'created' ? 'bg-green-500/10' :
+                        activity.activityType === 'generated' ? 'bg-purple-500/10' : 'bg-orange-500/10'
+                        }`}>
+                        {activity.activityType === 'created' ? (
+                          <Hammer className="w-5 h-5 text-green-500" />
+                        ) : activity.activityType === 'generated' ? (
+                          <Hammer className="w-5 h-5 text-purple-500" />
+                        ) : (
+                          <BarChart3 className="w-5 h-5 text-orange-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium truncate">{activity.title}</span>
+                          {grade && (
+                            <span className={`px-1.5 py-0.5 text-xs font-bold rounded border ${gradeColors[grade.color]}`}>
+                              {grade.label}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-500">{activity.type} • {activity.timeAgo}</div>
+                      </div>
+                      {activity.activityType === 'analysis' && activity.status === 'completed' && (
+                        <button
+                          onClick={(e) => handleUseAsReference(e, activity)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          {t('activity.useAsReference')}
+                        </button>
                       )}
+                      <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-gray-400 flex-shrink-0" />
                     </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-medium mb-1">{activity.title}</div>
-                      <div className="text-sm text-gray-500">{activity.type} • {activity.timeAgo}</div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-gray-400" />
-                  </button>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
