@@ -8,10 +8,10 @@ import { getLocale, getMessages } from 'next-intl/server';
 export const metadata: Metadata = {
   metadataBase: new URL("https://shorta.ai"),
   title: {
-    default: "AI Script Generator & YouTube Shorts Analyzer | Shorta",
+    default: "Plan Shorts Before Filming. Analyze Before Publishing. | Shorta",
     template: "%s | Shorta",
   },
-  description: "AI script generator and YouTube video analyzer for creators. Try free — generate video storyboards, analyze shorts for retention issues, and grow your YouTube channel with AI-powered insights.",
+  description: "Stop guessing why your Shorts fail. Shorta helps you plan storyboards before filming and analyze videos before publishing. A production system for YouTube Shorts creators.",
   keywords: [
     // Primary target keywords
     "free script generator",
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "AI Script Generator & Storyboard Tool for YouTube Shorts",
-    description: "AI script generator and video storyboard tool for YouTube creators. Try free — analyze shorts, generate scripts, and grow your YouTube channel.",
+    title: "Plan Shorts Before Filming. Analyze Before Publishing.",
+    description: "Stop guessing why your Shorts fail. Shorta helps you plan storyboards before filming and analyze videos before publishing.",
     type: "website",
     locale: "en_US",
     url: "https://shorta.ai",
@@ -57,8 +57,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Script Generator & Storyboard Tool | Shorta",
-    description: "AI script generator and video storyboard tool. Try free — analyze YouTube Shorts and grow your channel.",
+    title: "Plan Shorts Before Filming. Analyze Before Publishing.",
+    description: "Stop guessing why your Shorts fail. Shorta helps you plan storyboards before filming and analyze videos before publishing.",
     site: "@eguitarz",
     creator: "@eguitarz",
     images: ["https://shorta.ai/og-image.svg"],

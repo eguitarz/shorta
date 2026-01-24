@@ -14,6 +14,7 @@ import {
   X,
   RotateCcw,
   GripVertical,
+  Sparkles,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -441,6 +442,19 @@ export default function LibraryContent() {
     }
   };
 
+  // Handle use as reference
+  const handleUseAsReference = (e: React.MouseEvent, item: LibraryItem) => {
+    e.stopPropagation();
+    const params = new URLSearchParams({
+      refId: item.id,
+      refTitle: item.title || 'Untitled',
+      refScore: item.deterministic_score?.toString() || '',
+      refNiche: item.niche_category || '',
+      refHook: item.hook_category || '',
+    });
+    router.push(`/storyboard/create?${params.toString()}`);
+  };
+
   // Render cell value
   const renderCell = (item: LibraryItem, column: ColumnKey) => {
     const value = item[column];
@@ -849,7 +863,7 @@ export default function LibraryContent() {
                 items.map((item) => (
                   <tr
                     key={item.id}
-                    className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer"
+                    className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer group"
                     onClick={() => router.push(`/analyzer/${item.id}`)}
                   >
                     {/* Star */}
@@ -871,7 +885,25 @@ export default function LibraryContent() {
                     {/* Dynamic columns - in user's custom order */}
                     {orderedVisibleColumns.map((column) => (
                       <td key={column} className="px-4 py-3">
-                        {renderCell(item, column)}
+                        {column === "title" ? (
+                          <div>
+                            <span
+                              className="text-white hover:text-orange-500 transition-colors font-medium truncate max-w-[200px] block cursor-pointer"
+                              title={item.title || "Untitled"}
+                            >
+                              {item.title || "Untitled"}
+                            </span>
+                            <button
+                              onClick={(e) => handleUseAsReference(e, item)}
+                              className="text-xs text-purple-400 hover:text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 mt-0.5"
+                            >
+                              <Sparkles className="w-3 h-3" />
+                              Use as Reference
+                            </button>
+                          </div>
+                        ) : (
+                          renderCell(item, column)
+                        )}
                       </td>
                     ))}
                   </tr>

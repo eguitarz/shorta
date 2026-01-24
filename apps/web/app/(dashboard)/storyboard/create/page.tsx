@@ -109,6 +109,25 @@ export default function CreateStoryboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // Pre-populate reference video from URL params
+  useEffect(() => {
+    const refId = searchParams.get('refId');
+    const refTitle = searchParams.get('refTitle');
+    if (refId && refTitle && !referenceVideo) {
+      const refScore = searchParams.get('refScore');
+      const refNiche = searchParams.get('refNiche');
+      const refHook = searchParams.get('refHook');
+      setReferenceVideo({
+        id: refId,
+        title: refTitle,
+        score: refScore ? parseInt(refScore, 10) : null,
+        niche: refNiche || null,
+        hookCategory: refHook || null,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;

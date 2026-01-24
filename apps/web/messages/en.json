@@ -125,7 +125,8 @@
       "title": "Recent Activity",
       "viewAll": "View All History",
       "loading": "Loading activities...",
-      "empty": "No recent activities. Start by analyzing a video!"
+      "empty": "No recent activities. Start by analyzing a video!",
+      "useAsReference": "Use as Reference"
     }
   },
   "analyzer": {

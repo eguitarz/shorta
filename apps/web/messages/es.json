@@ -121,7 +121,8 @@
       "title": "Actividad Reciente",
       "viewAll": "Ver Todo el Historial",
       "loading": "Cargando actividades...",
-      "empty": "Sin actividad reciente. ¡Empieza analizando un video!"
+      "empty": "Sin actividad reciente. ¡Empieza analizando un video!",
+      "useAsReference": "Usar como Referencia"
     }
   },
   "analyzer": {

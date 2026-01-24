@@ -1,20 +1,14 @@
 "use client";
 
 import { HeroSection } from "@/components/HeroSection";
-import { Section, SectionTitle, SectionGrid } from "@/components/Section";
+import { Section, SectionTitle } from "@/components/Section";
 import { Callout } from "@/components/Callout";
 import { Footer } from "@/components/Footer";
 import { CTAForm } from "@/components/CTAForm";
 import { QuestionButton } from "@/components/QuestionButton";
 import { Button } from "@/components/ui/button";
-import { UseCases } from "@/components/UseCases";
-import { Differentiation } from "@/components/Differentiation";
-import { AIComparison } from "@/components/AIComparison";
-import { CreativityLoop } from "@/components/CreativityLoop";
-import { HookAnalysis } from "@/components/HookAnalysis";
 
 const shortaLogo = "/shorta-logo.png";
-const daleHeadshot = "/dale-ma-headshot.jpg";
 
 export default function HomePage() {
   return (
@@ -55,68 +49,17 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero - Storytelling */}
       <HeroSection />
-
-      {/* AI Comparison */}
-      <AIComparison />
-
-      {/* Creativity Loop */}
-      <CreativityLoop />
-
-      {/* Hook Analysis */}
-      <HookAnalysis />
-
-      {/* Use Cases */}
-      <Section id="use-cases">
-        <SectionTitle>Who uses Shorta</SectionTitle>
-        <UseCases />
-        <div className="flex flex-col items-center gap-2 mt-12">
-          <a href="/pricing">
-            <Button variant="hero" size="lg">
-              Join as a Founding Member
-            </Button>
-          </a>
-          <p className="text-sm text-muted-foreground">$99/year or $199 lifetime · limited seats available</p>
-        </div>
-      </Section>
-
-      {/* Differentiation */}
-      <Section id="differentiation">
-        <SectionTitle>Shorta vs ChatGPT</SectionTitle>
-        <Differentiation />
-        <div className="flex flex-col items-center gap-2 mt-12">
-          <a href="/pricing">
-            <Button variant="hero" size="lg">
-              Join as a Founding Member
-            </Button>
-          </a>
-          <p className="text-sm text-muted-foreground">$99/year or $199 lifetime · limited seats available</p>
-        </div>
-      </Section>
 
       {/* FAQ */}
       <Section id="faq" maxWidth="narrow">
         <SectionTitle>Frequently asked questions</SectionTitle>
         <div className="space-y-6 md:space-y-8 lg:space-y-10">
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Is Shorta a free AI script generator?</h3>
-            <p className="text-base md:text-lg text-muted-foreground">
-              Shorta offers a free trial to try our storyboard AI and video analyzer. Unlike basic script generators, Shorta focuses on analysis first—understanding what works before generating. You can create storyboards from scratch, guided by real insights from viral videos.
-            </p>
-          </div>
-
-          <div>
             <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">How does the video storyboard generator work?</h3>
             <p className="text-base md:text-lg text-muted-foreground">
               Our storyboard AI searches viral videos on YouTube and your personal library to find proven hooks and structures. It then generates beat-by-beat storyboards with hooks, content flow, and CTAs—helping you create videos based on patterns that actually perform.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Why don't you offer a monthly plan?</h3>
-            <p className="text-base md:text-lg text-muted-foreground">
-              Building a successful YouTube Shorts channel is a long-term business, not a quick experiment. Annual pricing ensures you're committed to the process and gives you enough runway to see real results. We're building for creators who are serious about growth.
             </p>
           </div>
 
@@ -136,37 +79,9 @@ export default function HomePage() {
           </div>
 
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">What if my niche isn't productivity or AI?</h3>
-            <p className="text-base md:text-lg text-muted-foreground">
-              Shorta analyzes structure and viewer behavior patterns, not niche-specific buzzwords.
-            </p>
-          </div>
-
-          <div>
             <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Will this replace my creativity?</h3>
             <p className="text-base md:text-lg text-muted-foreground">
               No. It removes uncertainty so you can focus on creative decisions that matter.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">How long does it take to generate storyboards?</h3>
-            <p className="text-base md:text-lg text-muted-foreground">
-              Less than 5 minutes. Paste your references, enter your topic, and get high quality storyboard instantly.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Can I use this for TikTok or Instagram Reels?</h3>
-            <p className="text-base md:text-lg text-muted-foreground">
-              You can — the principles of viral short-form content apply across platforms. However, our current focus is on YouTube Shorts, so the analysis and patterns are optimized for that platform.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Do you store my channel data?</h3>
-            <p className="text-base md:text-lg text-muted-foreground">
-              We store summarized channel data (not raw videos) so the AI can generate the best content specifically for your audience and style. Your data is never shared with third parties.
             </p>
           </div>
         </div>
@@ -177,93 +92,6 @@ export default function HomePage() {
             </Button>
           </a>
           <p className="text-sm text-muted-foreground">$99/year or $199 lifetime · limited seats available</p>
-        </div>
-      </Section>
-
-      {/* Founder */}
-      <Section id="founder" maxWidth="narrow">
-        <SectionTitle>What Shorta changed in my workflow</SectionTitle>
-        <div className="space-y-4 md:space-y-6">
-          <div className="flex items-start gap-3 md:gap-4">
-            <img
-              src={daleHeadshot}
-              alt="Dale Ma"
-              className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full object-cover flex-shrink-0"
-            />
-            <div className="flex-1">
-              <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1 md:mb-2">Dale Ma</h3>
-              <div className="flex gap-2 md:gap-3 text-sm md:text-base">
-                <a
-                  href="https://x.com/eguitarz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Twitter
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/dalema/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  LinkedIn
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-3 md:space-y-4 lg:space-y-5 text-base md:text-lg text-muted-foreground">
-            <p>
-              I used to work at Meta on improving developer productivity.
-            </p>
-            <p>
-              Over the last few years, AI has dramatically boosted how efficient engineers can be. That made me think: what other industries could benefit from the same kind of productivity leap?
-            </p>
-            <p>
-              A while ago, I tried making YouTube videos myself. I filmed consistently for some time, then slowly lost momentum. Not because I ran out of ideas—but because no one cared about the videos.
-            </p>
-            <p>
-              That's when I realized the real problem wasn't effort or execution.
-            </p>
-            <p>
-              It was about how ideas are translated into compelling content.
-            </p>
-            <p>
-              Today, the creator space is flooded with low-quality script generators and AI slop. I don't believe this is the future. AI shouldn't replace human thinking or creativity—it should help people express their ideas better.
-            </p>
-            <p>
-              That belief is why I decided to build something for creators.
-            </p>
-            <p>
-              Shorta is not just a script generator. It's a system that bridges the gap between ideas and filming. You bring a strong idea, and Shorta turns it into a clear, actionable storyboard—covering structure, pacing, and attention design. Filming becomes low-friction, and producing high-quality videos becomes repeatable.
-            </p>
-            <p>
-              In the past, YouTubers had to grind through hundreds of hours of trial and error to learn what works. With Shorta, those hours can be reinvested into ideation and filming instead.
-            </p>
-            <p>
-              This is the productivity system I wanted to build.
-            </p>
-            <p>
-              Not a faceless video generator.
-            </p>
-            <p>
-              Not a cheap AI script tool.
-            </p>
-            <p>
-              In the future, audiences will care more about creators with strong ideas—not AI-generated noise. And creators who use systems like Shorta will be able to move faster, learn faster, and win faster.
-            </p>
-          </div>
-          <div className="aspect-video bg-surface rounded-lg border border-border overflow-hidden mt-6 md:mt-8">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/3N6lS0y75rw"
-              title="What Shorta changed in my workflow"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
         </div>
       </Section>
 
