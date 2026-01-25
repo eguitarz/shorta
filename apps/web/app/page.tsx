@@ -54,26 +54,49 @@ export default function HomePage() {
 
       {/* FAQ */}
       <Section id="faq" maxWidth="narrow">
-        <SectionTitle>Frequently asked questions</SectionTitle>
+        <SectionTitle>YouTube Shorts FAQ</SectionTitle>
         <div className="space-y-6 md:space-y-8 lg:space-y-10">
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">How does the video storyboard generator work?</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Why are my YouTube Shorts not getting views?</h3>
+            <div className="space-y-3 md:space-y-4 text-base md:text-lg text-muted-foreground">
+              <p>
+                Most Shorts fail in the first 2 seconds — weak hooks, slow pacing, or unclear value. YouTube's algorithm measures retention, and if viewers swipe away early, your Short won't get pushed to more people.
+              </p>
+              <p>
+                Shorta's analyzer shows you exactly where viewers drop off and why, so you can fix issues before publishing.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">How do I improve YouTube Shorts retention?</h3>
             <p className="text-base md:text-lg text-muted-foreground">
-              Our storyboard AI searches viral videos on YouTube and your personal library to find proven hooks and structures. It then generates beat-by-beat storyboards with hooks, content flow, and CTAs—helping you create videos based on patterns that actually perform.
+              Focus on your hook (first 1-2 seconds), maintain fast pacing, and deliver value quickly. Shorta analyzes your video beat-by-beat and flags retention killers like slow intros, weak transitions, or unclear messaging — then suggests specific fixes.
             </p>
           </div>
 
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Can't I just use ChatGPT?</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">How does the AI storyboard generator work?</h3>
+            <p className="text-base md:text-lg text-muted-foreground">
+              Our storyboard AI searches viral videos on YouTube and your personal library to find proven hooks and structures. It then generates beat-by-beat storyboards with hooks, content flow, and CTAs—helping you create short-form video scripts based on patterns that actually perform.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Can I analyze my YouTube Shorts for free?</h3>
+            <p className="text-base md:text-lg text-muted-foreground">
+              Yes. Shorta offers a free trial to analyze your YouTube Shorts — no credit card, no login required. Upload your video and get AI-powered feedback on hooks, pacing, and retention issues instantly.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Is this better than using ChatGPT for video scripts?</h3>
             <div className="space-y-3 md:space-y-4 text-base md:text-lg text-muted-foreground">
               <p>
-                You can — but ChatGPT is trained on old data and gives you generic hooks.
+                ChatGPT gives generic scripts from old training data. Shorta analyzes what's working <em>now</em> on YouTube and generates storyboards optimized for retention.
               </p>
               <p>
-                Shorta analyzes recent viral Shorts, extracts what's working now, and matches the best hook to your specific content — not just random viral patterns.
-              </p>
-              <p>
-                It's like having a researcher who watches trending Shorts daily and tells you exactly which hook will work for your topic.
+                It's the difference between a generic template and a data-driven production plan.
               </p>
             </div>
           </div>
@@ -81,7 +104,7 @@ export default function HomePage() {
           <div>
             <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">Will this replace my creativity?</h3>
             <p className="text-base md:text-lg text-muted-foreground">
-              No. It removes uncertainty so you can focus on creative decisions that matter.
+              No. Shorta removes the guesswork around structure and pacing so you can focus on your ideas and delivery — the parts that actually make your content unique.
             </p>
           </div>
         </div>
