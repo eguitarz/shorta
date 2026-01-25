@@ -17,14 +17,16 @@ export function HeroSection() {
           {/* H1 - SEO optimized */}
           <div className="mb-8 md:mb-12 max-w-4xl">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight font-heading">
-              Plan your Shorts before filming.
-              <br />
-              <span className="text-muted-foreground">Analyze them before publishing.</span>
+              YouTube Shorts Storyboard & Analyzer
             </h1>
+            <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground mt-3 font-semibold">
+              Plan before filming. Analyze before publishing.
+            </p>
           </div>
 
           {/* Story 1: The Idea */}
           <div className="mb-12 md:mb-16">
+            <h2 className="text-lg md:text-xl font-semibold text-primary mb-3">AI Storyboard Generator for YouTube Shorts</h2>
             <div className="mb-4 md:mb-6">
               <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground leading-tight">
                 You have a crazy Short idea.
@@ -55,6 +57,7 @@ export function HeroSection() {
 
           {/* Story 2: The Problem */}
           <div className="mb-12 md:mb-16">
+            <h2 className="text-lg md:text-xl font-semibold text-primary mb-3">YouTube Shorts Analyzer — Fix Before You Publish</h2>
             <div className="mb-4 md:mb-6">
               <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground leading-tight">
                 You filmed your Short. Something feels off.
@@ -88,9 +91,50 @@ export function HeroSection() {
             <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-4">
               Stop guessing. Start improving.
             </p>
-            <p className="text-lg md:text-xl text-muted-foreground">
+            <p className="text-lg md:text-xl text-muted-foreground mb-6">
               Shorta is a production system for YouTube Shorts — not another script generator.
             </p>
+
+            {/* What Shorta Does - Keyword rich section */}
+            <div className="bg-surface/50 rounded-lg p-4 md:p-6 border border-border/50">
+              <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">What Shorta Does</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Storyboard feature */}
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2 text-sm md:text-base text-muted-foreground">
+                    <span className="text-primary mt-1">→</span>
+                    <span><strong>Generate video storyboards</strong> with AI-optimized hooks, pacing, and structure</span>
+                  </div>
+                  <img
+                    src="/beat.png"
+                    alt="AI-generated storyboard beat showing script, visual direction, and pacing"
+                    className="rounded-lg border border-border shadow-sm w-full"
+                  />
+                </div>
+                {/* Analyzer feature */}
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2 text-sm md:text-base text-muted-foreground">
+                    <span className="text-primary mt-1">→</span>
+                    <span><strong>Analyze YouTube Shorts</strong> to find retention issues before publishing</span>
+                  </div>
+                  <img
+                    src="/structure_score.png"
+                    alt="YouTube Shorts analysis score showing hook, structure, content, and delivery ratings"
+                    className="rounded-lg border border-border shadow-sm w-full"
+                  />
+                </div>
+              </div>
+              <ul className="space-y-2 text-sm md:text-base text-muted-foreground mt-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">→</span>
+                  <span><strong>Fix low-performing hooks</strong> with data-driven suggestions from viral patterns</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">→</span>
+                  <span><strong>Improve short-form video scripts</strong> beat by beat for better engagement</span>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* CTA Section */}
