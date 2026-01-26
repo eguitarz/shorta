@@ -71,7 +71,7 @@ interface Beat {
 }
 
 // Hook variant styles aligned with rehook presets
-export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific';
+export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific' | 'library' | 'viral';
 
 interface HookVariant {
   id: string;
@@ -354,20 +354,12 @@ STRUCTURE REQUIREMENTS:
    - Retention tip: brief note on why this beat keeps viewers watching
 
 HOOK VARIANTS REQUIREMENT:
-Generate 4 different hook options with distinct styles. Each variant should:
+Generate ${getHookVariantCount(input)} different hook options with distinct styles. Each variant should:
 - Cover the same hook duration (0-${hookDuration}s)
 - Have the same timing as Beat 1 but with different approaches
 - Include a brief explanation of why it works
 
-${input.libraryInsights?.recommendedHookStyle ? `The 4 hook styles are:
-1. LIBRARY (PRIORITIZE - based on user's past success): Use the "${input.libraryInsights.recommendedHookStyle}" style that worked well in their past content.${input.libraryInsights.referenceHookText ? ` Model after their successful hook: "${input.libraryInsights.referenceHookText}"` : ''} This should be the DEFAULT/SELECTED hook.
-2. BOLD: Make a confident claim or promise. Lead with the result or outcome. Be assertive and direct. Use power words.
-3. QUESTION: Open with a thought-provoking question or create a curiosity gap. Make viewers NEED to know the answer.
-4. SPECIFIC: Lead with concrete numbers, data, timeframes, or specific results. Ground the hook in measurable outcomes.` : `The 4 hook styles are:
-1. BOLD: Make a confident claim or promise. Lead with the result or outcome. Be assertive and direct. Use power words.
-2. QUESTION: Open with a thought-provoking question or create a curiosity gap. Make viewers NEED to know the answer.
-3. EMOTIONAL: Connect with the viewer's struggle, pain point, or desire. Use empathy, urgency, and relatability.
-4. SPECIFIC: Lead with concrete numbers, data, timeframes, or specific results. Ground the hook in measurable outcomes.`}
+${getHookStylesDescription(input)}
 
 DIRECTOR NOTES GUIDELINES:
 - Start with action verbs (Start, Show, Cut, Maintain, etc.)
@@ -408,85 +400,7 @@ Return VALID JSON ONLY in this format:
     "length": ${input.targetLength}
   },
   "hookVariants": [
-${input.libraryInsights?.recommendedHookStyle ? `    {
-      "id": "library",
-      "style": "library",
-      "label": "From Your Library",
-      "script": "Hook modeled after your successful '${input.libraryInsights.recommendedHookStyle}' style",
-      "visual": "• Match the visual style of your reference video\\n• Familiar framing\\n• Proven setup",
-      "audio": "• Similar audio approach to reference\\n• Consistent with past success",
-      "directorNotes": "• **Model after your proven ${input.libraryInsights.recommendedHookStyle} hook**\\n• Maintain what worked\\n• Adapt to new topic",
-      "whyItWorks": "This style performed well in your past videos - stick with what works for your audience"
-    },
-    {
-      "id": "bold",
-      "style": "bold",
-      "label": "Bold & Direct",
-      "script": "The direct, confident opening script",
-      "visual": "• Close-up shot\\n• Confident posture\\n• Direct eye contact",
-      "audio": "• Powerful intro beat\\n• Quick sound effect",
-      "directorNotes": "• **Lead with confidence**\\n• Maintain strong eye contact\\n• Speak with authority",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    },
-    {
-      "id": "question",
-      "style": "question",
-      "label": "Curiosity Hook",
-      "script": "The question or curiosity-gap opening",
-      "visual": "• Medium shot\\n• Curious expression\\n• Lean in slightly",
-      "audio": "• Intriguing music\\n• Pause for effect",
-      "directorNotes": "• **Pause after the question**\\n• Show genuine curiosity\\n• Create tension",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    },
-    {
-      "id": "specific",
-      "style": "specific",
-      "label": "Data-Driven",
-      "script": "The opening with specific numbers or metrics",
-      "visual": "• Text overlay with number\\n• Medium shot\\n• Authoritative stance",
-      "audio": "• Clean, professional intro\\n• Subtle emphasis sound",
-      "directorNotes": "• **Emphasize the number clearly**\\n• Let the data speak\\n• Show credibility",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    }` : `    {
-      "id": "bold",
-      "style": "bold",
-      "label": "Bold & Direct",
-      "script": "The direct, confident opening script",
-      "visual": "• Close-up shot\\n• Confident posture\\n• Direct eye contact",
-      "audio": "• Powerful intro beat\\n• Quick sound effect",
-      "directorNotes": "• **Lead with confidence**\\n• Maintain strong eye contact\\n• Speak with authority",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    },
-    {
-      "id": "question",
-      "style": "question",
-      "label": "Curiosity Hook",
-      "script": "The question or curiosity-gap opening",
-      "visual": "• Medium shot\\n• Curious expression\\n• Lean in slightly",
-      "audio": "• Intriguing music\\n• Pause for effect",
-      "directorNotes": "• **Pause after the question**\\n• Show genuine curiosity\\n• Create tension",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    },
-    {
-      "id": "emotional",
-      "style": "emotional",
-      "label": "Pain Point",
-      "script": "The empathetic, relatable opening",
-      "visual": "• Warm lighting\\n• Relatable setting\\n• Empathetic expression",
-      "audio": "• Soft intro music\\n• Conversational tone",
-      "directorNotes": "• **Connect emotionally first**\\n• Show understanding\\n• Be authentic",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    },
-    {
-      "id": "specific",
-      "style": "specific",
-      "label": "Data-Driven",
-      "script": "The opening with specific numbers or metrics",
-      "visual": "• Text overlay with number\\n• Medium shot\\n• Authoritative stance",
-      "audio": "• Clean, professional intro\\n• Subtle emphasis sound",
-      "directorNotes": "• **Emphasize the number clearly**\\n• Let the data speak\\n• Show credibility",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    }`}
+${generateHookVariantsTemplate(input)}
   ],
   "beats": [
     {
@@ -512,8 +426,8 @@ ${input.libraryInsights?.recommendedHookStyle ? `    {
 }
 
 IMPORTANT:
-- The "beats" array Beat 1 should use the BOLD hook variant as default
-- All 4 hookVariants must have COMPLETELY DIFFERENT scripts that achieve the same goal differently
+- The "beats" array Beat 1 should use the ${input.viralPatterns?.hookPatterns?.length ? 'VIRAL' : input.libraryInsights?.recommendedHookStyle ? 'LIBRARY' : 'BOLD'} hook variant as default
+- All ${getHookVariantCount(input)} hookVariants must have COMPLETELY DIFFERENT scripts that achieve the same goal differently
 - Each hookVariant.whyItWorks should be specific to the topic, not generic
 - Make each hook genuinely distinct - not just word variations
 ${input.locale && input.locale !== 'en' ? `- ALL text content (scripts, titles, director notes, etc.) must be written in ${getLanguageName(input.locale)}` : ''}
@@ -531,4 +445,123 @@ function getBeatCount(length: number, keyPointsCount: number): number {
   } else {
     return keyPointsCount + 3; // Hook + setup + points + payoff + CTA
   }
+}
+
+function getHookVariantCount(input: CreateStoryboardInput): number {
+  let count = 4; // Base: bold, question, emotional, specific
+  if (input.libraryInsights?.recommendedHookStyle) count++; // Add library
+  if (input.viralPatterns?.hookPatterns?.length) count++; // Add viral
+  return count;
+}
+
+function getHookStylesDescription(input: CreateStoryboardInput): string {
+  const hasLibrary = !!input.libraryInsights?.recommendedHookStyle;
+  const hasViral = input.viralPatterns?.hookPatterns && input.viralPatterns.hookPatterns.length > 0;
+
+  const styles: string[] = [];
+  let num = 1;
+
+  if (hasViral) {
+    const topPattern = input.viralPatterns!.hookPatterns[0];
+    styles.push(`${num}. VIRAL (RECOMMENDED - based on ${input.viralPatterns!.videosAnalyzed} viral videos): Apply the top-performing hook pattern: "${topPattern}". This style is currently trending in this niche with average ${input.viralPatterns!.averageViews.toLocaleString()} views.`);
+    num++;
+  }
+
+  if (hasLibrary) {
+    styles.push(`${num}. LIBRARY (based on user's past success): Use the "${input.libraryInsights!.recommendedHookStyle}" style that worked well in their past content.${input.libraryInsights!.referenceHookText ? ` Model after their successful hook: "${input.libraryInsights!.referenceHookText}"` : ''}`);
+    num++;
+  }
+
+  styles.push(`${num}. BOLD: Make a confident claim or promise. Lead with the result or outcome. Be assertive and direct. Use power words.`);
+  num++;
+
+  styles.push(`${num}. QUESTION: Open with a thought-provoking question or create a curiosity gap. Make viewers NEED to know the answer.`);
+  num++;
+
+  styles.push(`${num}. EMOTIONAL: Connect with the viewer's struggle, pain point, or desire. Use empathy, urgency, and relatability.`);
+  num++;
+
+  styles.push(`${num}. SPECIFIC: Lead with concrete numbers, data, timeframes, or specific results. Ground the hook in measurable outcomes.`);
+
+  return `The hook styles are:\n${styles.join('\n')}`;
+}
+
+function generateHookVariantsTemplate(input: CreateStoryboardInput): string {
+  const hasLibrary = !!input.libraryInsights?.recommendedHookStyle;
+  const hasViral = input.viralPatterns?.hookPatterns && input.viralPatterns.hookPatterns.length > 0;
+
+  const variants: string[] = [];
+
+  if (hasViral) {
+    const topPattern = input.viralPatterns!.hookPatterns[0];
+    variants.push(`    {
+      "id": "viral",
+      "style": "viral",
+      "label": "Viral Trend",
+      "script": "Hook applying the viral pattern: ${topPattern}",
+      "visual": "• Match successful viral video style\\n• High-energy framing\\n• Attention-grabbing visual",
+      "audio": "• Trending audio style\\n• Impactful intro sound",
+      "directorNotes": "• **Apply viral pattern: ${topPattern}**\\n• Mirror what's working now\\n• Capture trending energy",
+      "whyItWorks": "Based on ${input.viralPatterns!.videosAnalyzed} viral videos averaging ${input.viralPatterns!.averageViews.toLocaleString()} views - this pattern is proven to work right now"
+    }`);
+  }
+
+  if (hasLibrary) {
+    variants.push(`    {
+      "id": "library",
+      "style": "library",
+      "label": "From Your Library",
+      "script": "Hook modeled after your successful '${input.libraryInsights!.recommendedHookStyle}' style",
+      "visual": "• Match the visual style of your reference video\\n• Familiar framing\\n• Proven setup",
+      "audio": "• Similar audio approach to reference\\n• Consistent with past success",
+      "directorNotes": "• **Model after your proven ${input.libraryInsights!.recommendedHookStyle} hook**\\n• Maintain what worked\\n• Adapt to new topic",
+      "whyItWorks": "This style performed well in your past videos - stick with what works for your audience"
+    }`);
+  }
+
+  variants.push(`    {
+      "id": "bold",
+      "style": "bold",
+      "label": "Bold & Direct",
+      "script": "The direct, confident opening script",
+      "visual": "• Close-up shot\\n• Confident posture\\n• Direct eye contact",
+      "audio": "• Powerful intro beat\\n• Quick sound effect",
+      "directorNotes": "• **Lead with confidence**\\n• Maintain strong eye contact\\n• Speak with authority",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    }`);
+
+  variants.push(`    {
+      "id": "question",
+      "style": "question",
+      "label": "Curiosity Hook",
+      "script": "The question or curiosity-gap opening",
+      "visual": "• Medium shot\\n• Curious expression\\n• Lean in slightly",
+      "audio": "• Intriguing music\\n• Pause for effect",
+      "directorNotes": "• **Pause after the question**\\n• Show genuine curiosity\\n• Create tension",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    }`);
+
+  variants.push(`    {
+      "id": "emotional",
+      "style": "emotional",
+      "label": "Pain Point",
+      "script": "The empathetic, relatable opening",
+      "visual": "• Warm lighting\\n• Relatable setting\\n• Empathetic expression",
+      "audio": "• Soft intro music\\n• Conversational tone",
+      "directorNotes": "• **Connect emotionally first**\\n• Show understanding\\n• Be authentic",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    }`);
+
+  variants.push(`    {
+      "id": "specific",
+      "style": "specific",
+      "label": "Data-Driven",
+      "script": "The opening with specific numbers or metrics",
+      "visual": "• Text overlay with number\\n• Medium shot\\n• Authoritative stance",
+      "audio": "• Clean, professional intro\\n• Subtle emphasis sound",
+      "directorNotes": "• **Emphasize the number clearly**\\n• Let the data speak\\n• Show credibility",
+      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
+    }`);
+
+  return variants.join(',\n');
 }

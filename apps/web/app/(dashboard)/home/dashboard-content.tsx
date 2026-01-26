@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload, Sparkles } from "lucide-react";
+import { Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VideoUpload } from "@/components/video-upload";
@@ -159,29 +159,6 @@ export default function DashboardContent() {
 
   return (
     <>
-      {/* Top Bar */}
-      <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <span>{t('breadcrumb.overview')}</span>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-white">{t('breadcrumb.dashboard')}</span>
-        </div>
-
-        {/* Right Side */}
-        <div className="flex items-center gap-4">
-          {/* Status */}
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-gray-400">{t('status.aiOnline')}</span>
-          </div>
-
-          {/* Notifications */}
-          <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-            <Bell className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
-      </header>
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto">

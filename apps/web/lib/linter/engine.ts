@@ -72,11 +72,12 @@ This is essential as the user is analyzing the video in this language.`;
       throw new Error('Client does not support video analysis');
     }
 
-    // Call Gemini with the linting prompt (uses gemini-2.5-flash by default)
+    // Call Gemini with the linting prompt using flash-lite for faster response (avoid 524 timeouts)
     const response = await this.client.analyzeVideo(
       videoUrl,
       prompt,
       {
+        model: 'gemini-2.5-flash-lite', // Use lite model for faster linting
         temperature: 0.0, // Minimum temperature for maximum consistency in scoring
         maxTokens: 16384, // Very high limit to prevent incomplete JSON responses
         videoDuration, // Pass duration for FPS optimization on long videos

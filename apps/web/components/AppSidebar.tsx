@@ -95,7 +95,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         <SidebarMenu>
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.path;
+            const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
 
             return (
               <SidebarMenuItem key={item.path}>
