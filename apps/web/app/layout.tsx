@@ -8,10 +8,10 @@ import { getLocale, getMessages } from 'next-intl/server';
 export const metadata: Metadata = {
   metadataBase: new URL("https://shorta.ai"),
   title: {
-    default: "YouTube Shorts Analyzer – See Why Viewers Swipe Away | Shorta",
+    default: "YouTube Shorts Storyboard Generator | Plan Before Filming | Shorta",
     template: "%s | Shorta",
   },
-  description: "Free YouTube Shorts analyzer shows exactly where viewers drop off. Get beat-by-beat retention analysis, hook scoring, and fix issues before publishing. Try free — no login required.",
+  description: "Generate beat-by-beat storyboards for YouTube Shorts. Plan your hook, pacing, and structure before filming. Free analyzer to review your drafts — no login required.",
   keywords: [
     // Low KD long-tail keywords
     "why my youtube shorts get low views",
@@ -41,12 +41,12 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "YouTube Shorts Analyzer – See Why Viewers Swipe Away",
-    description: "Free YouTube Shorts analyzer shows exactly where viewers drop off. Get beat-by-beat retention analysis, hook scoring, and actionable fixes.",
+    title: "YouTube Shorts Storyboard Generator | Plan Before Filming",
+    description: "Generate beat-by-beat storyboards for YouTube Shorts. Plan your hook, pacing, and structure before filming. Free analyzer included.",
     type: "website",
     locale: "en_US",
     url: "https://shorta.ai",
-    siteName: "Shorta - Shorts Analyzer",
+    siteName: "Shorta - Storyboard Generator",
     images: [
       {
         url: "https://shorta.ai/og-image.svg",
@@ -58,8 +58,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "YouTube Shorts Analyzer – See Why Viewers Swipe Away",
-    description: "Free YouTube Shorts analyzer shows exactly where viewers drop off. Get beat-by-beat retention analysis, hook scoring, and actionable fixes.",
+    title: "YouTube Shorts Storyboard Generator | Plan Before Filming",
+    description: "Generate beat-by-beat storyboards for YouTube Shorts. Plan your hook, pacing, and structure before filming. Free analyzer included.",
     site: "@eguitarz",
     creator: "@eguitarz",
     images: ["https://shorta.ai/og-image.svg"],
