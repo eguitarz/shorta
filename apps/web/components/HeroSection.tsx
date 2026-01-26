@@ -15,18 +15,18 @@ export function HeroSection() {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           {/* H1 - SEO optimized */}
-          <div className="mb-8 md:mb-12 max-w-4xl">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight font-heading">
+          <div className="mb-8 md:mb-12">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight font-heading whitespace-nowrap">
               YouTube Shorts Storyboard & Analyzer
             </h1>
-            <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground mt-3 font-semibold">
+            <p className="text-lg md:text-2xl lg:text-3xl text-muted-foreground mt-3 font-semibold">
               Plan before filming. Analyze before publishing.
             </p>
           </div>
 
           {/* Story 1: The Idea */}
-          <div className="mb-12 md:mb-16">
-            <h2 className="text-lg md:text-xl font-semibold text-primary mb-3">AI Storyboard Generator for YouTube Shorts</h2>
+          <div className="mb-16 md:mb-24 pl-4 md:pl-6 border-l-2 border-primary/50">
+            <span className="text-xs md:text-sm font-mono text-primary mb-2 block">01 — BEFORE FILMING</span>
             <div className="mb-4 md:mb-6">
               <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground leading-tight">
                 You have a crazy Short idea.
@@ -56,8 +56,8 @@ export function HeroSection() {
           </div>
 
           {/* Story 2: The Problem */}
-          <div className="mb-12 md:mb-16">
-            <h2 className="text-lg md:text-xl font-semibold text-primary mb-3">YouTube Shorts Analyzer — Fix Before You Publish</h2>
+          <div className="mb-16 md:mb-24 pl-4 md:pl-6 border-l-2 border-violet-500/50">
+            <span className="text-xs md:text-sm font-mono text-violet-400 mb-2 block">02 — BEFORE PUBLISHING</span>
             <div className="mb-4 md:mb-6">
               <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground leading-tight">
                 You filmed your Short. Something feels off.
