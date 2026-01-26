@@ -5,8 +5,8 @@ import { SEOInternalLinks } from '@/components/seo/SEOInternalLinks';
 import { Check, BarChart3, Zap, Target } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'YouTube Shorts Analytics Tool – Retention & Hook Data',
-    description: 'Get frame-by-frame retention data and hook analysis for your YouTube Shorts. Upload your video, get actionable feedback, and re-film with confidence.',
+    title: 'YouTube Shorts Analytics Tool – See Where Viewers Drop Off',
+    description: 'Free YouTube Shorts analytics your Studio doesn\'t show. Frame-by-frame retention data, hook scores, and exact timestamps of where viewers swipe away.',
     openGraph: {
         title: 'YouTube Shorts Analytics Tool – Retention & Hook Data',
         description: 'Get frame-by-frame retention data and hook analysis for your YouTube Shorts. Upload your video, get actionable feedback, and re-film with confidence.',
