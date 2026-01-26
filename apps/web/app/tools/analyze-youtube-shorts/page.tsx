@@ -5,11 +5,11 @@ import { SEOInternalLinks } from '@/components/seo/SEOInternalLinks';
 import { BarChart3, Zap, MessageSquare, Target, Check } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Analyze YouTube Shorts – Hook, Retention & Clarity',
-    description: 'Upload your YouTube Short and get a full breakdown: hook strength, retention risks, pacing issues, clarity problems. See exactly what to fix.',
+    title: 'Analyze YouTube Shorts Free – Find Why Viewers Swipe Away',
+    description: 'Free YouTube Shorts analyzer shows exactly where viewers lose interest. Get hook scores, retention timeline, and timestamped fixes. No login required.',
     openGraph: {
-        title: 'Analyze YouTube Shorts – Hook, Retention & Clarity',
-        description: 'Upload your YouTube Short and get a complete analysis.',
+        title: 'Analyze YouTube Shorts Free – Find Why Viewers Swipe Away',
+        description: 'Free YouTube Shorts analyzer shows exactly where viewers lose interest. No login required.',
         url: 'https://shorta.ai/tools/analyze-youtube-shorts',
         type: 'website',
     },
