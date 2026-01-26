@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Zap, HelpCircle, Heart, Hash, ChevronDown, ChevronUp, Sparkles, Library } from "lucide-react";
+import { Check, Zap, HelpCircle, Heart, Hash, Sparkles, Library, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific' | 'library';
+export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific' | 'library' | 'viral';
 
 export interface HookVariant {
   id: string;
@@ -54,21 +54,36 @@ const STYLE_CONFIG: Record<HookVariantStyle, { icon: typeof Zap; color: string; 
     bgColor: 'bg-purple-900/20',
     borderColor: 'border-purple-700/50'
   },
+  viral: {
+    icon: Zap,
+    color: 'text-red-400',
+    bgColor: 'bg-red-900/20',
+    borderColor: 'border-red-700/50'
+  },
 };
 
 export function HookVariantSelector({ variants, selectedId, onSelect }: HookVariantSelectorProps) {
   const t = useTranslations('storyboard.resultPage.hookSelector');
   const tVariants = useTranslations('storyboard.hookVariants');
-  const tFields = useTranslations('storyboard.fields');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   if (!variants || variants.length === 0) {
     return null;
   }
 
   const toggleExpand = (id: string) => {
-    setExpandedId(prev => prev === id ? null : id);
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
+
+  const isExpanded = (id: string) => expandedIds.has(id);
 
   return (
     <div className="mb-8">
@@ -82,12 +97,11 @@ export function HookVariantSelector({ variants, selectedId, onSelect }: HookVari
         {t('description')}
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {variants.map((variant) => {
           const config = STYLE_CONFIG[variant.style] || STYLE_CONFIG.bold;
           const Icon = config.icon;
           const isSelected = variant.id === selectedId;
-          const isExpanded = expandedId === variant.id;
 
           return (
             <div
@@ -131,49 +145,25 @@ export function HookVariantSelector({ variants, selectedId, onSelect }: HookVari
                 </div>
               </button>
 
-              {/* Why it works - Expandable */}
+              {/* Why it works - Toggle to expand */}
               <div className="border-t border-gray-800">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleExpand(variant.id);
                   }}
-                  className="w-full px-4 py-2 flex items-center justify-between text-xs text-gray-400 hover:text-gray-300 hover:bg-gray-800/50 transition-colors"
+                  className="w-full px-4 py-2 flex items-center justify-between text-xs text-gray-500 hover:text-gray-400 hover:bg-gray-800/30 transition-colors"
                 >
                   <span>{tVariants('whyThisWorks')}</span>
-                  {isExpanded ? (
+                  {isExpanded(variant.id) ? (
                     <ChevronUp className="w-4 h-4" />
                   ) : (
                     <ChevronDown className="w-4 h-4" />
                   )}
                 </button>
-
-                {isExpanded && (
-                  <div className="px-4 pb-4 text-sm text-gray-400 border-t border-gray-800/50 pt-3">
-                    <p className="mb-3">{variant.whyItWorks}</p>
-
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <p className="text-gray-500 uppercase tracking-wider mb-1">{tFields('visual')}</p>
-                        <ul className="space-y-0.5">
-                          {variant.visual.split('\n').filter(l => l.trim()).map((line, i) => (
-                            <li key={i} className="text-gray-400">
-                              {line.replace(/^[•\-\*]\s*/, '• ')}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <p className="text-gray-500 uppercase tracking-wider mb-1">{tFields('audio')}</p>
-                        <ul className="space-y-0.5">
-                          {variant.audio.split('\n').filter(l => l.trim()).map((line, i) => (
-                            <li key={i} className="text-gray-400">
-                              {line.replace(/^[•\-\*]\s*/, '• ')}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                {isExpanded(variant.id) && (
+                  <div className="px-4 pb-3">
+                    <p className="text-sm text-gray-400">{variant.whyItWorks}</p>
                   </div>
                 )}
               </div>

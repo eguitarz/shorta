@@ -369,7 +369,7 @@ Incorporating these into your storyboard...`;
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -585,14 +585,20 @@ Incorporating these into your storyboard...`;
               className="hidden"
             />
 
-            <input
-              type="text"
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder={attachedFiles.length > 0 ? t('inputWithFiles') : t('inputPlaceholder')}
               disabled={isLoading || isGenerating}
-              className="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 disabled:opacity-50"
+              rows={1}
+              className="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 disabled:opacity-50 resize-none min-h-[48px] max-h-[200px]"
+              style={{ height: 'auto' }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+              }}
             />
             <button
               onClick={handleSend}
