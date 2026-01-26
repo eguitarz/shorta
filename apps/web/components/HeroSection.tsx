@@ -51,7 +51,7 @@ export function HeroSection() {
               </video>
             </div>
             <p className="text-base md:text-lg text-muted-foreground mt-4 max-w-2xl">
-              Shorta turns your idea into a clear, filmable storyboard — structure, hooks, and pacing included.
+              Your AI director turns your idea into a clear, filmable storyboard — structure, hooks, and pacing included.
             </p>
           </div>
 
@@ -92,7 +92,7 @@ export function HeroSection() {
               Stop guessing. Start improving.
             </p>
             <p className="text-lg md:text-xl text-muted-foreground mb-6">
-              Shorta is a production system for YouTube Shorts — not another script generator.
+              Shorta is your AI director for YouTube Shorts — not another script generator.
             </p>
 
             {/* What Shorta Does - Keyword rich section */}
@@ -103,7 +103,7 @@ export function HeroSection() {
                 <div className="space-y-3">
                   <div className="flex items-start gap-2 text-sm md:text-base text-muted-foreground">
                     <span className="text-primary mt-1">→</span>
-                    <span><strong>Generate video storyboards</strong> with AI-optimized hooks, pacing, and structure</span>
+                    <span><strong>Generate video storyboards</strong> with AI director notes for hooks, pacing, and structure</span>
                   </div>
                   <img
                     src="/beat.png"
@@ -115,7 +115,7 @@ export function HeroSection() {
                 <div className="space-y-3">
                   <div className="flex items-start gap-2 text-sm md:text-base text-muted-foreground">
                     <span className="text-primary mt-1">→</span>
-                    <span><strong>Analyze YouTube Shorts</strong> to find retention issues before publishing</span>
+                    <span><strong>YouTube video analyzer</strong> — video analysis that finds retention issues before publishing</span>
                   </div>
                   <img
                     src="/structure_score.png"
@@ -131,7 +131,7 @@ export function HeroSection() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">→</span>
-                  <span><strong>Improve short-form video scripts</strong> beat by beat for better engagement</span>
+                  <span><strong>Improve video quality</strong> — refine scripts beat by beat for better engagement</span>
                 </li>
               </ul>
             </div>

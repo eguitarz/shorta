@@ -25,6 +25,17 @@ export const metadata: Metadata = {
     "short form video script",
     "youtube shorts analyzer",
     "video storyboard ai",
+    // Video analyzer keywords
+    "video analyzer",
+    "video quality",
+    "youtube video quality",
+    "youtube analyzer",
+    "youtube analyser",
+    "video analysis",
+    // AI director keywords
+    "ai director",
+    "ai video director",
+    "youtube shorts director",
     // Supporting keywords
     "shorts hook generator",
     "youtube shorts retention",

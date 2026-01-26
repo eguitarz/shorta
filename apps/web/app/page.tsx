@@ -107,6 +107,13 @@ export default function HomePage() {
               No. Shorta removes the guesswork around structure and pacing so you can focus on your ideas and delivery — the parts that actually make your content unique.
             </p>
           </div>
+
+          <div>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3 md:mb-4">What does the YouTube video analyzer check?</h3>
+            <p className="text-base md:text-lg text-muted-foreground">
+              Our video analyzer performs a complete video analysis covering hook strength, pacing, content structure, and delivery quality. It identifies exactly where viewers might drop off and gives you specific fixes to improve video quality before publishing.
+            </p>
+          </div>
         </div>
         <div className="flex flex-col items-center gap-2 mt-8 md:mt-10 lg:mt-12">
           <a href="/pricing">
