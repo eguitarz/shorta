@@ -109,7 +109,11 @@ This is essential as the user is analyzing the video in this language.`;
       throw new Error(`Failed to parse lint results. The response may be incomplete or malformed. Content length: ${contentLength} chars. Check server logs for details.`);
     }
 
-    const violations: RuleViolation[] = parsedResult.violations || [];
+    const rawViolations: RuleViolation[] = parsedResult.violations || [];
+
+    // Only keep high-confidence violations to reduce false positives
+    const violations = rawViolations.filter(v => (v.confidence ?? 1) >= 0.9);
+    console.log(`[Linter] Filtered ${rawViolations.length} → ${violations.length} violations (confidence >= 0.9)`);
 
     // Deduplicate violations by ruleId - same rule type only counts once for scoring
     const uniqueViolations = Array.from(
