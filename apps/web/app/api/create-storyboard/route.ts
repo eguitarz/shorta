@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getLanguageName } from '@/lib/i18n-helpers';
+import { checkStoryboardLimit, incrementStoryboardUsage } from '@/lib/storyboard-usage';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,6 +125,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create Supabase client (needed for usage check and save)
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // API route - ignore cookie setting errors
+            }
+          },
+        },
+      }
+    );
+
+    // Check storyboard usage limit
+    const usage = await checkStoryboardLimit(supabase, user.id);
+    if (!usage.canCreate) {
+      return NextResponse.json(
+        {
+          error: 'Monthly limit reached',
+          message: `You've used all ${usage.limit} credits this month. Resets on ${new Date(usage.resetAt!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.`,
+          storyboards_used: usage.used,
+          storyboards_limit: usage.limit,
+          storyboards_reset_at: usage.resetAt,
+        },
+        { status: 403 }
+      );
+    }
+
     // Create LLM client
     const env: LLMEnv = {
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
@@ -186,28 +225,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to database
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
-            } catch {
-              // API route - ignore cookie setting errors
-            }
-          },
-        },
-      }
-    );
-
     const overview = storyboard.overview;
     const title = overview?.title || input.topic || 'Untitled Storyboard';
 
@@ -257,6 +274,9 @@ export async function POST(request: NextRequest) {
 
     const storyboardId = savedStoryboard?.id;
     console.log('Saved created storyboard with ID:', storyboardId);
+
+    // Increment storyboard usage after successful generation
+    await incrementStoryboardUsage(supabase, user.id);
 
     return NextResponse.json({
       id: storyboardId,

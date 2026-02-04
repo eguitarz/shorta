@@ -7,8 +7,9 @@ import { Loader2, AlertCircle, Bug, Copy, Check, ExternalLink } from 'lucide-rea
 interface UserProfile {
   user_id: string;
   tier: string;
-  analyses_used: number;
-  analyses_limit: number;
+  storyboards_used: number;
+  storyboards_limit: number;
+  storyboards_reset_at: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   subscription_status: string | null;
@@ -243,8 +244,8 @@ export default function DebugUserPage() {
                     <span>{profile.tier}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Analyses Used</span>
-                    <span>{profile.analyses_used} / {profile.analyses_limit}</span>
+                    <span className="text-gray-400">Storyboards Used</span>
+                    <span>{profile.storyboards_used} / {profile.storyboards_limit}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Subscription Status</span>

@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { hashIP, getClientIp } from '@/lib/ip-hash';
 import { verifyTurnstile } from '@/lib/turnstile';
+import { checkStoryboardLimit, incrementStoryboardUsage } from '@/lib/storyboard-usage';
 
 // Extract YouTube video ID from URL
 function extractYouTubeId(url: string): string | null {
@@ -271,7 +272,21 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Logged-in users - tier checking to be added when credit system is implemented
+      // Check storyboard usage limit
+      const usage = await checkStoryboardLimit(supabase, user.id);
+      if (!usage.canCreate) {
+        return NextResponse.json(
+          {
+            error: 'Monthly limit reached',
+            message: `You've used all ${usage.limit} credits this month. Resets on ${new Date(usage.resetAt!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.`,
+            storyboards_used: usage.used,
+            storyboards_limit: usage.limit,
+            storyboards_reset_at: usage.resetAt,
+          },
+          { status: 403 }
+        );
+      }
+
       const videoUrl = url || null;
       const videoFileUri = fileUri || null;
 
@@ -305,7 +320,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.log(`[Job Created] ID: ${job.id}, User: ${user.id}, Access: Unlimited`);
+      // Increment storyboard usage after successful job creation
+      await incrementStoryboardUsage(supabase, user.id);
+
+      console.log(`[Job Created] ID: ${job.id}, User: ${user.id}, Usage: ${usage.used + 1}/${usage.limit}`);
 
       return NextResponse.json({
         job_id: job.id,
@@ -314,8 +332,9 @@ export async function POST(request: NextRequest) {
         current_step: job.current_step,
         total_steps: job.total_steps,
         created_at: job.created_at,
-        tier: 'unlimited', // All logged-in users have unlimited access
-        analyses_remaining: -1, // -1 = unlimited
+        storyboards_used: usage.used + 1,
+        storyboards_limit: usage.limit,
+        storyboards_remaining: usage.limit - usage.used - 1,
       }, { status: 201 });
     }
 

@@ -67,7 +67,6 @@ const formatRelativeTime = (dateString: string, tTime: any): string => {
 
 export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: VideoPickerModalProps) {
     const tPicker = useTranslations('picker');
-    const tAnalyzer = useTranslations('analyzer');
     const tTime = useTranslations('time');
 
     const [videos, setVideos] = useState<UserVideo[]>([]);
@@ -230,7 +229,7 @@ export function VideoPickerModal({ isOpen, onClose, onSelect, excludeJobId }: Vi
                                         {/* Score */}
                                         <div className={`flex-shrink-0 w-10 h-10 rounded-lg bg-${grade.color}-500/10 flex items-center justify-center`}>
                                             <span className={`text-lg font-bold text-${grade.color}-500`}>
-                                                {tAnalyzer(`grades.letters.${grade.label as any}`)}
+                                                {grade.label}
                                             </span>
                                         </div>
                                     </button>
