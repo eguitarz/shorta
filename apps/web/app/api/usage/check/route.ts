@@ -66,43 +66,42 @@ export async function GET(request: NextRequest) {
     // Authenticated user - check user_profiles
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('tier, analyses_used, analyses_limit')
+      .select('tier')
       .eq('user_id', user.id)
       .single();
 
     if (!profile) {
-      // Profile doesn't exist yet (shouldn't happen with trigger, but defensive)
-      // Default to free tier
       return NextResponse.json({
         tier: 'free',
-        analyses_used: 0,
-        analyses_limit: 3,
-        analyses_remaining: 3,
-        can_analyze: true,
+        can_analyze: false,
       });
     }
 
-    // Paid users - credit system to be implemented
+    // Paid users - storyboard usage with monthly limit
     if (profile.tier === 'founder' || profile.tier === 'lifetime') {
+      const { data: usageData } = await supabase.rpc('reset_storyboard_usage_if_needed', {
+        p_user_id: user.id,
+      });
+
+      const storyboardsUsed = usageData?.[0]?.storyboards_used ?? 0;
+      const storyboardsLimit = usageData?.[0]?.storyboards_limit ?? 50;
+      const storyboardsResetAt = usageData?.[0]?.storyboards_reset_at ?? null;
+
       return NextResponse.json({
         tier: profile.tier,
-        analyses_used: profile.analyses_used,
-        analyses_limit: -1, // -1 indicates unlimited (will be replaced with credit system)
-        analyses_remaining: -1,
-        can_analyze: true,
+        can_analyze: storyboardsUsed < storyboardsLimit,
+        storyboards_used: storyboardsUsed,
+        storyboards_limit: storyboardsLimit,
+        storyboards_remaining: Math.max(0, storyboardsLimit - storyboardsUsed),
+        storyboards_reset_at: storyboardsResetAt,
+        can_create_storyboard: storyboardsUsed < storyboardsLimit,
       });
     }
 
-    // Free tier users have limit
-    const analysesRemaining = Math.max(0, profile.analyses_limit - profile.analyses_used);
-    const canAnalyze = profile.analyses_used < profile.analyses_limit;
-
+    // Free tier - no storyboard access
     return NextResponse.json({
       tier: profile.tier,
-      analyses_used: profile.analyses_used,
-      analyses_limit: profile.analyses_limit,
-      analyses_remaining: analysesRemaining,
-      can_analyze: canAnalyze,
+      can_analyze: false,
     });
 
   } catch (error) {

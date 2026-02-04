@@ -33,22 +33,9 @@ export default async function DashboardLayout({
       .eq('user_id', user.id)
       .single();
 
-    // Founder/lifetime tier users always have access (bypass allowlist)
-    if (profile?.tier === 'founder' || profile?.tier === 'lifetime') {
-      // Allow access, no further checks needed
-    } else {
-      // Free tier: check if email is on allowlist
-      const { data: allowedEmail } = await supabase
-        .from('email_allowlist')
-        .select('email')
-        .eq('email', user.email)
-        .single();
-
-      if (!allowedEmail) {
-        // Free tier user not on allowlist -> block access
-        redirect("/launching-soon");
-      }
-      // If allowedEmail exists, user can access dashboard
+    // Free tier users cannot access dashboard — must upgrade
+    if (profile?.tier !== 'founder' && profile?.tier !== 'lifetime') {
+      redirect("/pricing");
     }
   }
 

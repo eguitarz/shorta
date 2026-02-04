@@ -28,8 +28,10 @@ interface AppSidebarProps {
 
 interface UsageData {
   tier: 'anonymous' | 'free' | 'founder' | 'lifetime';
-  analyses_remaining: number;
-  analyses_limit: number;
+  storyboards_used?: number;
+  storyboards_limit?: number;
+  storyboards_remaining?: number;
+  storyboards_reset_at?: string;
 }
 
 function CollapseButton() {
@@ -60,13 +62,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const initials = user.email?.split("@")[0].slice(0, 2).toUpperCase() || "JD";
 
-  // Fetch usage data
+  // Fetch usage data on mount and when navigating (e.g. after creating a storyboard)
   useEffect(() => {
     fetch('/api/usage/check')
       .then(res => res.json())
       .then(data => setUsageData(data))
       .catch(console.error);
-  }, []);
+  }, [pathname]);
 
   const navItems = [
     { name: t('home'), icon: Home, path: "/home" },
@@ -130,31 +132,42 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <LanguageSwitcher variant="compact" />
         </div>
 
-        {/* Credits section - only show for free/anonymous tiers, hidden when collapsed */}
+        {/* Upgrade prompt for free/anonymous tiers, hidden when collapsed */}
         {usageData && (usageData.tier === 'free' || usageData.tier === 'anonymous') && (
+          <div className="mb-4 group-data-[collapsible=icon]:hidden">
+            <Link
+              href="/pricing"
+              className="block text-sm text-orange-500 hover:text-orange-400 font-medium"
+            >
+              {tCommon('upgrade')}
+            </Link>
+          </div>
+        )}
+
+        {/* Storyboard credits - show for paid tiers */}
+        {usageData && (usageData.tier === 'founder' || usageData.tier === 'lifetime') && usageData.storyboards_limit != null && (
           <div className="mb-4 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-500 uppercase tracking-wider">
-                {tCommon('analyses')}
+                Storyboards
               </span>
               <span className="text-sm font-semibold text-white">
-                {tCommon('analysesRemaining', { remaining: usageData.analyses_remaining, limit: usageData.analyses_limit })}
+                {(usageData.storyboards_limit! - (usageData.storyboards_used ?? 0))} left
               </span>
             </div>
             <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-orange-500 rounded-full"
                 style={{
-                  width: `${(usageData.analyses_remaining / usageData.analyses_limit) * 100}%`
+                  width: `${((usageData.storyboards_limit! - (usageData.storyboards_used ?? 0)) / usageData.storyboards_limit!) * 100}%`
                 }}
               />
             </div>
-            <Link
-              href="/pricing"
-              className="block text-sm text-orange-500 hover:text-orange-400 font-medium mt-2"
-            >
-              {tCommon('upgrade')}
-            </Link>
+            {usageData.storyboards_reset_at && (
+              <p className="text-xs text-gray-500 mt-1">
+                Resets {new Date(usageData.storyboards_reset_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </p>
+            )}
           </div>
         )}
 
