@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload, Sparkles } from "lucide-react";
+import { Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload, Sparkles, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VideoUpload } from "@/components/video-upload";
@@ -36,6 +36,29 @@ interface Activity {
   metadata?: ActivityMetadata;
 }
 
+interface TrendItem {
+  videoId: string;
+  title: string;
+  channelTitle: string;
+  publishedAt: string;
+  thumbnail: string;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  durationSeconds: number | null;
+  viewsPerHour: number;
+  engagementRate: number;
+  url: string;
+}
+
+interface TrendsResponse {
+  items: TrendItem[];
+  region: string;
+  regionSource: string;
+  usedFallback: boolean;
+  generatedAt: string;
+}
+
 // Letter grade helper
 function getLetterGrade(score: number | null | undefined): { label: string; color: string } {
   if (score === null || score === undefined) return { label: '-', color: 'gray' };
@@ -58,6 +81,37 @@ const gradeColors: Record<string, string> = {
   gray: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
 };
 
+function formatCompactNumber(value: number): string {
+  return new Intl.NumberFormat(undefined, { notation: 'compact' }).format(value);
+}
+
+function formatViewsPerHour(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return '0';
+  return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+}
+
+function formatEngagementRate(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return '0%';
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+function formatTimeAgo(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+  if (diffMinutes < 1) return 'Just now';
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return `${Math.floor(diffHours / 24)}d ago`;
+}
+
+function formatDuration(seconds: number | null): string {
+  if (!seconds || seconds <= 0) return '--:--';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 export default function DashboardContent() {
   const router = useRouter();
   const t = useTranslations('dashboard');
@@ -66,6 +120,16 @@ export default function DashboardContent() {
   const [topicInput, setTopicInput] = useState("");
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [trends, setTrends] = useState<TrendItem[]>([]);
+  const [trendsLoading, setTrendsLoading] = useState(true);
+  const [trendsError, setTrendsError] = useState<string | null>(null);
+  const [trendsRegion, setTrendsRegion] = useState<string | null>(null);
+  const [trendsUpdatedAt, setTrendsUpdatedAt] = useState<string | null>(null);
+  const [trendsPage, setTrendsPage] = useState(1);
+  const [trendsChannelSet, setTrendsChannelSet] = useState<'us' | 'kr'>('us');
+  const trendsPageSize = 4;
+  const didLoadActivities = useRef(false);
+  const didLoadTrends = useRef(false);
 
   const handleAnalyze = () => {
     if (!analyzeUrl.trim()) return;
@@ -109,6 +173,9 @@ export default function DashboardContent() {
 
   // Fetch recent activities
   useEffect(() => {
+    if (didLoadActivities.current) return;
+    didLoadActivities.current = true;
+
     const fetchActivities = async () => {
       try {
         setActivitiesLoading(true);
@@ -129,6 +196,48 @@ export default function DashboardContent() {
     };
 
     fetchActivities();
+  }, []);
+
+  const loadTrends = async (channelSetOverride?: 'us' | 'kr') => {
+    try {
+      setTrendsLoading(true);
+      setTrendsError(null);
+
+      const params = new URLSearchParams();
+      params.set('limit', '300');
+      const channelSet = channelSetOverride || trendsChannelSet;
+      params.set('channelSet', channelSet);
+
+      const response = await fetch(`/api/trends/shorts?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch trends');
+      }
+
+      const data = (await response.json()) as TrendsResponse;
+      setTrends(data.items || []);
+      setTrendsRegion(data.region || null);
+      setTrendsUpdatedAt(data.generatedAt || null);
+      setTrendsPage(1);
+    } catch (error) {
+      console.error('Error fetching trends:', error);
+      setTrendsError(t('trends.error'));
+      setTrends([]);
+    } finally {
+      setTrendsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (didLoadTrends.current) return;
+    didLoadTrends.current = true;
+    const locale = navigator.language || '';
+    if (locale.toLowerCase().startsWith('ko')) {
+      setTrendsChannelSet('kr');
+      loadTrends('kr');
+      return;
+    }
+    loadTrends('us');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleActivityClick = (activity: Activity) => {
@@ -171,6 +280,142 @@ export default function DashboardContent() {
             <p className="text-xl text-gray-400">
               {t('hero.subtitle')}
             </p>
+          </div>
+
+          {/* Local Viral Trends */}
+          <div className="bg-[#141414] border border-gray-800 rounded-2xl p-6 mb-12">
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div>
+                <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider">
+                  <Flame className="w-4 h-4" />
+                  <span>{t('trends.label')}</span>
+                </div>
+                <h2 className="text-2xl font-semibold mt-2">{t('trends.title')}</h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  {t('trends.subtitle')}
+                  {trendsRegion ? ` · ${trendsRegion}` : ''}
+                  {trendsUpdatedAt ? ` · ${t('trends.updated')} ${new Date(trendsUpdatedAt).toLocaleTimeString()}` : ''}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 bg-black/40 rounded-full p-1 text-xs">
+                  <button
+                    onClick={() => { setTrendsChannelSet('us'); loadTrends('us'); }}
+                    className={`px-3 py-1 rounded-full transition-colors ${trendsChannelSet === 'us'
+                      ? 'bg-orange-500/20 text-orange-300'
+                      : 'text-gray-400 hover:text-white'
+                      }`}
+                  >
+                    US
+                  </button>
+                  <button
+                    onClick={() => { setTrendsChannelSet('kr'); loadTrends('kr'); }}
+                    className={`px-3 py-1 rounded-full transition-colors ${trendsChannelSet === 'kr'
+                      ? 'bg-orange-500/20 text-orange-300'
+                      : 'text-gray-400 hover:text-white'
+                      }`}
+                  >
+                    KR
+                  </button>
+                </div>
+                <button
+                  onClick={() => loadTrends()}
+                  className="text-sm text-orange-500 hover:text-orange-400 font-medium"
+                >
+                  {t('trends.refresh')}
+                </button>
+              </div>
+            </div>
+
+            {trendsLoading ? (
+              <div className="text-center py-10 text-gray-500">
+                {t('trends.loading')}
+              </div>
+            ) : trendsError ? (
+              <div className="text-center py-10 text-gray-500">
+                <p className="mb-3">{trendsError}</p>
+                <button
+                  onClick={() => loadTrends()}
+                  className="text-sm text-orange-500 hover:text-orange-400 font-medium"
+                >
+                  {t('trends.retry')}
+                </button>
+              </div>
+            ) : trends.length === 0 ? (
+              <div className="text-center py-10 text-gray-500">
+                {t('trends.empty')}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {trends
+                    .slice((trendsPage - 1) * trendsPageSize, trendsPage * trendsPageSize)
+                    .map((trend) => (
+                  <a
+                    key={trend.videoId}
+                    href={trend.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group rounded-xl border border-gray-800 bg-[#0f0f0f] hover:bg-[#151515] transition-colors p-3"
+                  >
+                    <div className="relative aspect-[9/16] rounded-lg overflow-hidden bg-black">
+                      {trend.thumbnail ? (
+                        <img
+                          src={trend.thumbnail}
+                          alt={trend.title}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center text-gray-600 text-xs">
+                          No thumbnail
+                        </div>
+                      )}
+                      <div className="absolute top-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white">
+                        {formatCompactNumber(trend.viewCount)} {t('trends.views')}
+                      </div>
+                      <div className="absolute bottom-2 right-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white">
+                        {formatDuration(trend.durationSeconds)}
+                      </div>
+                    </div>
+                    <div className="mt-3 space-y-1">
+                      <p className="text-sm font-medium text-white line-clamp-2">{trend.title}</p>
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+                        <span>{formatViewsPerHour(trend.viewsPerHour)} {t('trends.viewsPerHour')}</span>
+                        <span className="text-gray-600">•</span>
+                        <span>{formatCompactNumber(trend.viewCount)} {t('trends.views')}</span>
+                        <span className="text-gray-600">•</span>
+                        <span>{formatEngagementRate(trend.engagementRate)} {t('trends.engagement')}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {trend.channelTitle} • {formatTimeAgo(trend.publishedAt)}
+                      </p>
+                    </div>
+                  </a>
+                  ))}
+                </div>
+                {trends.length > trendsPageSize && (
+                  <div className="flex items-center justify-center gap-2 mt-6 text-sm">
+                    {Array.from({ length: Math.ceil(trends.length / trendsPageSize) }, (_, i) => {
+                      const page = i + 1;
+                      const isActive = page === trendsPage;
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setTrendsPage(page)}
+                          className={`h-8 w-8 rounded-full border transition-colors ${
+                            isActive
+                              ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
+                              : 'border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Action Cards */}

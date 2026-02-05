@@ -127,6 +127,20 @@
       "loading": "Loading activities...",
       "empty": "No recent activities. Start by analyzing a video!",
       "useAsReference": "Use as Reference"
+    },
+    "trends": {
+      "label": "Popular Shorts",
+      "title": "Popular Shorts (7-Day)",
+      "subtitle": "From curated talking-head channels · ranked by views/hour",
+      "updated": "Updated",
+      "refresh": "Refresh",
+      "loading": "Loading popular Shorts...",
+      "error": "Could not load popular Shorts.",
+      "retry": "Try again",
+      "empty": "No popular Shorts found in the last 7 days.",
+      "views": "views",
+      "viewsPerHour": "views/hr",
+      "engagement": "engagement"
     }
   },
   "analyzer": {

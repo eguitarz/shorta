@@ -123,6 +123,20 @@
       "loading": "활동 불러오는 중...",
       "empty": "최근 활동이 없습니다. 비디오 분석을 시작해보세요!",
       "useAsReference": "참조로 사용"
+    },
+    "trends": {
+      "label": "인기 쇼츠",
+      "title": "인기 쇼츠 (7일)",
+      "subtitle": "선별된 토킹헤드 채널 · 시간당 조회수 기준",
+      "updated": "업데이트",
+      "refresh": "새로고침",
+      "loading": "인기 쇼츠 불러오는 중...",
+      "error": "인기 쇼츠를 불러오지 못했습니다.",
+      "retry": "다시 시도",
+      "empty": "최근 7일 내 인기 쇼츠가 없습니다.",
+      "views": "조회수",
+      "viewsPerHour": "조회수/시간",
+      "engagement": "참여율"
     }
   },
   "analyzer": {
