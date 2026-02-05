@@ -127,6 +127,20 @@
       "loading": "正在載入活動...",
       "empty": "沒有最近的活動。開始分析一個影片吧！",
       "useAsReference": "作為參考"
+    },
+    "trends": {
+      "label": "熱門 Shorts",
+      "title": "熱門 Shorts（7 天）",
+      "subtitle": "精選講述型頻道 · 以每小時觀看數排序",
+      "updated": "更新",
+      "refresh": "重新整理",
+      "loading": "正在載入熱門 Shorts...",
+      "error": "無法載入熱門 Shorts。",
+      "retry": "再試一次",
+      "empty": "最近 7 天沒有熱門 Shorts。",
+      "views": "次觀看",
+      "viewsPerHour": "次/小時",
+      "engagement": "互動率"
     }
   },
   "analyzer": {

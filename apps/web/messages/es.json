@@ -123,6 +123,20 @@
       "loading": "Cargando actividades...",
       "empty": "Sin actividad reciente. ¡Empieza analizando un video!",
       "useAsReference": "Usar como Referencia"
+    },
+    "trends": {
+      "label": "Shorts Populares",
+      "title": "Shorts Populares (7 días)",
+      "subtitle": "De canales seleccionados · ordenados por vistas/hora",
+      "updated": "Actualizado",
+      "refresh": "Actualizar",
+      "loading": "Cargando Shorts populares...",
+      "error": "No se pudieron cargar los Shorts populares.",
+      "retry": "Reintentar",
+      "empty": "No se encontraron Shorts populares en los últimos 7 días.",
+      "views": "vistas",
+      "viewsPerHour": "vistas/h",
+      "engagement": "interacción"
     }
   },
   "analyzer": {
