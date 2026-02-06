@@ -75,6 +75,9 @@ export const metadata: Metadata = {
     creator: "@eguitarz",
     images: ["https://shorta.ai/og-image.svg"],
   },
+  alternates: {
+    canonical: "https://shorta.ai",
+  },
   robots: {
     index: true,
     follow: true,
@@ -87,10 +90,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // IMPORTANT: Add your Google Search Console verification code here
-    // Get it from: Search Console > Settings > Ownership verification > HTML tag
-    // google: "your-google-verification-code",
-    // yandex: "your-yandex-verification-code",
+    // Already verified via DNS (domain name provider)
   },
 };
 
@@ -251,7 +251,7 @@ export default async function RootLayout({
         <link rel="icon" href="/icon-512x512.png" type="image/png" sizes="512x512" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="canonical" href="https://shorta.ai" />
+        {/* canonical is set per-page via metadata.alternates.canonical */}
         {/*
           SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
           1. structuredData is a hardcoded object literal (not user input)

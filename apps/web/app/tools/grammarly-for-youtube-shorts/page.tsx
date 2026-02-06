@@ -186,9 +186,10 @@ export default function GrammarlyForYouTubeShortsPage() {
                 {/* Internal Links */}
                 <SEOInternalLinks
                     links={[
-                        { href: '/tools/youtube-shorts-analytics-tool', text: 'Post-Publish Analytics' },
-                        { href: '/tools/youtube-shorts-hook-analysis', text: 'Focus on Hook Analysis' },
-                        { href: '/tools/youtube-shorts-script-optimization', text: 'Script Optimization' },
+                        { href: '/tools/youtube-shorts-analyzer', text: 'YouTube Shorts Analyzer' },
+                        { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
+                        { href: '/tools/youtube-shorts-hook-analysis', text: 'Hook Analysis' },
+                        { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
                     ]}
                 />
             </SEOPageLayout>

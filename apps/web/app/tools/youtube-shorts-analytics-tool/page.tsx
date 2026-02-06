@@ -182,9 +182,10 @@ export default function YouTubeShortsAnalyticsToolPage() {
                 {/* Internal Links */}
                 <SEOInternalLinks
                     links={[
-                        { href: '/tools/youtube-shorts-retention-analysis', text: 'Deep Dive: Retention Analysis' },
-                        { href: '/tools/youtube-shorts-hook-analysis', text: 'Focus on Hook Analysis' },
-                        { href: '/tools/youtube-shorts-feedback-tool', text: 'Get Pre-Publish Feedback' },
+                        { href: '/tools/youtube-shorts-analyzer', text: 'YouTube Shorts Analyzer' },
+                        { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
+                        { href: '/tools/youtube-shorts-retention-analysis', text: 'Retention Analysis' },
+                        { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
                     ]}
                 />
             </SEOPageLayout>

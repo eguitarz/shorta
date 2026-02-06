@@ -40,10 +40,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // SEO landing pages under /tools
   const seoPages = [
+    'youtube-shorts-analyzer',
+    'youtube-storyboard-generator',
+    'youtube-shorts-script-generator',
     'youtube-shorts-analytics-tool',
     'grammarly-for-youtube-shorts',
     'why-my-youtube-shorts-get-low-views',
     'youtube-shorts-retention-analysis',
+    'youtube-shorts-hook-generator',
     'youtube-shorts-hook-analysis',
     'improve-youtube-shorts-retention',
     'youtube-shorts-feedback-tool',

@@ -152,9 +152,11 @@ export default function AnalyzeYouTubeShortsPage() {
 
                 <SEOInternalLinks
                     links={[
+                        { href: '/tools/youtube-shorts-analyzer', text: 'YouTube Shorts Analyzer' },
+                        { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
                         { href: '/tools/youtube-shorts-hook-analysis', text: 'Focus on Hooks' },
                         { href: '/tools/youtube-shorts-retention-analysis', text: 'Focus on Retention' },
-                        { href: '/tools/youtube-shorts-script-optimization', text: 'Analyze Drafts' },
+                        { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
                         { href: '/tools/grammarly-for-youtube-shorts', text: 'The Grammarly for Shorts' },
                     ]}
                 />

@@ -153,9 +153,10 @@ export default function ScriptOptimizationPage() {
 
                 <SEOInternalLinks
                     links={[
+                        { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
+                        { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
                         { href: '/tools/youtube-shorts-hook-analysis', text: 'Hook Optimization' },
                         { href: '/tools/youtube-shorts-retention-analysis', text: 'Analyze Finished Shorts' },
-                        { href: '/tools/grammarly-for-youtube-shorts', text: 'Pre-Publish Checking' },
                     ]}
                 />
             </SEOPageLayout>

@@ -153,9 +153,10 @@ export default function HookAnalysisPage() {
 
                 <SEOInternalLinks
                     links={[
+                        { href: '/tools/youtube-shorts-analyzer', text: 'YouTube Shorts Analyzer' },
+                        { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
                         { href: '/tools/youtube-shorts-retention-analysis', text: 'Retention Analysis' },
-                        { href: '/tools/youtube-shorts-script-optimization', text: 'Script Optimization' },
-                        { href: '/tools/grammarly-for-youtube-shorts', text: 'Pre-Publish Checking' },
+                        { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
                     ]}
                 />
             </SEOPageLayout>
