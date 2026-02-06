@@ -165,9 +165,10 @@ export default function AIToolPage() {
 
                 <SEOInternalLinks
                     links={[
+                        { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
+                        { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
                         { href: '/tools/youtube-shorts-hook-analysis', text: 'Hook Analysis' },
                         { href: '/tools/youtube-shorts-retention-analysis', text: 'Retention Analysis' },
-                        { href: '/tools/grammarly-for-youtube-shorts', text: 'The Grammarly for Shorts' },
                     ]}
                 />
             </SEOPageLayout>

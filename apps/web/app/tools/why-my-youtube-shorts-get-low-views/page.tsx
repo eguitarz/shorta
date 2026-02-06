@@ -190,10 +190,10 @@ export default function WhyMyShortsGetLowViewsPage() {
                 {/* Internal Links */}
                 <SEOInternalLinks
                     links={[
-                        { href: '/tools/youtube-shorts-analytics-tool', text: 'Get Full Analytics' },
+                        { href: '/tools/youtube-shorts-analyzer', text: 'YouTube Shorts Analyzer' },
+                        { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
                         { href: '/tools/youtube-shorts-hook-analysis', text: 'Focus on Hook Issues' },
-                        { href: '/tools/youtube-shorts-retention-analysis', text: 'Deep Dive on Retention' },
-                        { href: '/tools/grammarly-for-youtube-shorts', text: 'Pre-Publish Checking' },
+                        { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
                     ]}
                 />
             </SEOPageLayout>

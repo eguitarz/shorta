@@ -139,9 +139,10 @@ export default function RetentionAnalysisPage() {
 
                 <SEOInternalLinks
                     links={[
-                        { href: '/tools/youtube-shorts-hook-analysis', text: 'Focus on Hook Analysis' },
-                        { href: '/tools/youtube-shorts-script-optimization', text: 'Script Optimization' },
-                        { href: '/tools/analyze-youtube-shorts', text: 'Full Shorts Analysis' },
+                        { href: '/tools/youtube-shorts-analyzer', text: 'YouTube Shorts Analyzer' },
+                        { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
+                        { href: '/tools/youtube-shorts-hook-analysis', text: 'Hook Analysis' },
+                        { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
                     ]}
                 />
             </SEOPageLayout>
