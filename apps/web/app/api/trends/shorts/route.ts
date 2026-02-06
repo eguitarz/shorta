@@ -320,6 +320,10 @@ export async function GET(request: NextRequest) {
   const cacheKey = `region:${region}:${channelSet}:${limit}:${new Date().toISOString().slice(0, 10)}`;
 
   const kv = getKvNamespace();
+  console.log('Trends cache:', {
+    usingKv: Boolean(kv),
+    cacheKey,
+  });
   if (kv) {
     try {
       const cached = await kv.get(cacheKey, 'json');
