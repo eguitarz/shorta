@@ -282,6 +282,115 @@ export default function DashboardContent() {
             </p>
           </div>
 
+          {/* Action Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+            {/* Create from Topic Card */}
+            <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8">
+              <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider mb-4">
+                <Hammer className="w-4 h-4" />
+                <span>{t('createCard.label')}</span>
+              </div>
+              <h2 className="text-2xl font-semibold mb-3">
+                {t('createCard.title')}
+              </h2>
+              <p className="text-gray-400 mb-6">
+                {t('createCard.description')}
+              </p>
+              <div className="mb-6">
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                    <Lightbulb className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder={t('createCard.placeholder')}
+                    value={topicInput}
+                    onChange={(e) => setTopicInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleCreateStoryboard()}
+                    className="w-full bg-[#0a0a0a] border-gray-800 rounded-xl h-14 pl-12 text-gray-400 placeholder:text-gray-600"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={handleCreateStoryboard}
+                className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-base"
+              >
+                <Hammer className="w-5 h-5 mr-2" />
+                {t('createCard.button')}
+              </Button>
+            </div>
+
+            {/* Analyze Short Card */}
+            <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8">
+              <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider mb-4">
+                <BarChart3 className="w-4 h-4" />
+                <span>{t('analyzeCard.label')}</span>
+              </div>
+              <h2 className="text-2xl font-semibold mb-3">
+                {t('analyzeCard.title')}
+              </h2>
+              <p className="text-gray-400 mb-6">
+                {t('analyzeCard.description')}
+              </p>
+
+              {/* Tab Toggle */}
+              <div className="flex gap-1 p-1 bg-black/50 rounded-lg w-fit mb-4">
+                <button
+                  onClick={() => setAnalyzeMode("url")}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${analyzeMode === "url"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-400 hover:text-white"
+                    }`}
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  {t('analyzeCard.urlTab')}
+                </button>
+                <button
+                  onClick={() => setAnalyzeMode("upload")}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${analyzeMode === "upload"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-400 hover:text-white"
+                    }`}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  {t('analyzeCard.uploadTab')}
+                </button>
+              </div>
+
+              {analyzeMode === "url" ? (
+                <>
+                  <div className="mb-4">
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                        <Link2 className="w-5 h-5 text-gray-500" />
+                      </div>
+                      <Input
+                        type="text"
+                        placeholder={t('analyzeCard.placeholder')}
+                        value={analyzeUrl}
+                        onChange={(e) => setAnalyzeUrl(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && analyzeUrl.trim() && handleAnalyze()}
+                        className="w-full bg-[#0a0a0a] border-gray-800 rounded-xl h-14 pl-12 text-gray-400 placeholder:text-gray-600"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleAnalyze}
+                    disabled={!analyzeUrl.trim()}
+                    className="w-full h-14 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <BarChart3 className="w-5 h-5 mr-2" />
+                    {t('analyzeCard.button')}
+                  </Button>
+                </>
+              ) : (
+                <VideoUpload
+                  onUploadComplete={handleUploadComplete}
+                />
+              )}
+            </div>
+          </div>
+
           {/* Local Viral Trends */}
           <div className="bg-[#141414] border border-gray-800 rounded-2xl p-6 mb-12">
             <div className="flex items-start justify-between gap-4 mb-6">
@@ -416,115 +525,6 @@ export default function DashboardContent() {
                 )}
               </>
             )}
-          </div>
-
-          {/* Action Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-            {/* Create from Topic Card */}
-            <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8">
-              <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider mb-4">
-                <Hammer className="w-4 h-4" />
-                <span>{t('createCard.label')}</span>
-              </div>
-              <h2 className="text-2xl font-semibold mb-3">
-                {t('createCard.title')}
-              </h2>
-              <p className="text-gray-400 mb-6">
-                {t('createCard.description')}
-              </p>
-              <div className="mb-6">
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                    <Lightbulb className="w-5 h-5 text-gray-500" />
-                  </div>
-                  <Input
-                    type="text"
-                    placeholder={t('createCard.placeholder')}
-                    value={topicInput}
-                    onChange={(e) => setTopicInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleCreateStoryboard()}
-                    className="w-full bg-[#0a0a0a] border-gray-800 rounded-xl h-14 pl-12 text-gray-400 placeholder:text-gray-600"
-                  />
-                </div>
-              </div>
-              <Button
-                onClick={handleCreateStoryboard}
-                className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-base"
-              >
-                <Hammer className="w-5 h-5 mr-2" />
-                {t('createCard.button')}
-              </Button>
-            </div>
-
-            {/* Analyze Short Card */}
-            <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8">
-              <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider mb-4">
-                <BarChart3 className="w-4 h-4" />
-                <span>{t('analyzeCard.label')}</span>
-              </div>
-              <h2 className="text-2xl font-semibold mb-3">
-                {t('analyzeCard.title')}
-              </h2>
-              <p className="text-gray-400 mb-6">
-                {t('analyzeCard.description')}
-              </p>
-
-              {/* Tab Toggle */}
-              <div className="flex gap-1 p-1 bg-black/50 rounded-lg w-fit mb-4">
-                <button
-                  onClick={() => setAnalyzeMode("url")}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${analyzeMode === "url"
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-400 hover:text-white"
-                    }`}
-                >
-                  <Link2 className="w-3.5 h-3.5" />
-                  {t('analyzeCard.urlTab')}
-                </button>
-                <button
-                  onClick={() => setAnalyzeMode("upload")}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${analyzeMode === "upload"
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-400 hover:text-white"
-                    }`}
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  {t('analyzeCard.uploadTab')}
-                </button>
-              </div>
-
-              {analyzeMode === "url" ? (
-                <>
-                  <div className="mb-4">
-                    <div className="relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                        <Link2 className="w-5 h-5 text-gray-500" />
-                      </div>
-                      <Input
-                        type="text"
-                        placeholder={t('analyzeCard.placeholder')}
-                        value={analyzeUrl}
-                        onChange={(e) => setAnalyzeUrl(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && analyzeUrl.trim() && handleAnalyze()}
-                        className="w-full bg-[#0a0a0a] border-gray-800 rounded-xl h-14 pl-12 text-gray-400 placeholder:text-gray-600"
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    onClick={handleAnalyze}
-                    disabled={!analyzeUrl.trim()}
-                    className="w-full h-14 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <BarChart3 className="w-5 h-5 mr-2" />
-                    {t('analyzeCard.button')}
-                  </Button>
-                </>
-              ) : (
-                <VideoUpload
-                  onUploadComplete={handleUploadComplete}
-                />
-              )}
-            </div>
           </div>
 
           {/* Recent Activity */}

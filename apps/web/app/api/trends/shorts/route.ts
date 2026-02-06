@@ -75,8 +75,14 @@ type KvNamespace = {
   put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>;
 };
 
+function getCloudflareEnv(): Record<string, any> | null {
+  const context = (globalThis as any)[Symbol.for('__cloudflare-context__')];
+  return context?.env ?? null;
+}
+
 function getKvNamespace(): KvNamespace | null {
-  const kv = (globalThis as any)[CACHE_NAMESPACE] ?? (process.env as any)[CACHE_NAMESPACE];
+  const env = getCloudflareEnv();
+  const kv = env?.[CACHE_NAMESPACE] ?? (globalThis as any)[CACHE_NAMESPACE] ?? (process.env as any)[CACHE_NAMESPACE];
   if (kv && typeof kv.get === 'function' && typeof kv.put === 'function') {
     return kv as KvNamespace;
   }
@@ -320,6 +326,10 @@ export async function GET(request: NextRequest) {
   const cacheKey = `region:${region}:${channelSet}:${limit}:${new Date().toISOString().slice(0, 10)}`;
 
   const kv = getKvNamespace();
+  console.log('Trends cache:', {
+    usingKv: Boolean(kv),
+    cacheKey,
+  });
   if (kv) {
     try {
       const cached = await kv.get(cacheKey, 'json');
