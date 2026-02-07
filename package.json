@@ -12,7 +12,8 @@
     "typecheck": "npm run build --workspace=apps/web",
     "web:dev": "npm run dev --workspace=apps/web",
     "web:build": "npm run build --workspace=apps/web",
-    "web:preview": "npm run preview --workspace=apps/web"
+    "web:preview": "npm run preview --workspace=apps/web",
+    "deploy": "npm run deploy --workspace=apps/web"
   },
   "devDependencies": {},
   "overrides": {
