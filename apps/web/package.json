@@ -10,6 +10,7 @@
     "cf:build": "node scripts/generate-posts-data.mjs && opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare deploy",
+    "deploy": "npm run cf:build && npx wrangler deploy",
     "start": "next start",
     "lint": "next lint"
   },
