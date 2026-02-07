@@ -44,15 +44,17 @@ export function HeroSection() {
           className="mt-10 md:mt-14 max-w-5xl"
         >
           <div className="rounded-xl border border-border overflow-hidden shadow-2xl shadow-primary/5">
-            <img
-              src="/structure_score.png"
-              alt="YouTube Shorts analysis showing hook, structure, content, and delivery scores with beat-by-beat breakdown"
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
               className="w-full"
-            />
+            >
+              <source src="/LandingPage.mp4" type="video/mp4" />
+            </video>
           </div>
-          <p className="text-sm text-muted-foreground mt-3 text-center">
-            Real analysis output — every Short gets a score, retention map, and specific fixes
-          </p>
         </motion.div>
       </div>
     </section>
