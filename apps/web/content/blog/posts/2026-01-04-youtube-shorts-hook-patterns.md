@@ -5,7 +5,7 @@ publishedAt: "2026-01-04"
 author: "Dale Ma"
 categories: ["content-creation", "youtube-shorts", "viral-content"]
 tags: ["hooks", "retention", "engagement", "algorithm"]
-featured: true
+featured: false
 ---
 
 The first 3 seconds of your YouTube Short determine whether viewers stick around or swipe away. After analyzing thousands of viral Shorts, we've identified 14 hook patterns that consistently drive high retention and viral growth.

@@ -11,7 +11,9 @@ import {
     MessageSquare,
     Sparkles,
     FileText,
-    Search
+    Search,
+    Target,
+    Users
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -29,6 +31,20 @@ export const metadata: Metadata = {
 };
 
 const tools = [
+    {
+        slug: 'youtube-niche-analyzer',
+        title: 'YouTube Niche Analyzer',
+        description: 'Confidence-first scoring to validate a niche before you invest.',
+        icon: Target,
+        color: 'text-amber-500',
+    },
+    {
+        slug: 'youtube-channel-analyzer',
+        title: 'YouTube Channel Analyzer',
+        description: 'Snapshot any channel with real cadence, views, and engagement.',
+        icon: Users,
+        color: 'text-blue-500',
+    },
     {
         slug: 'youtube-shorts-analytics-tool',
         title: 'YouTube Shorts Analytics Tool',

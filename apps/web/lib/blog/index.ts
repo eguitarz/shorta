@@ -33,6 +33,7 @@ export interface Category {
 
 // Use pre-generated posts data for Cloudflare Workers compatibility
 const allPosts = postsData;
+const PINNED_RELATED_SLUGS = ['2026-02-07-start-youtube-channel-hands-on-guide'];
 
 export function getAllPosts(): BlogPost[] {
   return allPosts;
@@ -69,10 +70,28 @@ export function getRelatedPosts(post: BlogPost, limit = 3): BlogPost[] {
     return { post: p, score };
   });
 
-  return scored
+  const pinnedPosts = PINNED_RELATED_SLUGS
+    .filter(slug => slug !== post.slug)
+    .map(slug => filtered.find(p => p.slug === slug))
+    .filter((p): p is BlogPost => Boolean(p));
+
+  const scoredWithoutPinned = scored
+    .filter(item => !PINNED_RELATED_SLUGS.includes(item.post.slug))
     .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map(s => s.post);
+    .map(item => item.post);
+
+  const combined = [...pinnedPosts, ...scoredWithoutPinned];
+  const unique: BlogPost[] = [];
+  const seen = new Set<string>();
+
+  for (const item of combined) {
+    if (seen.has(item.slug)) continue;
+    unique.push(item);
+    seen.add(item.slug);
+    if (unique.length >= limit) break;
+  }
+
+  return unique;
 }
 
 export function getAllCategories(): Category[] {
