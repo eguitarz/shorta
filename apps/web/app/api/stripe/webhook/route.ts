@@ -160,12 +160,24 @@ export async function POST(req: NextRequest) {
         }
 
         const matchedUser = authUsers?.find(u => u.email === userEmail);
-        if (!matchedUser) {
-            console.error(`Webhook Error: Supabase auth user not found for email ${userEmail}`);
-            return new NextResponse('Webhook Error: Supabase user not found', { status: 404 });
+        if (matchedUser) {
+          userId = matchedUser.id;
+          console.log(`User identified by email: ${userId}`);
+        } else {
+          // No existing account — create one so they can sign in with Google OAuth later
+          const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+            email: userEmail,
+            email_confirm: true,
+          });
+
+          if (createError || !newUser?.user) {
+            console.error(`Webhook Error: Failed to create user for email ${userEmail}:`, createError);
+            return new NextResponse('Webhook Error: User creation failed', { status: 500 });
+          }
+
+          userId = newUser.user.id;
+          console.log(`Created new user for email ${userEmail}: ${userId}`);
         }
-        userId = matchedUser.id;
-        console.log(`User identified by email: ${userId}`);
       }
 
       if (!userId) {
