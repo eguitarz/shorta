@@ -66,43 +66,55 @@ export async function GET(request: NextRequest) {
     // Authenticated user - check user_profiles
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('tier, analyses_used, analyses_limit')
+      .select('tier, credits, credits_cap')
       .eq('user_id', user.id)
       .single();
 
     if (!profile) {
-      // Profile doesn't exist yet (shouldn't happen with trigger, but defensive)
-      // Default to free tier
       return NextResponse.json({
         tier: 'free',
-        analyses_used: 0,
-        analyses_limit: 3,
-        analyses_remaining: 3,
-        can_analyze: true,
+        credits: 0,
+        credits_cap: 0,
+        can_analyze: false,
+        can_create_storyboard: false,
       });
     }
 
-    // Paid users - credit system to be implemented
-    if (profile.tier === 'founder' || profile.tier === 'lifetime') {
+    // Founders have unlimited credits
+    if (profile.tier === 'founder') {
       return NextResponse.json({
         tier: profile.tier,
-        analyses_used: profile.analyses_used,
-        analyses_limit: -1, // -1 indicates unlimited (will be replaced with credit system)
-        analyses_remaining: -1,
+        credits: null,
+        credits_cap: null,
         can_analyze: true,
+        can_create_storyboard: true,
       });
     }
 
-    // Free tier users have limit
-    const analysesRemaining = Math.max(0, profile.analyses_limit - profile.analyses_used);
-    const canAnalyze = profile.analyses_used < profile.analyses_limit;
+    // Lifetime and paid tiers use credits
+    if (['lifetime', 'hobby', 'pro', 'producer'].includes(profile.tier)) {
+      const credits = profile.credits ?? 0;
+      const creditsCap = profile.credits_cap ?? 0;
+      const storyboardCost = 100;
 
+      return NextResponse.json({
+        tier: profile.tier,
+        credits,
+        credits_cap: creditsCap,
+        can_analyze: credits >= storyboardCost,
+        can_create_storyboard: credits >= storyboardCost,
+      });
+    }
+
+    // Free tier - one-time 300 credits, no monthly reset
+    const freeCredits = profile.credits ?? 0;
+    const storyboardCost = 100;
     return NextResponse.json({
       tier: profile.tier,
-      analyses_used: profile.analyses_used,
-      analyses_limit: profile.analyses_limit,
-      analyses_remaining: analysesRemaining,
-      can_analyze: canAnalyze,
+      credits: freeCredits,
+      credits_cap: 0,
+      can_analyze: freeCredits >= storyboardCost,
+      can_create_storyboard: freeCredits >= storyboardCost,
     });
 
   } catch (error) {

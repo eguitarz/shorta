@@ -2,7 +2,7 @@
 
 import { Section, SectionTitle } from "@/components/Section";
 import { Button } from "@/components/ui/button";
-import { redirectToCheckout } from "@/lib/stripe";
+import Link from "next/link";
 
 export function HookAnalysis() {
   return (
@@ -214,8 +214,8 @@ export function HookAnalysis() {
 
         {/* CTA */}
         <div className="flex justify-center mt-12">
-          <Button variant="hero" size="lg" onClick={() => redirectToCheckout()}>
-            Join as a Founding Member
+          <Button variant="hero" size="lg" asChild>
+            <Link href="/pricing">View Plans</Link>
           </Button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 interface UsageLimitBannerProps {
-  tier: 'anonymous' | 'free' | 'founder' | 'lifetime';
+  tier: 'anonymous' | 'free' | 'founder' | 'lifetime' | 'hobby' | 'pro' | 'producer';
   remaining: number;
 }
 
@@ -11,7 +11,7 @@ interface UsageLimitBannerProps {
  */
 export function UsageLimitBanner({ tier, remaining }: UsageLimitBannerProps) {
   // Don't show banner for paid users
-  if (tier === 'founder' || tier === 'lifetime') {
+  if (tier === 'founder' || tier === 'lifetime' || tier === 'hobby' || tier === 'pro' || tier === 'producer') {
     return null;
   }
 

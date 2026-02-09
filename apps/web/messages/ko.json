@@ -694,7 +694,10 @@
     "anonymous": "체험판",
     "free": "무료",
     "founder": "창립 멤버",
-    "lifetime": "평생"
+    "lifetime": "평생",
+    "hobby": "취미",
+    "pro": "프로",
+    "producer": "프로듀서"
   },
   "time": {
     "year": "{count}년 전",

@@ -708,7 +708,10 @@
     "anonymous": "Trial",
     "free": "Free",
     "founder": "Founding Member",
-    "lifetime": "Lifetime"
+    "lifetime": "Lifetime",
+    "hobby": "Hobby",
+    "pro": "Pro",
+    "producer": "Producer"
   },
   "sharedAnalysis": {
     "readOnly": "This is a shared analysis - Read-only view",
