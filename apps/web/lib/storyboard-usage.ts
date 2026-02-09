@@ -4,8 +4,7 @@ const STORYBOARD_COST = 100; // Define the cost of a storyboard in credits
 
 /**
  * Checks if a user has enough credits to create a storyboard.
- * This is intended for client-side checks to update the UI.
- * It also returns true for legacy users with unlimited plans.
+ * All tiers (including founder/lifetime) use credits.
  *
  * @returns {Promise<boolean>} - True if the user can create a storyboard.
  */
@@ -21,12 +20,11 @@ export async function hasSufficientCreditsForStoryboard(
 
   if (error || !profile) {
     console.error('[Credit Check] Failed to get user profile:', error);
-    // Fail open to not block UI, the server-side check will be the source of truth
-    return true;
+    return false;
   }
 
-  // Legacy users have unlimited credits
-  if (profile.tier === 'founder' || profile.tier === 'lifetime') {
+  // Founders have unlimited credits
+  if (profile.tier === 'founder') {
     return true;
   }
 

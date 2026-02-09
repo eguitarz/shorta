@@ -7,7 +7,7 @@ import { createServiceClient } from '@/lib/supabase-service';
 
 // Initialize Stripe with the secret key from environment variables
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16', // It's a good practice to pin the API version
+  apiVersion: '2026-01-28.clover',
 });
 
 // Get the webhook secret from environment variables for signature verification
@@ -58,7 +58,7 @@ const priceIdToPlanMap = {
  */
 export async function POST(req: NextRequest) {
   const body = await req.text();
-  const signature = headers().get('stripe-signature')!;
+  const signature = (await headers()).get('stripe-signature')!;
 
   let event: Stripe.Event;
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     case 'invoice.paid': {
       const session = event.data.object as Stripe.Checkout.Session | Stripe.Invoice;
       const customerId = session.customer as string;
-      const subscriptionId = session.subscription as string;
+      const subscriptionId = ('subscription' in session ? session.subscription : null) as string;
 
       if (!subscriptionId) {
         console.warn(`Webhook received ${event.type} without a subscription ID.`);
@@ -152,13 +152,19 @@ export async function POST(req: NextRequest) {
         }
         
         // Find user by email in auth.users
-        const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserByEmail(userEmail);
+        const { data: { users: authUsers }, error: authUserError } = await supabase.auth.admin.listUsers();
 
-        if (authUserError || !authUser?.user) {
-            console.error(`Webhook Error: Supabase auth user not found for email ${userEmail}:`, authUserError);
+        if (authUserError) {
+            console.error(`Webhook Error: Failed to list users for email ${userEmail}:`, authUserError);
+            return new NextResponse('Webhook Error: Supabase user lookup failed', { status: 500 });
+        }
+
+        const matchedUser = authUsers?.find(u => u.email === userEmail);
+        if (!matchedUser) {
+            console.error(`Webhook Error: Supabase auth user not found for email ${userEmail}`);
             return new NextResponse('Webhook Error: Supabase user not found', { status: 404 });
         }
-        userId = authUser.user.id;
+        userId = matchedUser.id;
         console.log(`User identified by email: ${userId}`);
       }
 

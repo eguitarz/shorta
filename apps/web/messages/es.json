@@ -702,7 +702,10 @@
     "anonymous": "Prueba",
     "free": "Gratis",
     "founder": "Miembro Fundador",
-    "lifetime": "Miembro Vitalicio"
+    "lifetime": "Miembro Vitalicio",
+    "hobby": "Hobby",
+    "pro": "Pro",
+    "producer": "Productor"
   },
   "time": {
     "year": "hace {count} año",

@@ -31,6 +31,11 @@ BEGIN
   WHERE user_id = p_user_id
   FOR UPDATE;
 
+  -- Founders have unlimited credits
+  IF v_tier = 'founder' THEN
+    RETURN;
+  END IF;
+
   -- Check if the user has enough credits to perform the action
   IF v_current_credits < p_amount THEN
     RAISE EXCEPTION 'insufficient_credits';
