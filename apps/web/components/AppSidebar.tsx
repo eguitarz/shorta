@@ -27,11 +27,10 @@ interface AppSidebarProps {
 }
 
 interface UsageData {
-  tier: 'anonymous' | 'free' | 'founder' | 'lifetime';
-  storyboards_used?: number;
-  storyboards_limit?: number;
-  storyboards_remaining?: number;
-  storyboards_reset_at?: string;
+  tier: 'anonymous' | 'free' | 'founder' | 'lifetime' | 'hobby' | 'pro' | 'producer';
+  credits?: number | null;
+  credits_cap?: number | null;
+  can_create_storyboard?: boolean;
 }
 
 function CollapseButton() {
@@ -144,29 +143,35 @@ export function AppSidebar({ user }: AppSidebarProps) {
           </div>
         )}
 
-        {/* Storyboard credits - show for paid tiers */}
-        {usageData && (usageData.tier === 'founder' || usageData.tier === 'lifetime') && usageData.storyboards_limit != null && (
+        {/* Unlimited badge for founders */}
+        {usageData && usageData.tier === 'founder' && (
+          <div className="mb-4 group-data-[collapsible=icon]:hidden">
+            <span className="text-xs text-gray-500 uppercase tracking-wider">
+              Unlimited access
+            </span>
+          </div>
+        )}
+
+        {/* Credits display - show for free, lifetime and paid tiers */}
+        {usageData && ['free', 'lifetime', 'hobby', 'pro', 'producer'].includes(usageData.tier) && usageData.credits != null && (
           <div className="mb-4 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-500 uppercase tracking-wider">
-                Storyboards
+                Credits
               </span>
               <span className="text-sm font-semibold text-white">
-                {(usageData.storyboards_limit! - (usageData.storyboards_used ?? 0))} left
+                {usageData.credits}
               </span>
             </div>
-            <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-orange-500 rounded-full"
-                style={{
-                  width: `${((usageData.storyboards_limit! - (usageData.storyboards_used ?? 0)) / usageData.storyboards_limit!) * 100}%`
-                }}
-              />
-            </div>
-            {usageData.storyboards_reset_at && (
-              <p className="text-xs text-gray-500 mt-1">
-                Resets {new Date(usageData.storyboards_reset_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
+            {usageData.credits_cap != null && usageData.credits_cap > 0 && (
+              <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 rounded-full"
+                  style={{
+                    width: `${Math.min(100, (usageData.credits / usageData.credits_cap) * 100)}%`
+                  }}
+                />
+              </div>
             )}
           </div>
         )}

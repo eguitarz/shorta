@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getLanguageName } from '@/lib/i18n-helpers';
-import { checkStoryboardLimit, incrementStoryboardUsage } from '@/lib/storyboard-usage';
+import { hasSufficientCreditsForStoryboard, chargeUserForStoryboard } from '@/lib/storyboard-usage';
 
 export const dynamic = 'force-dynamic';
 
@@ -148,16 +148,13 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // Check storyboard usage limit
-    const usage = await checkStoryboardLimit(supabase, user.id);
-    if (!usage.canCreate) {
+    // Check if user has enough credits
+    const hasCredits = await hasSufficientCreditsForStoryboard(supabase, user.id);
+    if (!hasCredits) {
       return NextResponse.json(
         {
-          error: 'Monthly limit reached',
-          message: `You've used all ${usage.limit} credits this month. Resets on ${new Date(usage.resetAt!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.`,
-          storyboards_used: usage.used,
-          storyboards_limit: usage.limit,
-          storyboards_reset_at: usage.resetAt,
+          error: 'Insufficient credits',
+          message: 'You don\'t have enough credits to create a storyboard. Please upgrade your plan.',
         },
         { status: 403 }
       );
@@ -275,8 +272,15 @@ export async function POST(request: NextRequest) {
     const storyboardId = savedStoryboard?.id;
     console.log('Saved created storyboard with ID:', storyboardId);
 
-    // Increment storyboard usage after successful generation
-    await incrementStoryboardUsage(supabase, user.id);
+    // Charge credits after successful generation
+    const { error: chargeError } = await chargeUserForStoryboard(supabase, user.id);
+    if (chargeError) {
+      console.error('Failed to charge credits:', chargeError);
+      return NextResponse.json(
+        { error: 'Failed to process credits. Please try again.' },
+        { status: 402 }
+      );
+    }
 
     return NextResponse.json({
       id: storyboardId,

@@ -23,7 +23,7 @@ CHECK (tier IN (
 -- Step 3: Add new columns for the credit-based system.
 -- This replaces the old 'analyses_used' and 'analyses_limit' columns removed in migration 018.
 ALTER TABLE public.user_profiles
-ADD COLUMN IF NOT EXISTS credits INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS credits INTEGER NOT NULL DEFAULT 300,
 ADD COLUMN IF NOT EXISTS credits_cap INTEGER NOT NULL DEFAULT 0;
 
 -- Step 4: Add comments for documentation purposes.

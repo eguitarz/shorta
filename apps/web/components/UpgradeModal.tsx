@@ -7,7 +7,7 @@ interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   feature: string;
-  tier: 'anonymous' | 'free';
+  tier: 'anonymous' | 'free' | 'founder' | 'lifetime' | 'hobby' | 'pro' | 'producer';
 }
 
 /**
