@@ -304,7 +304,7 @@ async function fetchRecentVideos(playlistId: string, apiKey: string): Promise<Vi
   );
 
   return items.map((item: any) => {
-    const stats = statsMap.get(item.contentDetails.videoId);
+    const stats: any = statsMap.get(item.contentDetails.videoId);
     const duration = stats?.contentDetails?.duration || 'PT0S';
     return {
       id: item.contentDetails.videoId,
