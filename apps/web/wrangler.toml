@@ -18,8 +18,21 @@ binding = "ASSETS"
 NEXT_PUBLIC_APP_URL = "https://shorta.ai"
 NEXT_PUBLIC_SUPABASE_URL = "https://dylimplqplexlbyqvhhk.supabase.co"
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_1Q0JmK2vk09_azKYuV6Xvg_Bl10k3u_"
-# Stripe payment links are now hardcoded in lib/stripe.ts
-# NEXT_PUBLIC_STRIPE_PAYMENT_LINK = "deprecated"
+# Stripe Payment Links
+NEXT_PUBLIC_STRIPE_HOBBY_YEARLY_PAYMENT_LINK = "https://buy.stripe.com/aFafYY0ES6d93AJ9P90kE03"
+NEXT_PUBLIC_STRIPE_HOBBY_MONTHLY_PAYMENT_LINK = "https://buy.stripe.com/eVq9AA4V88lh4EN3qL0kE04"
+NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PAYMENT_LINK = "https://buy.stripe.com/4gM28887katpgnv4uP0kE05"
+NEXT_PUBLIC_STRIPE_PRO_YEARLY_PAYMENT_LINK = "https://buy.stripe.com/8x21449bo5951sB3qL0kE06"
+NEXT_PUBLIC_STRIPE_PRODUCER_MONTHLY_PAYMENT_LINK = "https://buy.stripe.com/8x26oocnA5955IRd1l0kE07"
+NEXT_PUBLIC_STRIPE_PRODUCER_YEARLY_PAYMENT_LINK = "https://buy.stripe.com/bJe9AAafscBx1sBaTd0kE08"
+
+# Stripe Price IDs (used by webhook to map payments to tiers)
+STRIPE_HOBBY_MONTHLY_PRICE_ID = "price_0SyyHh3ieIhLaR2RPw3sRkxp"
+STRIPE_HOBBY_YEARLY_PRICE_ID = "price_0SyyJ23ieIhLaR2RDHW5xV6f"
+STRIPE_PRO_MONTHLY_PRICE_ID = "price_0SyyJi3ieIhLaR2RaV7y2TTO"
+STRIPE_PRO_YEARLY_PRICE_ID = "price_0SyyK73ieIhLaR2ReVBdNVsV"
+STRIPE_PRODUCER_MONTHLY_PRICE_ID = "price_0SyyKn3ieIhLaR2RtEyI7ml6"
+STRIPE_PRODUCER_YEARLY_PRICE_ID = "price_0SyyLD3ieIhLaR2ROSDAMIyZ"
 NEXT_PUBLIC_POSTHOG_KEY = "phc_f07AXjLIJZeWKaCuCLeAdZiIcIPhJk4Rzm9RcsRx81L"
 NEXT_PUBLIC_POSTHOG_HOST = "https://us.i.posthog.com"
 

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getLanguageName } from '@/lib/i18n-helpers';
+import { hasSufficientCreditsForStoryboard, chargeUserForStoryboard } from '@/lib/storyboard-usage';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,6 +125,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create Supabase client (needed for usage check and save)
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // API route - ignore cookie setting errors
+            }
+          },
+        },
+      }
+    );
+
+    // Check if user has enough credits
+    const hasCredits = await hasSufficientCreditsForStoryboard(supabase, user.id);
+    if (!hasCredits) {
+      return NextResponse.json(
+        {
+          error: 'Insufficient credits',
+          message: 'You don\'t have enough credits to create a storyboard. Please upgrade your plan.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Create LLM client
     const env: LLMEnv = {
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
@@ -186,28 +222,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to database
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
-            } catch {
-              // API route - ignore cookie setting errors
-            }
-          },
-        },
-      }
-    );
-
     const overview = storyboard.overview;
     const title = overview?.title || input.topic || 'Untitled Storyboard';
 
@@ -257,6 +271,16 @@ export async function POST(request: NextRequest) {
 
     const storyboardId = savedStoryboard?.id;
     console.log('Saved created storyboard with ID:', storyboardId);
+
+    // Charge credits after successful generation
+    const { error: chargeError } = await chargeUserForStoryboard(supabase, user.id);
+    if (chargeError) {
+      console.error('Failed to charge credits:', chargeError);
+      return NextResponse.json(
+        { error: 'Failed to process credits. Please try again.' },
+        { status: 402 }
+      );
+    }
 
     return NextResponse.json({
       id: storyboardId,

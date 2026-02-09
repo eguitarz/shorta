@@ -27,9 +27,10 @@ interface AppSidebarProps {
 }
 
 interface UsageData {
-  tier: 'anonymous' | 'free' | 'founder' | 'lifetime';
-  analyses_remaining: number;
-  analyses_limit: number;
+  tier: 'anonymous' | 'free' | 'founder' | 'lifetime' | 'hobby' | 'pro' | 'producer';
+  credits?: number | null;
+  credits_cap?: number | null;
+  can_create_storyboard?: boolean;
 }
 
 function CollapseButton() {
@@ -60,13 +61,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const initials = user.email?.split("@")[0].slice(0, 2).toUpperCase() || "JD";
 
-  // Fetch usage data
+  // Fetch usage data on mount and when navigating (e.g. after creating a storyboard)
   useEffect(() => {
     fetch('/api/usage/check')
       .then(res => res.json())
       .then(data => setUsageData(data))
       .catch(console.error);
-  }, []);
+  }, [pathname]);
 
   const navItems = [
     { name: t('home'), icon: Home, path: "/home" },
@@ -130,31 +131,48 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <LanguageSwitcher variant="compact" />
         </div>
 
-        {/* Credits section - only show for free/anonymous tiers, hidden when collapsed */}
+        {/* Upgrade prompt for free/anonymous tiers, hidden when collapsed */}
         {usageData && (usageData.tier === 'free' || usageData.tier === 'anonymous') && (
           <div className="mb-4 group-data-[collapsible=icon]:hidden">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-500 uppercase tracking-wider">
-                {tCommon('analyses')}
-              </span>
-              <span className="text-sm font-semibold text-white">
-                {tCommon('analysesRemaining', { remaining: usageData.analyses_remaining, limit: usageData.analyses_limit })}
-              </span>
-            </div>
-            <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-orange-500 rounded-full"
-                style={{
-                  width: `${(usageData.analyses_remaining / usageData.analyses_limit) * 100}%`
-                }}
-              />
-            </div>
             <Link
               href="/pricing"
-              className="block text-sm text-orange-500 hover:text-orange-400 font-medium mt-2"
+              className="block text-sm text-orange-500 hover:text-orange-400 font-medium"
             >
               {tCommon('upgrade')}
             </Link>
+          </div>
+        )}
+
+        {/* Unlimited badge for founders */}
+        {usageData && usageData.tier === 'founder' && (
+          <div className="mb-4 group-data-[collapsible=icon]:hidden">
+            <span className="text-xs text-gray-500 uppercase tracking-wider">
+              Unlimited access
+            </span>
+          </div>
+        )}
+
+        {/* Credits display - show for free, lifetime and paid tiers */}
+        {usageData && ['free', 'lifetime', 'hobby', 'pro', 'producer'].includes(usageData.tier) && usageData.credits != null && (
+          <div className="mb-4 group-data-[collapsible=icon]:hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-gray-500 uppercase tracking-wider">
+                Credits
+              </span>
+              <span className="text-sm font-semibold text-white">
+                {usageData.credits}
+              </span>
+            </div>
+            {usageData.credits_cap != null && usageData.credits_cap > 0 && (
+              <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 rounded-full"
+                  style={{
+                    width: `${Math.min(100, (usageData.credits / usageData.credits_cap) * 100)}%`
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
 

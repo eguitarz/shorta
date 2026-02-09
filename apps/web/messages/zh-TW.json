@@ -708,7 +708,10 @@
     "anonymous": "試用版",
     "free": "免費",
     "founder": "創始會員",
-    "lifetime": "終身"
+    "lifetime": "終身",
+    "hobby": "愛好者",
+    "pro": "專業版",
+    "producer": "製作人"
   },
   "time": {
     "year": "{count} 年前",
