@@ -68,7 +68,6 @@ const formatRelativeTime = (dateString: string): string => {
 
 export function ReferenceVideoPickerModal({ isOpen, onClose, onSelect }: ReferenceVideoPickerModalProps) {
     const t = useTranslations('analyzer.referencePicker');
-    const tAnalyzer = useTranslations('analyzer');
 
     const [activeTab, setActiveTab] = useState<'starred' | 'all'>('starred');
     const [videos, setVideos] = useState<LibraryItem[]>([]);
@@ -347,7 +346,7 @@ export function ReferenceVideoPickerModal({ isOpen, onClose, onSelect }: Referen
                                                 grade.color === 'red' ? 'text-red-500' :
                                                 'text-gray-500'
                                             }`}>
-                                                {tAnalyzer(`grades.letters.${grade.label as any}`)}
+                                                {grade.label}
                                             </span>
                                         </div>
                                     </button>
