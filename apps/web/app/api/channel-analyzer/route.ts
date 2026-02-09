@@ -299,7 +299,7 @@ async function fetchRecentVideos(playlistId: string, apiKey: string): Promise<Vi
   }
 
   const statsData = await statsResponse.json();
-  const statsMap = new Map(
+  const statsMap = new Map<string, any>(
     (statsData.items || []).map((item: any) => [item.id, item])
   );
 
