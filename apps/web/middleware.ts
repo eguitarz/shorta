@@ -90,6 +90,24 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Track last visit time (throttled to once per 5 minutes via cookie)
+  if (user && !request.cookies.get('_visit_tracked')) {
+    supabaseResponse.cookies.set('_visit_tracked', '1', {
+      maxAge: 300, // 5 minutes
+      httpOnly: true,
+      sameSite: 'lax',
+    });
+    const { error: visitError } = await supabase
+      .from('user_profiles')
+      .update({ last_visited_at: new Date().toISOString() })
+      .eq('user_id', user.id);
+    if (visitError) {
+      console.error('Failed to update last_visited_at:', visitError.message);
+    } else {
+      console.log('Updated last_visited_at for user:', user.id);
+    }
+  }
+
   // Protect /home route - redirect to login if not authenticated
   if (request.nextUrl.pathname.startsWith('/home') && !user) {
     const url = request.nextUrl.clone();
