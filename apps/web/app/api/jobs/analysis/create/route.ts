@@ -193,6 +193,9 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Extract YouTube video ID for channel video matching
+      const youtubeVideoId = videoUrl ? extractYouTubeId(videoUrl) : null;
+
       const { data: job, error: jobError } = await supabase
         .from('analysis_jobs')
         .insert({
@@ -200,6 +203,7 @@ export async function POST(request: NextRequest) {
           video_url: videoUrl,
           file_uri: videoFileUri,
           video_duration: videoDuration,
+          youtube_video_id: youtubeVideoId,
           status: 'pending',
           current_step: 0,
           is_anonymous: true,
@@ -296,6 +300,9 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Extract YouTube video ID for channel video matching
+      const youtubeVideoId = videoUrl ? extractYouTubeId(videoUrl) : null;
+
       const { data: job, error: jobError } = await supabase
         .from('analysis_jobs')
         .insert({
@@ -303,6 +310,7 @@ export async function POST(request: NextRequest) {
           video_url: videoUrl,
           file_uri: videoFileUri,
           video_duration: videoDuration,
+          youtube_video_id: youtubeVideoId,
           status: 'pending',
           current_step: 0,
         })

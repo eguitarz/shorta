@@ -18,6 +18,10 @@
     "joinAsMember": "창립 멤버로 가입하기",
     "noCreditCard": "신용카드 불필요 · 로그인 불필요",
     "pricing": "연 $99 또는 평생 $199",
+    "connectYouTube": "유튜브 연결",
+    "channelConnected": "채널 연결됨",
+    "notConnected": "연결 안 됨",
+    "reconnectNeeded": "재연결 필요",
     "yes": "네",
     "pricingLimited": "연 $99 또는 평생 $199 · 한정 좌석",
     "upgrade": "플랜 업그레이드",
@@ -28,7 +32,8 @@
     "home": "홈",
     "analyzer": "분석기",
     "draft": "초안",
-    "library": "라이브러리"
+    "library": "라이브러리",
+    "channel": "내 채널"
   },
   "landing": {
     "hero": {
@@ -123,6 +128,23 @@
       "loading": "활동 불러오는 중...",
       "empty": "최근 활동이 없습니다. 비디오 분석을 시작해보세요!",
       "useAsReference": "참조로 사용"
+    },
+    "youtubeConnect": {
+      "label": "유튜브 연결",
+      "title": "채널 연결하기",
+      "description": "동영상을 가져오고, 니치를 감지하고, 분석된 쇼츠를 확인하세요.",
+      "connectButton": "유튜브 채널 연결",
+      "connected": "연결됨",
+      "subscribers": "구독자",
+      "videos": "동영상",
+      "lastSync": "마지막 동기화",
+      "disconnect": "연결 해제",
+      "disconnectConfirm": "채널 연결을 해제하시겠습니까?",
+      "yes": "예",
+      "no": "아니요",
+      "needsReauth": "유튜브 연결을 새로고침해야 합니다. 다시 연결해 주세요.",
+      "reconnect": "재연결",
+      "connectionError": "유튜브 연결에 실패했습니다. 다시 시도해 주세요."
     },
     "trends": {
       "label": "인기 쇼츠",
@@ -479,6 +501,18 @@
       "starHint": "라이브러리에서 영상을 즐겨찾기하면 여기에 표시됩니다",
       "tryAgain": "다시 시도"
     },
+    "retentionCurve": {
+      "title": "시청자 유지율",
+      "subtitle": "시청자가 이탈하는 구간",
+      "watchRatio": "시청 중",
+      "relativePerformance": "유사 영상 대비",
+      "atTime": "{time} 시점",
+      "beat": "비트 {number}",
+      "refresh": "새로고침",
+      "stale": "만료됨",
+      "aboveAverage": "평균 이상",
+      "belowAverage": "평균 이하"
+    },
     "create": {
       "title": "쇼츠 분석 만들기",
       "subtitle": "YouTube URL을 입력하거나 비디오를 업로드하여 AI로 분석하세요",
@@ -726,6 +760,85 @@
       "reason1": "분석 결과가 아직 공유되지 않았습니다",
       "reason2": "링크가 잘못되었거나 만료되었습니다",
       "reason3": "데이터베이스 마이그레이션이 필요할 수 있습니다"
+    }
+  },
+  "channel": {
+    "title": "내 채널",
+    "loading": "채널 데이터 로딩 중...",
+    "connectTitle": "YouTube 채널 연결하기",
+    "connectDescription": "YouTube 채널을 연결하여 구독자 성장, 조회수 추세, AI 기반 니치 분석을 확인하세요.",
+    "connectButton": "YouTube 연결",
+    "subscribers": "구독자",
+    "lastSync": "마지막 동기화:",
+    "syncNow": "지금 동기화",
+    "syncing": "동기화 중...",
+    "notEnoughData": "주간 비교를 위한 데이터가 충분하지 않습니다",
+    "notEnoughDataHint": "7일간의 스냅샷이 수집된 후 다시 확인하세요.",
+    "nicheAnalysis": "니치 분석",
+    "confidence": "신뢰도",
+    "secondaryNiches": "보조 니치",
+    "targetAudience": "타겟 시청자",
+    "format": "포맷",
+    "contentThemes": "콘텐츠 테마",
+    "reasoning": "AI 분석 근거",
+    "nicheEmpty": {
+      "title": "쇼츠 3개 업로드 시 니치 분석 활성화",
+      "description": "채널에 쇼츠를 3개 이상 업로드하세요 — AI가 콘텐츠를 분석하여 니치, 시청자, 스타일을 파악합니다.",
+      "blogLink": "가이드: 유튜브 채널 시작하기"
+    },
+    "channelStats": "채널 통계",
+    "metrics": {
+      "subscribers": "구독자",
+      "totalViews": "총 조회수",
+      "avgShortViews": "평균 쇼츠 조회수",
+      "engagementRate": "참여율"
+    },
+    "topShorts": "인기 쇼츠",
+    "readyToAnalyze": "분석 대기 중",
+    "analyzeButton": "분석",
+    "privateVideo": "비공개",
+    "privateVideoTooltip": "분석할 수 없습니다 — 공개 영상만 분석 가능합니다",
+    "growthChart": "성장 추세",
+    "growthChartEmpty": "데이터 수집 며칠 후 성장 차트가 표시됩니다.",
+    "stats": {
+      "totalVideos": "전체 영상",
+      "shorts": "쇼츠",
+      "analyzed": "분석 완료"
+    },
+    "retention": {
+      "title": "리텐션 개요",
+      "noDataYet": "YouTube Analytics와 동기화하면 리텐션 데이터가 표시됩니다.",
+      "avgCompletionRate": "평균 시청 완료율",
+      "acrossShorts": "{count}개 Shorts 기준",
+      "bestPerforming": "최고 리텐션",
+      "lowestPerforming": "최저 리텐션",
+      "completionTooltip": "시청자가 영상을 평균적으로 시청한 비율. 높을수록 끝까지 시청한 비율이 높습니다.",
+      "avgDuration": "평균 시청: {seconds}초"
+    },
+    "monetization": {
+      "title": "수익화 리뷰",
+      "marketSize": "시장 규모",
+      "competition": "경쟁도",
+      "growthPotential": "성장 잠재력",
+      "revenueEstimate": "수익 추정",
+      "cpmRange": "CPM 범위",
+      "monthlyRevenue": "예상 월 수익",
+      "strategies": "수익화 전략",
+      "recommendation": "추천",
+      "nicheAdvice": "니치 조언",
+      "levels": {
+        "small": "소규모",
+        "medium": "중간",
+        "large": "대규모",
+        "massive": "초대형",
+        "low": "낮음",
+        "high": "높음",
+        "saturated": "포화",
+        "declining": "하락세",
+        "stable": "안정",
+        "growing": "성장세",
+        "explosive": "폭발적"
+      }
     }
   }
 }

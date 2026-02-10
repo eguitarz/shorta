@@ -10,11 +10,13 @@ import {
   ArrowUp,
   ArrowDown,
   ChevronRight,
+  ChevronLeft,
   BarChart3,
   X,
   RotateCcw,
   GripVertical,
   Sparkles,
+  Play,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -67,11 +69,14 @@ const ALL_COLUMNS = {
   delivery_ls: { label: "Volume", group: "Delivery Details", defaultVisible: false },
   delivery_ns: { label: "Audio Quality", group: "Delivery Details", defaultVisible: false },
   delivery_ec: { label: "Energy Curve", group: "Delivery Details", defaultVisible: false },
+  // YouTube stats
+  youtube_view_count: { label: "YT Views", group: "YouTube", defaultVisible: false },
+  youtube_like_count: { label: "YT Likes", group: "YouTube", defaultVisible: false },
 } as const;
 
 type ColumnKey = keyof typeof ALL_COLUMNS;
 
-const COLUMN_GROUPS = ["Basic", "Scores", "Metadata", "Hook Details", "Structure Details", "Clarity Details", "Delivery Details"];
+const COLUMN_GROUPS = ["Basic", "Scores", "Metadata", "Hook Details", "Structure Details", "Clarity Details", "Delivery Details", "YouTube"];
 
 const STORAGE_KEY = "library-column-preferences";
 
@@ -139,6 +144,7 @@ interface LibraryItem {
   id: string;
   title: string | null;
   video_url: string | null;
+  file_uri: string | null;
   video_duration: number | null;
   created_at: string;
   starred: boolean;
@@ -171,6 +177,14 @@ interface LibraryItem {
   delivery_ls: number | null;
   delivery_ns: number | null;
   delivery_ec: boolean | null;
+  // YouTube fields (present when source includes own videos)
+  is_own_video?: boolean;
+  youtube_video_id?: string;
+  youtube_view_count?: number | null;
+  youtube_like_count?: number | null;
+  analysis_status?: 'analyzed' | 'unanalyzed';
+  thumbnail_url?: string | null;
+  privacy_status?: 'public' | 'unlisted' | 'private';
 }
 
 interface FilterCount {
@@ -184,6 +198,38 @@ interface FilterOptions {
   contentTypes: FilterCount[];
   formats: FilterCount[];
   counts: { total: number; starred: number };
+}
+
+function getThumbnailUrl(item: LibraryItem): string | null {
+  // Use existing thumbnail_url from channel_videos
+  if (item.thumbnail_url) return item.thumbnail_url;
+
+  // Extract video ID from youtube_video_id field
+  if (item.youtube_video_id) {
+    return `https://i.ytimg.com/vi/${item.youtube_video_id}/mqdefault.jpg`;
+  }
+
+  // Try to extract video ID from video_url
+  if (item.video_url) {
+    const url = item.video_url;
+    let videoId: string | null = null;
+
+    // youtube.com/shorts/VIDEO_ID
+    const shortsMatch = url.match(/\/shorts\/([a-zA-Z0-9_-]+)/);
+    if (shortsMatch) videoId = shortsMatch[1];
+
+    // youtu.be/VIDEO_ID or youtube.com/watch?v=VIDEO_ID
+    if (!videoId) {
+      const standardMatch = url.match(/(?:youtu\.be\/|[?&]v=)([a-zA-Z0-9_-]+)/);
+      if (standardMatch) videoId = standardMatch[1];
+    }
+
+    if (videoId) {
+      return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+    }
+  }
+
+  return null;
 }
 
 function formatDuration(seconds: number | null): string {
@@ -235,6 +281,10 @@ export default function LibraryContent() {
   const [loading, setLoading] = useState(true);
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
 
+  // YouTube connection state
+  const [ytConnected, setYtConnected] = useState(false);
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'uploaded' | 'own'>('all');
+
   // Filters
   const [search, setSearch] = useState("");
   const [starredOnly, setStarredOnly] = useState(false);
@@ -244,6 +294,10 @@ export default function LibraryContent() {
   const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
   const [selectedHookTypes, setSelectedHookTypes] = useState<string[]>([]);
   const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>([]);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Sorting
   const [sortBy, setSortBy] = useState<string>("created_at");
@@ -267,6 +321,14 @@ export default function LibraryContent() {
 
   // Get ordered visible columns
   const orderedVisibleColumns = columnOrder.filter(col => visibleColumns.includes(col));
+
+  // Check YouTube connection status
+  useEffect(() => {
+    fetch("/api/auth/youtube/status")
+      .then((res) => res.json())
+      .then((data) => setYtConnected(data.connected === true))
+      .catch(() => setYtConnected(false));
+  }, []);
 
   // Fetch filter options
   useEffect(() => {
@@ -303,19 +365,22 @@ export default function LibraryContent() {
     if (selectedNiches.length > 0) params.set("niches", selectedNiches.join(","));
     if (selectedHookTypes.length > 0) params.set("hookTypes", selectedHookTypes.join(","));
     if (selectedContentTypes.length > 0) params.set("contentTypes", selectedContentTypes.join(","));
+    if (sourceFilter !== 'all') params.set("source", sourceFilter);
     params.set("sortBy", sortBy);
     params.set("sortOrder", sortOrder);
+    params.set("page", page.toString());
 
     try {
       const res = await fetch(`/api/library?${params}`);
       const data = await res.json();
       setItems(data.items || []);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch library:", error);
     } finally {
       setLoading(false);
     }
-  }, [search, starredOnly, scoreRange, datePreset, customDateRange, selectedNiches, selectedHookTypes, selectedContentTypes, sortBy, sortOrder]);
+  }, [search, starredOnly, scoreRange, datePreset, customDateRange, selectedNiches, selectedHookTypes, selectedContentTypes, sortBy, sortOrder, sourceFilter, page]);
 
   useEffect(() => {
     fetchItems();
@@ -420,6 +485,8 @@ export default function LibraryContent() {
     setSelectedNiches([]);
     setSelectedHookTypes([]);
     setSelectedContentTypes([]);
+    setSourceFilter('all');
+    setPage(1);
   };
 
   const hasActiveFilters =
@@ -430,7 +497,8 @@ export default function LibraryContent() {
     datePreset !== "all" ||
     selectedNiches.length > 0 ||
     selectedHookTypes.length > 0 ||
-    selectedContentTypes.length > 0;
+    selectedContentTypes.length > 0 ||
+    sourceFilter !== 'all';
 
   // Handle sort
   const handleSort = (column: string) => {
@@ -581,6 +649,34 @@ export default function LibraryContent() {
             </button>
           </div>
         </div>
+
+        {/* Source Filter (only visible when YouTube connected) */}
+        {ytConnected && (
+          <div>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Source
+            </h3>
+            <div className="space-y-1">
+              {[
+                { value: 'all', label: 'All' },
+                { value: 'uploaded', label: 'Uploaded' },
+                { value: 'own', label: 'My Channel' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setSourceFilter(value as typeof sourceFilter)}
+                  className={`w-full text-left px-3 py-1.5 rounded text-sm transition-colors ${
+                    sourceFilter === value
+                      ? "bg-orange-500/10 text-orange-500"
+                      : "text-gray-400 hover:bg-gray-800"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Score Range */}
         <div>
@@ -860,62 +956,174 @@ export default function LibraryContent() {
                   </td>
                 </tr>
               ) : (
-                items.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer group"
-                    onClick={() => router.push(`/analyzer/${item.id}`)}
-                  >
-                    {/* Star */}
-                    <td
-                      className="px-4 py-3"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleStar(item.id, item.starred);
+                items.map((item) => {
+                  const isUnanalyzed = item.analysis_status === 'unanalyzed';
+                  const isOwnVideo = item.is_own_video;
+                  const isFileUpload = !!item.file_uri;
+                  const isPrivate = item.privacy_status === 'private' || item.privacy_status === 'unlisted';
+                  const thumb = getThumbnailUrl(item);
+                  return (
+                    <tr
+                      key={item.id}
+                      className={`border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer group ${
+                        isOwnVideo ? "border-l-2 border-l-red-500/40" : ""
+                      }`}
+                      onClick={() => {
+                        if (isUnanalyzed) return; // Handled by Analyze button
+                        router.push(`/analyzer/${item.id}`);
                       }}
                     >
-                      <Star
-                        className={`w-4 h-4 cursor-pointer transition-colors ${
-                          item.starred
-                            ? "fill-yellow-500 text-yellow-500"
-                            : "text-gray-600 hover:text-yellow-500"
-                        }`}
-                      />
-                    </td>
-                    {/* Dynamic columns - in user's custom order */}
-                    {orderedVisibleColumns.map((column) => (
-                      <td key={column} className="px-4 py-3">
-                        {column === "title" ? (
-                          <div>
-                            <span
-                              className="text-white hover:text-orange-500 transition-colors font-medium truncate max-w-[200px] block cursor-pointer"
-                              title={item.title || "Untitled"}
-                            >
-                              {item.title || "Untitled"}
-                            </span>
-                            <button
-                              onClick={(e) => handleUseAsReference(e, item)}
-                              className="text-xs text-purple-400 hover:text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 mt-0.5"
-                            >
-                              <Sparkles className="w-3 h-3" />
-                              Use as Reference
-                            </button>
-                          </div>
+                      {/* Star */}
+                      <td
+                        className="px-4 py-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isUnanalyzed) toggleStar(item.id, item.starred);
+                        }}
+                      >
+                        {isUnanalyzed ? (
+                          <span className="text-gray-700">—</span>
                         ) : (
-                          renderCell(item, column)
+                          <Star
+                            className={`w-4 h-4 cursor-pointer transition-colors ${
+                              item.starred
+                                ? "fill-yellow-500 text-yellow-500"
+                                : "text-gray-600 hover:text-yellow-500"
+                            }`}
+                          />
                         )}
                       </td>
-                    ))}
-                  </tr>
-                ))
+                      {/* Dynamic columns - in user's custom order */}
+                      {orderedVisibleColumns.map((column) => (
+                        <td key={column} className="px-4 py-3">
+                          {column === "title" ? (
+                            <div className="flex items-center gap-3">
+                              {/* Thumbnail */}
+                              <div className="w-16 h-10 rounded overflow-hidden bg-gray-800 flex-shrink-0">
+                                {thumb ? (
+                                  <img
+                                    src={thumb}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-gray-600">
+                                    <BarChart3 className="w-4 h-4" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  {isOwnVideo && (
+                                    <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                    </svg>
+                                  )}
+                                  <span
+                                    className="text-white hover:text-orange-500 transition-colors font-medium truncate max-w-[200px] block cursor-pointer"
+                                    title={item.title || "Untitled"}
+                                  >
+                                    {item.title || "Untitled"}
+                                  </span>
+                                  {isUnanalyzed && isPrivate ? (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-400 flex-shrink-0" title="Non-public videos can't be analyzed via URL. Use file upload instead.">
+                                      {item.privacy_status === 'private' ? 'Private' : 'Unlisted'}
+                                    </span>
+                                  ) : isUnanalyzed ? (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-800 text-gray-400 flex-shrink-0">
+                                      Not analyzed
+                                    </span>
+                                  ) : (sourceFilter === 'own' && isOwnVideo) ? (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-500 flex-shrink-0">
+                                      Analyzed
+                                    </span>
+                                  ) : isFileUpload ? (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400 flex-shrink-0">
+                                      Uploaded
+                                    </span>
+                                  ) : null}
+                                </div>
+                                {isUnanalyzed ? (
+                                  isPrivate ? (
+                                    <span
+                                      className="text-xs text-gray-600 flex items-center gap-1 mt-0.5 cursor-default"
+                                      title="Non-public videos can't be analyzed via URL. Set to Public on YouTube, or use file upload on the Home page."
+                                    >
+                                      <Play className="w-3 h-3" />
+                                      Analyze
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const ytUrl = item.video_url || `https://youtube.com/shorts/${item.youtube_video_id}`;
+                                        router.push(`/home?analyzeUrl=${encodeURIComponent(ytUrl)}`);
+                                      }}
+                                      className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1 mt-0.5"
+                                    >
+                                      <Play className="w-3 h-3" />
+                                      Analyze
+                                    </button>
+                                  )
+                                ) : (
+                                  <button
+                                    onClick={(e) => handleUseAsReference(e, item)}
+                                    className="text-xs text-purple-400 hover:text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 mt-0.5"
+                                  >
+                                    <Sparkles className="w-3 h-3" />
+                                    Use as Reference
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : isUnanalyzed && ["deterministic_score", "hook_strength", "structure_pacing", "value_clarity", "delivery_performance"].includes(column) ? (
+                            <span className="text-gray-600 text-xs">—</span>
+                          ) : column === "youtube_view_count" ? (
+                            <span className="text-gray-400">{item.youtube_view_count != null ? item.youtube_view_count.toLocaleString() : "—"}</span>
+                          ) : column === "youtube_like_count" ? (
+                            <span className="text-gray-400">{item.youtube_like_count != null ? item.youtube_like_count.toLocaleString() : "—"}</span>
+                          ) : (
+                            renderCell(item, column)
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Footer with count */}
-        <footer className="h-12 border-t border-gray-800 flex items-center px-6 text-sm text-gray-500">
-          Showing {items.length} of {filterOptions?.counts.total || 0} videos
+        {/* Footer with count and pagination */}
+        <footer className="h-12 border-t border-gray-800 flex items-center justify-between px-6 text-sm text-gray-500">
+          <span>Showing {items.length} videos</span>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0 border-gray-700"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="text-xs tabular-nums">
+                {page} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0 border-gray-700"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </footer>
       </div>
     </div>

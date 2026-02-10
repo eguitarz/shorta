@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, BarChart3, Hammer, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, BarChart3, Hammer, BookOpen, User, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -33,6 +33,21 @@ interface UsageData {
   can_create_storyboard?: boolean;
 }
 
+// YouTube brand icon (simplified SVG path)
+function YouTubeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+    </svg>
+  );
+}
+
+interface YouTubeStatus {
+  connected: boolean;
+  channelTitle: string | null;
+  status: string | null;
+}
+
 function CollapseButton() {
   const { toggleSidebar, state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -55,11 +70,19 @@ function CollapseButton() {
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
   const [usageData, setUsageData] = useState<UsageData | null>(null);
+  const [ytStatus, setYtStatus] = useState<YouTubeStatus | null>(null);
   const t = useTranslations('nav');
   const tCommon = useTranslations('common');
   const tTier = useTranslations('tier');
 
   const initials = user.email?.split("@")[0].slice(0, 2).toUpperCase() || "JD";
+
+  const fetchYtStatus = () => {
+    fetch('/api/auth/youtube/status')
+      .then(res => res.json())
+      .then(data => setYtStatus(data))
+      .catch(console.error);
+  };
 
   // Fetch usage data on mount, navigation, and after credit changes
   useEffect(() => {
@@ -74,8 +97,18 @@ export function AppSidebar({ user }: AppSidebarProps) {
     return () => window.removeEventListener('credits-changed', fetchUsage);
   }, [pathname]);
 
+  // Fetch YouTube status and listen for connection changes
+  useEffect(() => {
+    fetchYtStatus();
+
+    const handleConnectionChange = () => fetchYtStatus();
+    window.addEventListener('youtube-connection-changed', handleConnectionChange);
+    return () => window.removeEventListener('youtube-connection-changed', handleConnectionChange);
+  }, []);
+
   const navItems = [
     { name: t('home'), icon: Home, path: "/home" },
+    { name: t('channel'), icon: User, path: "/channel" },
     { name: t('draft'), icon: Hammer, path: "/draft" },
     { name: t('analyzer'), icon: BarChart3, path: "/analyzer" },
     { name: t('library'), icon: BookOpen, path: "/library" },
@@ -125,8 +158,58 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarContent>
 
-      {/* Footer - Language, Credits + User Profile */}
+      {/* Footer - YouTube, Language, Credits + User Profile */}
       <SidebarFooter className="p-4 border-t border-gray-800">
+        {/* YouTube connection indicator */}
+        {ytStatus && (
+          <>
+            {/* Expanded view */}
+            <Link
+              href={ytStatus.connected ? "/home" : "/api/auth/youtube/initiate"}
+              className="flex items-center gap-3 px-3 py-2 mb-3 rounded-lg transition-colors hover:bg-gray-800/50 group-data-[collapsible=icon]:hidden"
+            >
+              <div className="relative shrink-0">
+                <YouTubeIcon className={`w-5 h-5 ${ytStatus.connected ? 'text-red-500' : 'text-gray-500'}`} />
+                <span className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-[#141414] ${
+                  ytStatus.connected
+                    ? ytStatus.status === 'needs_reauth' ? 'bg-orange-500' : 'bg-green-500'
+                    : 'bg-gray-600'
+                }`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-medium text-gray-300 block truncate">
+                  {ytStatus.connected ? ytStatus.channelTitle || 'YouTube' : tCommon('connectYouTube')}
+                </span>
+                <span className={`text-[10px] ${ytStatus.connected ? 'text-green-500' : 'text-gray-500'}`}>
+                  {ytStatus.connected
+                    ? ytStatus.status === 'needs_reauth' ? tCommon('reconnectNeeded') : tCommon('channelConnected')
+                    : tCommon('notConnected')
+                  }
+                </span>
+              </div>
+            </Link>
+            {/* Collapsed view - icon only */}
+            <div className="hidden group-data-[collapsible=icon]:flex justify-center mb-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={ytStatus.connected ? "/home" : "/api/auth/youtube/initiate"}
+                    className="relative p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+                  >
+                    <YouTubeIcon className={`w-5 h-5 ${ytStatus.connected ? 'text-red-500' : 'text-gray-500'}`} />
+                    <span className={`absolute bottom-1 right-1 w-2 h-2 rounded-full border border-[#141414] ${
+                      ytStatus.connected ? 'bg-green-500' : 'bg-gray-600'
+                    }`} />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{ytStatus.connected ? ytStatus.channelTitle || 'YouTube Connected' : 'Connect YouTube'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </>
+        )}
+
         {/* Language switcher - hidden when collapsed */}
         <div className="mb-4 group-data-[collapsible=icon]:hidden">
           <LanguageSwitcher />
