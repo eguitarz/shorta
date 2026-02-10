@@ -53,21 +53,23 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <Select value={locale} onValueChange={handleLanguageChange} disabled={isPending}>
-            <SelectTrigger className="w-12 h-10 px-2 border-gray-700 bg-transparent hover:bg-gray-800/50">
-              <span className="text-lg">{currentLanguage.flag}</span>
-            </SelectTrigger>
-            <SelectContent>
-              {languages.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
-                  <span className="flex items-center gap-2">
-                    <span>{lang.flag}</span>
-                    <span>{lang.label}</span>
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div>
+            <Select value={locale} onValueChange={handleLanguageChange} disabled={isPending}>
+              <SelectTrigger className="w-12 h-10 px-2 border-gray-700 bg-transparent hover:bg-gray-800/50">
+                <span className="text-lg">{currentLanguage.flag}</span>
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    <span className="flex items-center gap-2">
+                      <span>{lang.flag}</span>
+                      <span>{lang.label}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </TooltipTrigger>
         <TooltipContent side="right">
           <p>Language</p>

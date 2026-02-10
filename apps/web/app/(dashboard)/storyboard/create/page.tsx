@@ -348,6 +348,8 @@ Incorporating these into your storyboard...`;
 
       const data = await response.json();
 
+      window.dispatchEvent(new Event('credits-changed'));
+
       // Use the database ID if available, otherwise fall back to timestamp
       const id = data.id || Date.now().toString();
 

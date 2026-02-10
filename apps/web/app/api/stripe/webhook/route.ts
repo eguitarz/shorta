@@ -77,6 +77,17 @@ export async function POST(req: NextRequest) {
     // creating a new subscription. It also fires for recurring payments.
     case 'checkout.session.completed':
     case 'invoice.paid': {
+      // Skip the initial invoice.paid — checkout.session.completed already handles it.
+      // Only process invoice.paid for recurring payments (subscription_cycle).
+      if (event.type === 'invoice.paid') {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log(`invoice.paid billing_reason: "${invoice.billing_reason}"`);
+        if (invoice.billing_reason !== 'subscription_cycle') {
+          console.log(`Skipping invoice.paid (billing_reason: ${invoice.billing_reason}), not a recurring cycle`);
+          break;
+        }
+      }
+
       const session = event.data.object as Stripe.Checkout.Session | Stripe.Invoice;
       const customerId = session.customer as string;
       const subscriptionId = ('subscription' in session ? session.subscription : null) as string;
@@ -186,23 +197,17 @@ export async function POST(req: NextRequest) {
       }
       
       // Get the user's current credit balance to calculate the rollover
-      // Need to fetch again if user was identified by email
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from('user_profiles')
         .select('credits')
         .eq('user_id', userId)
-        .single();
-
-      if (profileError) {
-        console.error('Webhook Error: Could not retrieve user profile for rollover calc.', profileError);
-        return new NextResponse('Webhook Error: User profile not found', { status: 500 });
-      }
+        .maybeSingle();
 
       let newCreditBalance: number;
 
-      // If this is from a new checkout, it's a new subscription. Just set the credits.
+      // If this is from a new checkout or profile is missing, just set the credits.
       // Otherwise, it's a recurring invoice, so we calculate the rollover.
-      if (event.type === 'checkout.session.completed') {
+      if (event.type === 'checkout.session.completed' || !profile) {
         newCreditBalance = plan.credits;
         console.log(`New subscription for user ${userId}. Setting credits to ${newCreditBalance}.`);
       } else {
@@ -214,19 +219,18 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Update the user's profile in the database with the new plan details and credit balance.
-      // Ensure stripe_customer_id is set if it was null before (for new users via Payment Links)
+      // Upsert the user's profile — handles both existing and missing rows (e.g. if profile was deleted).
       const { error: updateError } = await supabase
         .from('user_profiles')
-        .update({
+        .upsert({
+          user_id: userId,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
           tier: plan.tier,
           subscription_status: 'active',
           credits: newCreditBalance,
           credits_cap: plan.cap,
-        })
-        .eq('user_id', userId);
+        }, { onConflict: 'user_id' });
 
       if (updateError) {
         console.error('Supabase update error:', updateError);

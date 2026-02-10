@@ -27,14 +27,16 @@ export default async function DashboardLayout({
   // Check access for authenticated users only
   if (user) {
     // Get user's tier from user_profiles
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('tier')
       .eq('user_id', user.id)
       .single();
 
-    // Free tier users cannot access dashboard — must upgrade
-    if (profile?.tier !== 'founder' && profile?.tier !== 'lifetime') {
+    console.log(`Dashboard layout - user: ${user.id}, profile:`, profile, 'error:', profileError?.message);
+
+    // Redirect users without a profile (shouldn't happen, but safety net)
+    if (!profile) {
       redirect("/pricing");
     }
   }

@@ -661,6 +661,7 @@ export default function AnalyzerResultsPage() {
 
         setJobId(data.job_id);
         setJobStatus(data.status);
+        window.dispatchEvent(new Event('credits-changed'));
 
         // Store job info for persistence if user navigates away
         const id = params.id as string;
