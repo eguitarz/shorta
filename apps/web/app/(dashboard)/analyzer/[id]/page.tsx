@@ -45,6 +45,8 @@ import { VideoPickerModal, type UserVideo } from "@/components/VideoPickerModal"
 import { CompareModal } from "@/components/CompareModal";
 import { HOOK_TYPES, HOOK_TYPE_DESCRIPTIONS, type HookCategory } from "@/lib/scoring/hook-types";
 import { REHOOK_PRESETS, type RehookPreset } from "@/lib/rehook";
+import { RetentionCurveChart } from "@/components/RetentionCurveChart";
+import type { VideoRetentionCurve } from "@/lib/youtube/types";
 
 interface Beat {
   beatNumber: number;
@@ -269,7 +271,7 @@ export default function AnalyzerResultsPage() {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [approvedChangesCollapsed, setApprovedChangesCollapsed] = useState(true);
   const [approvedChanges, setApprovedChanges] = useState<ApprovedChange[]>([]);
-  const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number; publishedAt: string } | null>(null);
+  const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number; publishedAt: string; duration: number | null } | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [beatBreakdownCollapsed, setBeatBreakdownCollapsed] = useState(true);
@@ -297,6 +299,11 @@ export default function AnalyzerResultsPage() {
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [compareBaseVideo, setCompareBaseVideo] = useState<UserVideo | null>(null);
 
+  // Retention curve state
+  const [retentionCurve, setRetentionCurve] = useState<VideoRetentionCurve | null>(null);
+  const [retentionLoading, setRetentionLoading] = useState(false);
+  const [retentionRefreshing, setRetentionRefreshing] = useState(false);
+
   // Re-hook generation state
   const [selectedPreset, setSelectedPreset] = useState<RehookPreset | null>(null);
   const [selectedHookType, setSelectedHookType] = useState<HookCategory | null>(null);
@@ -318,6 +325,24 @@ export default function AnalyzerResultsPage() {
     resetPreference,
     hasPreference,
   } = useIssuePreferences(isLoggedIn);
+
+  const handleRetentionRefresh = async () => {
+    if (!videoUrl) return;
+    const ytId = extractYouTubeId(videoUrl);
+    if (!ytId) return;
+    setRetentionRefreshing(true);
+    try {
+      const response = await fetch(`/api/youtube/retention-curve?videoId=${encodeURIComponent(ytId)}&refresh=true`);
+      if (response.ok) {
+        const result = await response.json();
+        setRetentionCurve(result.data || null);
+      }
+    } catch {
+      // Graceful degradation
+    } finally {
+      setRetentionRefreshing(false);
+    }
+  };
 
   const scrollToBeat = (beatNumber: number) => {
     // Expand beat breakdown if collapsed
@@ -780,6 +805,40 @@ export default function AnalyzerResultsPage() {
 
     fetchStats();
   }, [videoUrl]);
+
+  // Fetch retention curve once analysis is loaded and videoUrl is available.
+  // Single retry after 2s if first attempt returns null (auth may not be ready on hard refresh).
+  useEffect(() => {
+    if (!videoUrl || !analysisData) return;
+    const ytId = extractYouTubeId(videoUrl);
+    if (!ytId) return;
+
+    let cancelled = false;
+    setRetentionLoading(true);
+
+    const fetchCurve = async (attempt: number) => {
+      try {
+        const response = await fetch(`/api/youtube/retention-curve?videoId=${encodeURIComponent(ytId)}`);
+        if (!response.ok || cancelled) { setRetentionLoading(false); return; }
+        const result = await response.json();
+        if (cancelled) return;
+
+        if (result.data) {
+          setRetentionCurve(result.data);
+          setRetentionLoading(false);
+        } else if (attempt < 2) {
+          setTimeout(() => { if (!cancelled) fetchCurve(attempt + 1); }, 2000);
+        } else {
+          setRetentionLoading(false);
+        }
+      } catch {
+        if (!cancelled) setRetentionLoading(false);
+      }
+    };
+    fetchCurve(1);
+
+    return () => { cancelled = true; };
+  }, [videoUrl, analysisData]);
 
   // Initialize YouTube IFrame API
   useEffect(() => {
@@ -1928,6 +1987,33 @@ export default function AnalyzerResultsPage() {
                 )}
               </div>
             </div>
+
+            {/* Retention Curve Chart */}
+            {retentionLoading && analysisData && (
+              <div className="mb-8 bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-4 w-32 bg-gray-800 rounded animate-pulse" />
+                </div>
+                <div className="h-3 w-48 bg-gray-800 rounded animate-pulse mb-4" />
+                <div className="h-[200px] bg-gray-800/50 rounded animate-pulse" />
+              </div>
+            )}
+            {!retentionLoading && retentionCurve && retentionCurve.curveData && retentionCurve.curveData.length > 0 && analysisData && (
+              <div className="mb-8">
+                <RetentionCurveChart
+                  curveData={retentionCurve.curveData}
+                  videoDuration={videoStats?.duration || analysisData.storyboard.beats[analysisData.storyboard.beats.length - 1]?.endTime || 60}
+                  beats={analysisData.storyboard.beats.map((b: Beat) => ({
+                    beatNumber: b.beatNumber,
+                    startTime: b.startTime,
+                  }))}
+                  isFresh={retentionCurve.isFresh}
+                  fetchedAt={retentionCurve.fetchedAt}
+                  onRefresh={handleRetentionRefresh}
+                  refreshing={retentionRefreshing}
+                />
+              </div>
+            )}
 
             {/* Prioritized Action List */}
             {!loading && analysisData && (criticalCount > 0 || moderateCount > 0 || minorCount > 0) && (

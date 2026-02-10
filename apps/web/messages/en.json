@@ -22,6 +22,10 @@
     "upgrade": "Upgrade Plan",
     "analyses": "Analyses",
     "analysesRemaining": "{remaining} of {limit} left",
+    "connectYouTube": "Connect YouTube",
+    "channelConnected": "Channel connected",
+    "notConnected": "Not connected",
+    "reconnectNeeded": "Reconnect needed",
     "yes": "Yes",
     "no": "No",
     "currentVideo": "Current Video",
@@ -32,7 +36,8 @@
     "home": "Home",
     "analyzer": "Analyzer",
     "draft": "Draft",
-    "library": "Library"
+    "library": "Library",
+    "channel": "My Channel"
   },
   "landing": {
     "hero": {
@@ -127,6 +132,33 @@
       "loading": "Loading activities...",
       "empty": "No recent activities. Start by analyzing a video!",
       "useAsReference": "Use as Reference"
+    },
+    "channelEncouragement": {
+      "title": "Unlock Channel Insights",
+      "subtitle": "Upload more Shorts to get started",
+      "progress": "Shorts uploaded",
+      "message": "We need at least 3 Shorts to detect your niche and provide personalized recommendations.",
+      "tip1": "Start with a topic you know well — your expertise shows in Shorts",
+      "tip2": "Keep it under 60 seconds for best engagement",
+      "tip3": "Use a strong hook in the first 2 seconds",
+      "analyzeButton": "Analyze a Short"
+    },
+    "youtubeConnect": {
+      "label": "YouTube Connect",
+      "title": "Connect Your Channel",
+      "description": "Import your videos, detect your niche, and see which of your Shorts are analyzed.",
+      "connectButton": "Connect YouTube Channel",
+      "connected": "Connected",
+      "subscribers": "subscribers",
+      "videos": "videos",
+      "lastSync": "Last synced",
+      "disconnect": "Disconnect",
+      "disconnectConfirm": "Disconnect your channel?",
+      "yes": "Yes",
+      "no": "No",
+      "needsReauth": "Your YouTube connection needs to be refreshed. Please reconnect.",
+      "reconnect": "Reconnect",
+      "connectionError": "Failed to connect YouTube. Please try again."
     },
     "trends": {
       "label": "Popular Shorts",
@@ -492,6 +524,18 @@
       "openLink": "Open in new tab",
       "error": "Failed to create share link"
     },
+    "retentionCurve": {
+      "title": "Audience Retention",
+      "subtitle": "Where viewers drop off in your video",
+      "watchRatio": "Still watching",
+      "relativePerformance": "vs. similar videos",
+      "atTime": "At {time}",
+      "beat": "Beat {number}",
+      "refresh": "Refresh",
+      "stale": "Outdated",
+      "aboveAverage": "above avg",
+      "belowAverage": "below avg"
+    },
     "create": {
       "title": "Create Short Analysis",
       "subtitle": "Enter a YouTube URL or upload a video to analyze with AI",
@@ -741,5 +785,84 @@
     "m_ago": "{count}m ago",
     "h_ago": "{count}h ago",
     "d_ago": "{count}d ago"
+  },
+  "channel": {
+    "title": "My Channel",
+    "loading": "Loading channel data...",
+    "connectTitle": "Connect Your YouTube Channel",
+    "connectDescription": "Link your YouTube channel to track subscriber growth, view trends, and get AI-powered niche analysis.",
+    "connectButton": "Connect YouTube",
+    "subscribers": "subscribers",
+    "lastSync": "Last sync:",
+    "syncNow": "Sync Now",
+    "syncing": "Syncing...",
+    "notEnoughData": "Not enough data for week-over-week comparison",
+    "notEnoughDataHint": "Check back after 7 days of snapshots have been collected.",
+    "nicheAnalysis": "Niche Analysis",
+    "confidence": "confidence",
+    "secondaryNiches": "Secondary Niches",
+    "targetAudience": "Target Audience",
+    "format": "Format",
+    "contentThemes": "Content Themes",
+    "reasoning": "AI Reasoning",
+    "nicheEmpty": {
+      "title": "Niche Analysis Unlocks at 3 Shorts",
+      "description": "Upload at least 3 Shorts to your channel — our AI will analyze your content to identify your niche, audience, and style.",
+      "blogLink": "Guide: How to Start a YouTube Channel"
+    },
+    "channelStats": "Channel Stats",
+    "metrics": {
+      "subscribers": "Subscribers",
+      "totalViews": "Total Views",
+      "avgShortViews": "Avg Short Views",
+      "engagementRate": "Engagement Rate"
+    },
+    "topShorts": "Top Performing Shorts",
+    "readyToAnalyze": "Ready to Analyze",
+    "analyzeButton": "Analyze",
+    "privateVideo": "Private",
+    "privateVideoTooltip": "Unable to analyze — only public videos can be analyzed",
+    "growthChart": "Growth Trend",
+    "growthChartEmpty": "Growth chart will appear after a few days of data collection.",
+    "stats": {
+      "totalVideos": "Total Videos",
+      "shorts": "Shorts",
+      "analyzed": "Analyzed"
+    },
+    "retention": {
+      "title": "Retention Overview",
+      "noDataYet": "Retention data will appear after syncing with YouTube Analytics.",
+      "avgCompletionRate": "Avg Completion Rate",
+      "acrossShorts": "across {count} Shorts",
+      "bestPerforming": "Best Retention",
+      "lowestPerforming": "Lowest Retention",
+      "completionTooltip": "Average % of the video watched by viewers. Higher means more people watch to the end.",
+      "avgDuration": "Avg watch: {seconds}s"
+    },
+    "monetization": {
+      "title": "Monetization Review",
+      "marketSize": "Market Size",
+      "competition": "Competition",
+      "growthPotential": "Growth Potential",
+      "revenueEstimate": "Revenue Estimates",
+      "cpmRange": "CPM Range",
+      "monthlyRevenue": "Est. Monthly Revenue",
+      "strategies": "Monetization Strategies",
+      "recommendation": "Recommendation",
+      "nicheAdvice": "Niche Advice",
+      "levels": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large",
+        "massive": "Massive",
+        "low": "Low",
+        "high": "High",
+        "saturated": "Saturated",
+        "declining": "Declining",
+        "stable": "Stable",
+        "growing": "Growing",
+        "explosive": "Explosive"
+      }
+    }
   }
 }
