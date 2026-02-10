@@ -22,6 +22,10 @@
     "upgrade": "升級方案",
     "analyses": "分析",
     "analysesRemaining": "剩餘 {remaining}/{limit} 次",
+    "connectYouTube": "連結 YouTube",
+    "channelConnected": "頻道已連結",
+    "notConnected": "未連結",
+    "reconnectNeeded": "需要重新連結",
     "yes": "是",
     "no": "否",
     "currentVideo": "當前影片",
@@ -32,7 +36,8 @@
     "home": "首頁",
     "analyzer": "分析器",
     "draft": "草稿",
-    "library": "資料庫"
+    "library": "資料庫",
+    "channel": "我的頻道"
   },
   "landing": {
     "hero": {
@@ -127,6 +132,23 @@
       "loading": "正在載入活動...",
       "empty": "沒有最近的活動。開始分析一個影片吧！",
       "useAsReference": "作為參考"
+    },
+    "youtubeConnect": {
+      "label": "YouTube 連結",
+      "title": "連結你的頻道",
+      "description": "匯入影片、偵測你的利基市場，並查看哪些 Shorts 已被分析。",
+      "connectButton": "連結 YouTube 頻道",
+      "connected": "已連結",
+      "subscribers": "訂閱者",
+      "videos": "影片",
+      "lastSync": "上次同步",
+      "disconnect": "中斷連結",
+      "disconnectConfirm": "要中斷頻道連結嗎？",
+      "yes": "是",
+      "no": "否",
+      "needsReauth": "你的 YouTube 連結需要重新整理。請重新連結。",
+      "reconnect": "重新連結",
+      "connectionError": "YouTube 連結失敗。請再試一次。"
     },
     "trends": {
       "label": "熱門 Shorts",
@@ -492,6 +514,18 @@
       "openLink": "在新分頁開啟",
       "error": "建立連結失敗"
     },
+    "retentionCurve": {
+      "title": "觀眾留存率",
+      "subtitle": "觀眾在哪裡離開你的影片",
+      "watchRatio": "仍在觀看",
+      "relativePerformance": "對比類似影片",
+      "atTime": "在 {time}",
+      "beat": "節拍 {number}",
+      "refresh": "重新整理",
+      "stale": "已過期",
+      "aboveAverage": "高於平均",
+      "belowAverage": "低於平均"
+    },
     "create": {
       "title": "建立短影片分析",
       "subtitle": "輸入 YouTube 網址或上傳影片以使用 AI 分析",
@@ -740,6 +774,85 @@
       "reason1": "分析尚未共享",
       "reason2": "連結不正確或已過期",
       "reason3": "需要應用資料庫遷移"
+    }
+  },
+  "channel": {
+    "title": "我的頻道",
+    "loading": "正在載入頻道資料...",
+    "connectTitle": "連接您的 YouTube 頻道",
+    "connectDescription": "連結您的 YouTube 頻道，追蹤訂閱者成長、觀看趨勢，並獲得 AI 驅動的領域分析。",
+    "connectButton": "連接 YouTube",
+    "subscribers": "訂閱者",
+    "lastSync": "上次同步：",
+    "syncNow": "立即同步",
+    "syncing": "同步中...",
+    "notEnoughData": "資料不足，無法進行週間比較",
+    "notEnoughDataHint": "收集 7 天的快照後再回來查看。",
+    "nicheAnalysis": "領域分析",
+    "confidence": "信心度",
+    "secondaryNiches": "次要領域",
+    "targetAudience": "目標受眾",
+    "format": "格式",
+    "contentThemes": "內容主題",
+    "reasoning": "AI 分析理由",
+    "nicheEmpty": {
+      "title": "上傳 3 支短影片即可解鎖領域分析",
+      "description": "上傳至少 3 支短影片到你的頻道 — AI 會分析你的內容，找出你的領域、受眾和風格。",
+      "blogLink": "指南：如何開始經營 YouTube 頻道"
+    },
+    "channelStats": "頻道統計",
+    "metrics": {
+      "subscribers": "訂閱者",
+      "totalViews": "總觀看數",
+      "avgShortViews": "平均短影片觀看數",
+      "engagementRate": "互動率"
+    },
+    "topShorts": "表現最佳短影片",
+    "readyToAnalyze": "待分析",
+    "analyzeButton": "分析",
+    "privateVideo": "私人",
+    "privateVideoTooltip": "無法分析 — 僅能分析公開影片",
+    "growthChart": "成長趨勢",
+    "growthChartEmpty": "收集幾天數據後將顯示成長圖表。",
+    "stats": {
+      "totalVideos": "影片總數",
+      "shorts": "短影片",
+      "analyzed": "已分析"
+    },
+    "retention": {
+      "title": "觀看留存概覽",
+      "noDataYet": "與 YouTube Analytics 同步後將顯示留存數據。",
+      "avgCompletionRate": "平均完播率",
+      "acrossShorts": "涵蓋 {count} 個 Shorts",
+      "bestPerforming": "最佳留存",
+      "lowestPerforming": "最低留存",
+      "completionTooltip": "觀眾平均觀看影片的百分比。越高表示越多人看到最後。",
+      "avgDuration": "平均觀看：{seconds}秒"
+    },
+    "monetization": {
+      "title": "收益化評估",
+      "marketSize": "市場規模",
+      "competition": "競爭程度",
+      "growthPotential": "成長潛力",
+      "revenueEstimate": "收益預估",
+      "cpmRange": "CPM 範圍",
+      "monthlyRevenue": "預估月收益",
+      "strategies": "收益化策略",
+      "recommendation": "建議",
+      "nicheAdvice": "領域建議",
+      "levels": {
+        "small": "小型",
+        "medium": "中型",
+        "large": "大型",
+        "massive": "巨型",
+        "low": "低",
+        "high": "高",
+        "saturated": "飽和",
+        "declining": "下滑",
+        "stable": "穩定",
+        "growing": "成長中",
+        "explosive": "爆發性"
+      }
     }
   }
 }

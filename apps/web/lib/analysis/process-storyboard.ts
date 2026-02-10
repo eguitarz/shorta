@@ -194,6 +194,25 @@ export async function processStoryboard(jobId: string, locale?: string) {
       throw new Error(`Failed to update job: ${updateError.message}`);
     }
 
+    // Auto-link to channel_videos if this is a YouTube video
+    try {
+      const { data: completedJob } = await supabase
+        .from('analysis_jobs')
+        .select('user_id, youtube_video_id')
+        .eq('id', jobId)
+        .single();
+
+      if (completedJob?.user_id && completedJob?.youtube_video_id) {
+        await supabase
+          .from('channel_videos')
+          .update({ analysis_job_id: jobId })
+          .eq('user_id', completedJob.user_id)
+          .eq('youtube_video_id', completedJob.youtube_video_id);
+      }
+    } catch {
+      // Non-fatal: auto-link failure shouldn't affect analysis
+    }
+
     console.log(`[Storyboard] Completed for job ${jobId}`);
 
     return { success: true, storyboardResult };

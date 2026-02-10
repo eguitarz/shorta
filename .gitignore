@@ -35,6 +35,9 @@ next-env.d.ts
 .open-next/
 .wrangler/
 
+# Claude Code
+.claude/
+
 # IDEs
 .vscode/
 .idea/

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth-helpers';
 import { createServerClient } from '@supabase/ssr';
+import { createServiceClient } from '@/lib/supabase-service';
 import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
@@ -8,7 +9,7 @@ export const dynamic = 'force-dynamic';
 // All selectable columns for the library table
 const SELECTABLE_COLUMNS = [
   // Basic
-  'id', 'title', 'video_url', 'video_duration', 'created_at', 'starred',
+  'id', 'title', 'video_url', 'file_uri', 'video_duration', 'created_at', 'starred',
   // Overall scores
   'deterministic_score', 'hook_strength', 'structure_pacing', 'value_clarity', 'delivery_performance', 'lint_score',
   // Metadata
@@ -58,6 +59,9 @@ export async function GET(request: NextRequest) {
     const contentTypes = searchParams.get('contentTypes')?.split(',').filter(Boolean);
     const formats = searchParams.get('formats')?.split(',').filter(Boolean);
 
+    // Source filter: 'all' (default) | 'analyzed' | 'own' | 'own_unanalyzed'
+    const source = searchParams.get('source') || 'all';
+
     // Create Supabase client
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -81,12 +85,71 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    // Build query - select all useful columns
+    // Handle own_unanalyzed: return unanalyzed channel videos
+    if (source === 'own_unanalyzed') {
+      const serviceClient = createServiceClient();
+      let ownQuery = serviceClient
+        .from('channel_videos')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id)
+        .eq('is_short', true)
+        .is('analysis_job_id', null)
+        .order('published_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (search) {
+        ownQuery = ownQuery.ilike('title', `%${search}%`);
+      }
+
+      const { data: ownVideos, count: ownCount, error: ownError } = await ownQuery;
+
+      if (ownError) {
+        console.error('[Library] Own videos query error:', ownError);
+        return NextResponse.json({ error: 'Failed to fetch own videos' }, { status: 500 });
+      }
+
+      // Map to library item format
+      const items = (ownVideos || []).map((v: any) => ({
+        id: v.id,
+        title: v.title,
+        video_url: `https://youtube.com/shorts/${v.youtube_video_id}`,
+        video_duration: v.duration_seconds,
+        created_at: v.published_at,
+        starred: false,
+        is_own_video: true,
+        youtube_video_id: v.youtube_video_id,
+        youtube_view_count: v.view_count,
+        youtube_like_count: v.like_count,
+        analysis_status: 'unanalyzed' as const,
+        thumbnail_url: v.thumbnail_url,
+        privacy_status: v.privacy_status || 'public',
+      }));
+
+      return NextResponse.json({
+        items,
+        total: ownCount || 0,
+        page,
+        limit,
+        totalPages: Math.ceil((ownCount || 0) / limit),
+      });
+    }
+
+    // Build query for analyzed items
     let query = supabase
       .from('analysis_jobs')
-      .select(SELECTABLE_COLUMNS.join(','), { count: 'exact' })
+      .select(SELECTABLE_COLUMNS.join(',') + ',youtube_video_id', { count: 'exact' })
       .eq('user_id', user.id)
       .eq('status', 'completed'); // Only show completed analyses
+
+    // For 'own' source, only show analysis_jobs that have a youtube_video_id (own analyzed videos)
+    if (source === 'own') {
+      query = query.not('youtube_video_id', 'is', null);
+    }
+
+    // For 'uploaded' source, only show analysis_jobs with a file_uri (file uploads)
+    if (source === 'uploaded') {
+      query = query.not('file_uri', 'is', null);
+    }
 
     // Apply filters
     if (starred === 'true') {
@@ -130,7 +193,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply sorting
-    const validSortColumns = SELECTABLE_COLUMNS as readonly string[];
+    const validSortColumns = [...SELECTABLE_COLUMNS, 'youtube_video_id'] as readonly string[];
     if (validSortColumns.includes(sortBy)) {
       query = query.order(sortBy, { ascending: sortOrder === 'asc' });
     } else {
@@ -147,12 +210,74 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch library' }, { status: 500 });
     }
 
+    // Map analyzed items
+    let allItems = (data || []).map((item: any) => ({
+      ...item,
+      is_own_video: !!item.youtube_video_id,
+      analysis_status: 'analyzed' as const,
+    }));
+
+    let totalCount = count || 0;
+
+    // For 'own' or 'all' source, also fetch unanalyzed own videos and merge
+    if (source === 'own' || source === 'all') {
+      const serviceClient = createServiceClient();
+      const remainingSlots = limit - allItems.length;
+
+      if (remainingSlots > 0 && page === 1) {
+        let ownUnanalyzedQuery = serviceClient
+          .from('channel_videos')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_short', true)
+          .is('analysis_job_id', null)
+          .order('published_at', { ascending: false })
+          .limit(remainingSlots);
+
+        if (search) {
+          ownUnanalyzedQuery = ownUnanalyzedQuery.ilike('title', `%${search}%`);
+        }
+
+        const { data: unanalyzedOwn } = await ownUnanalyzedQuery;
+
+        if (unanalyzedOwn && unanalyzedOwn.length > 0) {
+          const mappedOwn = unanalyzedOwn.map((v: any) => ({
+            id: v.id,
+            title: v.title,
+            video_url: `https://youtube.com/shorts/${v.youtube_video_id}`,
+            video_duration: v.duration_seconds,
+            created_at: v.published_at,
+            starred: false,
+            is_own_video: true,
+            youtube_video_id: v.youtube_video_id,
+            youtube_view_count: v.view_count,
+            youtube_like_count: v.like_count,
+            analysis_status: 'unanalyzed' as const,
+            thumbnail_url: v.thumbnail_url,
+            privacy_status: v.privacy_status || 'public',
+          }));
+
+          allItems = [...allItems, ...mappedOwn];
+        }
+
+        // Get count of unanalyzed own videos for total
+        const { count: unanalyzedCount } = await serviceClient
+          .from('channel_videos')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_short', true)
+          .is('analysis_job_id', null);
+
+        totalCount += (unanalyzedCount || 0);
+      }
+    }
+
     return NextResponse.json({
-      items: data || [],
-      total: count || 0,
+      items: allItems,
+      total: totalCount,
       page,
       limit,
-      totalPages: Math.ceil((count || 0) / limit),
+      totalPages: Math.ceil(totalCount / limit),
     });
   } catch (error) {
     console.error('[Library] API error:', error);

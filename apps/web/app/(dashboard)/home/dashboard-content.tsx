@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload, Sparkles, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VideoUpload } from "@/components/video-upload";
+import { YouTubeConnectCard } from "@/components/YouTubeConnectCard";
 import { useTranslations } from "next-intl";
 
 type AnalyzeMode = "url" | "upload";
@@ -114,9 +115,11 @@ function formatDuration(seconds: number | null): string {
 
 export default function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations('dashboard');
   const [analyzeUrl, setAnalyzeUrl] = useState("");
   const [analyzeMode, setAnalyzeMode] = useState<AnalyzeMode>("url");
+  const didAutoAnalyze = useRef(false);
   const [topicInput, setTopicInput] = useState("");
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
@@ -146,6 +149,21 @@ export default function DashboardContent() {
     // Navigate directly to analysis page
     router.push(`/analyzer/${analysisId}`);
   };
+
+  // Auto-analyze when navigated with ?analyzeUrl= param (e.g. from library)
+  useEffect(() => {
+    if (didAutoAnalyze.current) return;
+    const urlParam = searchParams.get('analyzeUrl');
+    if (urlParam) {
+      didAutoAnalyze.current = true;
+      const analysisId = crypto.randomUUID();
+      sessionStorage.setItem(`analysis_${analysisId}`, JSON.stringify({
+        url: urlParam,
+        status: "pending"
+      }));
+      router.replace(`/analyzer/${analysisId}`);
+    }
+  }, [searchParams, router]);
 
   const handleUploadComplete = (fileUri: string, fileName: string) => {
     // Generate unique analysis ID
@@ -283,7 +301,7 @@ export default function DashboardContent() {
           </div>
 
           {/* Action Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {/* Create from Topic Card */}
             <div className="bg-[#141414] border border-gray-800 rounded-2xl p-8">
               <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider mb-4">
@@ -389,6 +407,9 @@ export default function DashboardContent() {
                 />
               )}
             </div>
+
+            {/* YouTube Connect Card */}
+            <YouTubeConnectCard />
           </div>
 
           {/* Local Viral Trends */}
