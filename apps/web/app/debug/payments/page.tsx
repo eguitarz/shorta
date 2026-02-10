@@ -35,7 +35,7 @@ interface Issue {
 }
 
 const TIERS = ['all', 'free', 'hobby', 'pro', 'producer', 'founder', 'lifetime'] as const;
-const STATUSES = ['all', 'active', 'canceled', 'past_due', 'trialing', 'null'] as const;
+const STATUSES = ['all', 'active', 'canceling', 'canceled', 'past_due', 'trialing', 'null'] as const;
 
 function getTierColor(tier: string) {
   switch (tier) {
@@ -51,6 +51,7 @@ function getTierColor(tier: string) {
 function getStatusColor(status: string | null) {
   switch (status) {
     case 'active': return 'bg-green-500/10 text-green-400';
+    case 'canceling': return 'bg-orange-500/10 text-orange-400';
     case 'canceled': return 'bg-red-500/10 text-red-400';
     case 'past_due': return 'bg-yellow-500/10 text-yellow-400';
     case 'trialing': return 'bg-blue-500/10 text-blue-400';
