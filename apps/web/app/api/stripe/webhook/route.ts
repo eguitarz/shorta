@@ -5,58 +5,66 @@ import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { createServiceClient } from '@/lib/supabase-service';
 
-// Initialize Stripe with the secret key from environment variables
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-01-28.clover',
-});
-
-// Get the webhook secret from environment variables for signature verification
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+// Lazy-initialized Stripe instance (secrets unavailable at build time)
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2026-01-28.clover',
+    });
+  }
+  return _stripe;
+}
 
 /**
- * A mapping from Stripe Price IDs to our application's plan details.
- * You must fill in the Price IDs from your Stripe dashboard in your environment variables.
+ * Build the price-to-plan mapping at runtime (env vars unavailable at build time).
  */
-const priceIdToPlanMap = {
-  // Hobby Plan (Monthly & Yearly)
-  [process.env.STRIPE_HOBBY_MONTHLY_PRICE_ID!]: {
-    tier: 'hobby',
-    credits: 1000,
-    cap: 1500, // 1.5x of 1000
-  },
-  [process.env.STRIPE_HOBBY_YEARLY_PRICE_ID!]: {
-    tier: 'hobby',
-    credits: 1000,
-    cap: 1500,
-  },
-  // Pro Plan (Monthly & Yearly)
-  [process.env.STRIPE_PRO_MONTHLY_PRICE_ID!]: {
-    tier: 'pro',
-    credits: 3500,
-    cap: 5250, // 1.5x of 3500
-  },
-  [process.env.STRIPE_PRO_YEARLY_PRICE_ID!]: {
-    tier: 'pro',
-    credits: 3500,
-    cap: 5250,
-  },
-  // Producer Plan (Monthly & Yearly)
-  [process.env.STRIPE_PRODUCER_MONTHLY_PRICE_ID!]: {
-    tier: 'producer',
-    credits: 12000,
-    cap: 24000, // 2x of 12000
-  },
-  [process.env.STRIPE_PRODUCER_YEARLY_PRICE_ID!]: {
-    tier: 'producer',
-    credits: 12000,
-    cap: 24000,
-  },
-};
+function getPriceIdToPlanMap(): Record<string, { tier: string; credits: number; cap: number }> {
+  return {
+    // Hobby Plan (Monthly & Yearly)
+    [process.env.STRIPE_HOBBY_MONTHLY_PRICE_ID!]: {
+      tier: 'hobby',
+      credits: 1000,
+      cap: 1500, // 1.5x of 1000
+    },
+    [process.env.STRIPE_HOBBY_YEARLY_PRICE_ID!]: {
+      tier: 'hobby',
+      credits: 1000,
+      cap: 1500,
+    },
+    // Pro Plan (Monthly & Yearly)
+    [process.env.STRIPE_PRO_MONTHLY_PRICE_ID!]: {
+      tier: 'pro',
+      credits: 3500,
+      cap: 5250, // 1.5x of 3500
+    },
+    [process.env.STRIPE_PRO_YEARLY_PRICE_ID!]: {
+      tier: 'pro',
+      credits: 3500,
+      cap: 5250,
+    },
+    // Producer Plan (Monthly & Yearly)
+    [process.env.STRIPE_PRODUCER_MONTHLY_PRICE_ID!]: {
+      tier: 'producer',
+      credits: 12000,
+      cap: 24000, // 2x of 12000
+    },
+    [process.env.STRIPE_PRODUCER_YEARLY_PRICE_ID!]: {
+      tier: 'producer',
+      credits: 12000,
+      cap: 24000,
+    },
+  };
+}
 
 /**
  * The main handler for processing incoming Stripe webhooks.
  */
 export async function POST(req: NextRequest) {
+  const stripe = getStripe();
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+  const priceIdToPlanMap = getPriceIdToPlanMap();
+
   const body = await req.text();
   const signature = (await headers()).get('stripe-signature')!;
 

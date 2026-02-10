@@ -4,10 +4,16 @@ import { redirect } from 'next/navigation';
 import Stripe from 'stripe';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase-server';
 
-// Initialize Stripe with the secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-01-28.clover',
-});
+// Lazy-initialized Stripe instance (secrets unavailable at build time)
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2026-01-28.clover',
+    });
+  }
+  return _stripe;
+}
 
 /**
  * Creates a Stripe Checkout session for a given price ID and redirects the user to it.
@@ -39,7 +45,7 @@ export async function createCheckoutSession(priceId: string) {
 
   // 2. If the user is not yet a Stripe customer, create one
   if (!customerId) {
-    const customer = await stripe.customers.create({
+    const customer = await getStripe().customers.create({
       email: user.email,
       metadata: {
         supabase_user_id: user.id,
@@ -65,7 +71,7 @@ export async function createCheckoutSession(priceId: string) {
 
   let session;
   try {
-    session = await stripe.checkout.sessions.create({
+    session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
       billing_address_collection: 'required',
