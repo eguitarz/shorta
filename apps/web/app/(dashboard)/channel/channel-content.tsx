@@ -739,8 +739,10 @@ export default function ChannelContent() {
     );
   }
 
-  const { connection, profile, stats, weekOverWeekChanges, historicalSnapshots, topShorts, unanalyzedShorts, retentionMetrics } =
+  const { connection, profile, stats, weekOverWeekChanges, historicalSnapshots, topShorts, unanalyzedShorts, retentionMetrics, tier } =
     analytics;
+
+  const isFreeUser = tier === 'free';
 
   return (
     <div className="flex flex-col h-full">
@@ -870,7 +872,27 @@ export default function ChannelContent() {
         </div>
 
         {/* Niche Analysis */}
-        {profile ? (
+        {isFreeUser ? (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 relative overflow-hidden">
+            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              {t("nicheLocked.title")}
+            </h3>
+            <div className="text-center py-6">
+              <div className="w-12 h-12 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Lock className="w-6 h-6 text-orange-500" />
+              </div>
+              <p className="text-gray-400 text-sm mb-4 max-w-sm mx-auto">
+                {t("nicheLocked.description")}
+              </p>
+              <Link href="/pricing">
+                <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
+                  {t("nicheLocked.cta")}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : profile ? (
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
             <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-2">
               <Target className="w-4 h-4" />
@@ -997,9 +1019,29 @@ export default function ChannelContent() {
         )}
 
         {/* Monetization Review */}
-        {profile?.monetization_analysis && (
+        {isFreeUser ? (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 relative overflow-hidden">
+            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              {t("monetizationLocked.title")}
+            </h3>
+            <div className="text-center py-6">
+              <div className="w-12 h-12 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Lock className="w-6 h-6 text-orange-500" />
+              </div>
+              <p className="text-gray-400 text-sm mb-4 max-w-sm mx-auto">
+                {t("monetizationLocked.description")}
+              </p>
+              <Link href="/pricing">
+                <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
+                  {t("monetizationLocked.cta")}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : profile?.monetization_analysis ? (
           <MonetizationReview analysis={profile.monetization_analysis} t={t} />
-        )}
+        ) : null}
 
         {/* Retention Overview */}
         {retentionMetrics && retentionMetrics.totalShortsWithData > 0 && (

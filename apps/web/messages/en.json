@@ -810,6 +810,16 @@
       "description": "Upload at least 3 Shorts to your channel — our AI will analyze your content to identify your niche, audience, and style.",
       "blogLink": "Guide: How to Start a YouTube Channel"
     },
+    "nicheLocked": {
+      "title": "Niche Analysis",
+      "description": "Upgrade to unlock AI-powered niche detection — discover your primary niche, target audience, and content themes.",
+      "cta": "Upgrade to Unlock"
+    },
+    "monetizationLocked": {
+      "title": "Monetization Review",
+      "description": "Upgrade to unlock monetization insights — get CPM estimates, revenue projections, and growth strategies for your niche.",
+      "cta": "Upgrade to Unlock"
+    },
     "channelStats": "Channel Stats",
     "metrics": {
       "subscribers": "Subscribers",

@@ -800,6 +800,16 @@
       "description": "上傳至少 3 支短影片到你的頻道 — AI 會分析你的內容，找出你的領域、受眾和風格。",
       "blogLink": "指南：如何開始經營 YouTube 頻道"
     },
+    "nicheLocked": {
+      "title": "領域分析",
+      "description": "升級以解鎖 AI 領域偵測 — 探索你的主要領域、目標受眾和內容主題。",
+      "cta": "升級以解鎖"
+    },
+    "monetizationLocked": {
+      "title": "變現分析",
+      "description": "升級以解鎖變現洞察 — 獲取 CPM 估算、收入預測和領域成長策略。",
+      "cta": "升級以解鎖"
+    },
     "channelStats": "頻道統計",
     "metrics": {
       "subscribers": "訂閱者",
