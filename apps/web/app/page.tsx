@@ -256,29 +256,30 @@ export default function HomePage() {
           Try free first. Upgrade when you're ready.
         </p>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {/* Free */}
+        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          {/* Hobby */}
           <div className="bg-surface/50 rounded-xl p-6 border border-border/50">
-            <h3 className="text-xl font-bold text-foreground mb-1">Free</h3>
-            <p className="text-sm text-muted-foreground mb-4">Try before you commit</p>
-            <p className="text-3xl font-bold text-foreground mb-4">$0</p>
+            <h3 className="text-xl font-bold text-foreground mb-1">Hobby</h3>
+            <p className="text-sm text-muted-foreground mb-4">For casual creators</p>
+            <p className="text-3xl font-bold text-foreground mb-1">$6<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
+            <p className="text-xs text-muted-foreground mb-4">billed yearly · $8/mo monthly</p>
             <ul className="space-y-2 text-sm text-muted-foreground mb-6">
               <li className="flex items-start gap-2">
                 <span className="text-green-500">&#10003;</span>
-                <span>1 free analysis</span>
+                <span>1,000 credits / month</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-500">&#10003;</span>
-                <span>Beat-by-beat breakdown</span>
+                <span>~10 storyboards</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-500">&#10003;</span>
-                <span>No login required</span>
+                <span>Credits roll over (up to 1.5x cap)</span>
               </li>
             </ul>
-            <a href="/try" className="block">
+            <a href="/pricing" className="block">
               <Button variant="outline" size="lg" className="w-full">
-                Try Free
+                Get Started
               </Button>
             </a>
           </div>
@@ -286,38 +287,59 @@ export default function HomePage() {
           {/* Pro */}
           <div className="bg-surface/50 rounded-xl p-6 border-2 border-primary relative">
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-3 py-0.5 rounded-full text-xs font-semibold">
-              Early Access Price
+              Most Popular
             </div>
             <h3 className="text-xl font-bold text-foreground mb-1">Pro</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              <span className="line-through">$399/year</span> after launch
-            </p>
-            <p className="text-3xl font-bold text-foreground mb-1">$99<span className="text-lg font-normal text-muted-foreground">/year</span></p>
-            <p className="text-xs text-muted-foreground mb-4">or $199 lifetime · price locked forever</p>
+            <p className="text-sm text-muted-foreground mb-4">For weekly creators</p>
+            <p className="text-3xl font-bold text-foreground mb-1">$15<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
+            <p className="text-xs text-muted-foreground mb-4">billed yearly · $18/mo monthly</p>
             <ul className="space-y-2 text-sm text-muted-foreground mb-6">
               <li className="flex items-start gap-2">
                 <span className="text-green-500">&#10003;</span>
-                <span>100 storyboards/month</span>
+                <span>3,500 credits / month</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-500">&#10003;</span>
-                <span>Storyboard AI with hook generator</span>
+                <span>~35 storyboards</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-500">&#10003;</span>
-                <span>YouTube Shorts analyzer</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-500">&#10003;</span>
-                <span>Personal analysis library</span>
+                <span>Credits roll over (up to 1.5x cap)</span>
               </li>
             </ul>
             <a href="/pricing" className="block">
               <Button variant="hero" size="lg" className="w-full">
-                Get Early Access
+                Get Started
               </Button>
             </a>
             <TrustBadges />
+          </div>
+
+          {/* Producer */}
+          <div className="bg-surface/50 rounded-xl p-6 border border-border/50">
+            <h3 className="text-xl font-bold text-foreground mb-1">Producer</h3>
+            <p className="text-sm text-muted-foreground mb-4">For daily creators & teams</p>
+            <p className="text-3xl font-bold text-foreground mb-1">$45<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
+            <p className="text-xs text-muted-foreground mb-4">billed yearly · $56/mo monthly</p>
+            <ul className="space-y-2 text-sm text-muted-foreground mb-6">
+              <li className="flex items-start gap-2">
+                <span className="text-green-500">&#10003;</span>
+                <span>12,000 credits / month</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500">&#10003;</span>
+                <span>~120 storyboards</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500">&#10003;</span>
+                <span>Priority processing</span>
+              </li>
+            </ul>
+            <a href="/pricing" className="block">
+              <Button variant="outline" size="lg" className="w-full">
+                Get Started
+              </Button>
+            </a>
           </div>
         </div>
 

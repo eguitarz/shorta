@@ -61,12 +61,17 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const initials = user.email?.split("@")[0].slice(0, 2).toUpperCase() || "JD";
 
-  // Fetch usage data on mount and when navigating (e.g. after creating a storyboard)
+  // Fetch usage data on mount, navigation, and after credit changes
   useEffect(() => {
-    fetch('/api/usage/check')
-      .then(res => res.json())
-      .then(data => setUsageData(data))
-      .catch(console.error);
+    const fetchUsage = () => {
+      fetch('/api/usage/check')
+        .then(res => res.json())
+        .then(data => setUsageData(data))
+        .catch(console.error);
+    };
+    fetchUsage();
+    window.addEventListener('credits-changed', fetchUsage);
+    return () => window.removeEventListener('credits-changed', fetchUsage);
   }, [pathname]);
 
   const navItems = [
