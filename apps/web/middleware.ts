@@ -1,3 +1,11 @@
+// Polyfill process.versions for Edge Runtime compatibility with @supabase/realtime-js
+if (typeof process !== 'undefined' && !process.versions) {
+  (process as any).versions = { node: '' };
+}
+if (typeof process !== 'undefined' && !process.version) {
+  (process as any).version = '';
+}
+
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
