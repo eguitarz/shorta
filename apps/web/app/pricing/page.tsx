@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Zap, Crown, Gem } from 'lucide-react';
+import { Check, Zap, Crown, Gem, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const plans = [
@@ -102,7 +102,35 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          {/* Free Tier */}
+          <div className="bg-[#1a1a1a] border border-gray-800 rounded-2xl p-8 transition-all hover:border-gray-700 flex flex-col">
+            <User className="w-10 h-10 text-gray-400 mb-4" />
+            <h3 className="text-2xl font-bold mb-2">Free</h3>
+            <p className="text-gray-400 mb-6 h-10">Try it out — no credit card needed</p>
+
+            <div className="mb-6">
+              <span className="text-4xl font-bold">$0</span>
+              <span className="text-gray-400">/forever</span>
+            </div>
+
+            <ul className="space-y-3 mb-8 flex-grow">
+              {['300 credits on sign-up', '~3 storyboards', 'Full analysis features'].map((feature, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <a
+              href="/login"
+              className="w-full py-3 rounded-lg font-semibold transition-colors bg-gray-800 hover:bg-gray-700 text-center block"
+            >
+              Create Free Account
+            </a>
+          </div>
+
           {plans.map((plan) => (
             <div
               key={plan.name}
