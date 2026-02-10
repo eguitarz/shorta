@@ -27,6 +27,12 @@ export default function HomePage() {
                 Pricing
               </a>
               <a
+                href="/login"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline"
+              >
+                Log in
+              </a>
+              <a
                 href="/try"
                 className="bg-primary text-primary-foreground px-4 py-2 md:px-5 md:py-2.5 rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 text-sm md:text-base"
               >
