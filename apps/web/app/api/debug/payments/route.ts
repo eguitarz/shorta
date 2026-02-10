@@ -46,7 +46,7 @@ export async function GET() {
     }));
 
     const byTier: Record<string, number> = { free: 0, hobby: 0, pro: 0, producer: 0, founder: 0, lifetime: 0 };
-    const byStatus: Record<string, number> = { active: 0, canceled: 0, past_due: 0, trialing: 0, null: 0 };
+    const byStatus: Record<string, number> = { active: 0, canceling: 0, canceled: 0, past_due: 0, trialing: 0, null: 0 };
 
     for (const p of profiles) {
       if (p.tier in byTier) byTier[p.tier]++;

@@ -241,12 +241,50 @@ export async function POST(req: NextRequest) {
       break;
     }
 
-    // This event fires when a subscription is canceled by the user or by billing failures.
+    // User requested cancellation — keep access until period end
+    case 'customer.subscription.updated': {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId = subscription.customer as string;
+
+      if (subscription.cancel_at_period_end && subscription.cancel_at) {
+        const periodEnd = new Date(subscription.cancel_at * 1000).toISOString();
+        const { error } = await supabase
+          .from('user_profiles')
+          .update({
+            subscription_status: 'canceling',
+            subscription_end_date: periodEnd,
+          })
+          .eq('stripe_customer_id', customerId);
+
+        if (error) {
+          console.error('Supabase update error on cancellation request:', error);
+          return new NextResponse(`Webhook Error: ${error.message}`, { status: 500 });
+        }
+        console.log(`✅ Subscription canceling at period end (${periodEnd}) for customer ${customerId}`);
+      } else if ((subscription as any).previous_attributes?.cancel_at_period_end === true) {
+        // User re-activated their subscription (undid cancellation)
+        const { error } = await supabase
+          .from('user_profiles')
+          .update({
+            subscription_status: 'active',
+            subscription_end_date: null,
+          })
+          .eq('stripe_customer_id', customerId);
+
+        if (error) {
+          console.error('Supabase update error on reactivation:', error);
+          return new NextResponse(`Webhook Error: ${error.message}`, { status: 500 });
+        }
+        console.log(`✅ Subscription reactivated for customer ${customerId}`);
+      }
+      break;
+    }
+
+    // Period ended after cancellation — now actually downgrade
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
-      // Downgrade the user to the 'free' tier and reset their credits.
       const { error } = await supabase
         .from('user_profiles')
         .update({
@@ -254,16 +292,17 @@ export async function POST(req: NextRequest) {
           tier: 'free',
           credits: 0,
           credits_cap: 0,
-          stripe_subscription_id: null, // Clear the old subscription ID
+          stripe_subscription_id: null,
+          subscription_end_date: null,
         })
         .eq('stripe_customer_id', customerId);
 
       if (error) {
-        console.error('Supabase update error on cancellation:', error);
+        console.error('Supabase update error on subscription end:', error);
         return new NextResponse(`Webhook Error: ${error.message}`, { status: 500 });
       }
-      
-      console.log(`✅ Canceled subscription for customer ${customerId}`);
+
+      console.log(`✅ Subscription ended for customer ${customerId}, downgraded to free`);
       break;
     }
 
