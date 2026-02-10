@@ -18,6 +18,10 @@
     "joinAsMember": "Únete como Miembro Fundador",
     "noCreditCard": "Sin tarjeta de crédito · Sin registro",
     "pricing": "$99/año o $199 de por vida",
+    "connectYouTube": "Conectar YouTube",
+    "channelConnected": "Canal conectado",
+    "notConnected": "No conectado",
+    "reconnectNeeded": "Reconexión necesaria",
     "yes": "Sí",
     "pricingLimited": "$99/año o $199 de por vida · plazas limitadas",
     "upgrade": "Mejorar Plan",
@@ -28,7 +32,8 @@
     "home": "Inicio",
     "analyzer": "Analizador",
     "draft": "Borrador",
-    "library": "Biblioteca"
+    "library": "Biblioteca",
+    "channel": "Mi Canal"
   },
   "landing": {
     "hero": {
@@ -123,6 +128,23 @@
       "loading": "Cargando actividades...",
       "empty": "Sin actividad reciente. ¡Empieza analizando un video!",
       "useAsReference": "Usar como Referencia"
+    },
+    "youtubeConnect": {
+      "label": "YouTube Connect",
+      "title": "Conecta tu canal",
+      "description": "Importa tus videos, detecta tu nicho y ve cuáles de tus Shorts están analizados.",
+      "connectButton": "Conectar canal de YouTube",
+      "connected": "Conectado",
+      "subscribers": "suscriptores",
+      "videos": "videos",
+      "lastSync": "Última sincronización",
+      "disconnect": "Desconectar",
+      "disconnectConfirm": "¿Desconectar tu canal?",
+      "yes": "Sí",
+      "no": "No",
+      "needsReauth": "Tu conexión de YouTube necesita ser actualizada. Por favor reconecta.",
+      "reconnect": "Reconectar",
+      "connectionError": "Error al conectar YouTube. Inténtalo de nuevo."
     },
     "trends": {
       "label": "Shorts Populares",
@@ -487,6 +509,18 @@
       "openLink": "Abrir en nueva pestaña",
       "error": "Error al crear enlace"
     },
+    "retentionCurve": {
+      "title": "Retención de Audiencia",
+      "subtitle": "Dónde los espectadores dejan de ver tu video",
+      "watchRatio": "Aún viendo",
+      "relativePerformance": "vs. videos similares",
+      "atTime": "En {time}",
+      "beat": "Beat {number}",
+      "refresh": "Actualizar",
+      "stale": "Desactualizado",
+      "aboveAverage": "sobre prom.",
+      "belowAverage": "bajo prom."
+    },
     "create": {
       "title": "Crear Análisis de Short",
       "subtitle": "Ingresa una URL de YouTube o sube un video para analizar con IA",
@@ -734,6 +768,85 @@
       "reason1": "El análisis aún no se ha compartido",
       "reason2": "El enlace es incorrecto o ha expirado",
       "reason3": "Es necesario aplicar migraciones de base de datos"
+    }
+  },
+  "channel": {
+    "title": "Mi Canal",
+    "loading": "Cargando datos del canal...",
+    "connectTitle": "Conecta Tu Canal de YouTube",
+    "connectDescription": "Vincula tu canal de YouTube para seguir el crecimiento de suscriptores, tendencias de vistas y obtener análisis de nicho con IA.",
+    "connectButton": "Conectar YouTube",
+    "subscribers": "suscriptores",
+    "lastSync": "Última sincronización:",
+    "syncNow": "Sincronizar",
+    "syncing": "Sincronizando...",
+    "notEnoughData": "No hay suficientes datos para la comparación semanal",
+    "notEnoughDataHint": "Vuelve a verificar después de 7 días de recopilación de datos.",
+    "nicheAnalysis": "Análisis de Nicho",
+    "confidence": "confianza",
+    "secondaryNiches": "Nichos Secundarios",
+    "targetAudience": "Audiencia Objetivo",
+    "format": "Formato",
+    "contentThemes": "Temas de Contenido",
+    "reasoning": "Razonamiento IA",
+    "nicheEmpty": {
+      "title": "Análisis de Nicho se desbloquea con 3 Shorts",
+      "description": "Sube al menos 3 Shorts a tu canal — nuestra IA analizará tu contenido para identificar tu nicho, audiencia y estilo.",
+      "blogLink": "Guía: Cómo empezar un canal de YouTube"
+    },
+    "channelStats": "Estadísticas del Canal",
+    "metrics": {
+      "subscribers": "Suscriptores",
+      "totalViews": "Vistas Totales",
+      "avgShortViews": "Vistas Promedio por Short",
+      "engagementRate": "Tasa de Interacción"
+    },
+    "topShorts": "Shorts con Mejor Rendimiento",
+    "readyToAnalyze": "Listos para Analizar",
+    "analyzeButton": "Analizar",
+    "privateVideo": "Privado",
+    "privateVideoTooltip": "No se puede analizar — solo se pueden analizar videos públicos",
+    "growthChart": "Tendencia de Crecimiento",
+    "growthChartEmpty": "El gráfico de crecimiento aparecerá después de unos días de recopilación de datos.",
+    "stats": {
+      "totalVideos": "Videos Totales",
+      "shorts": "Shorts",
+      "analyzed": "Analizados"
+    },
+    "retention": {
+      "title": "Resumen de Retención",
+      "noDataYet": "Los datos de retención aparecerán después de sincronizar con YouTube Analytics.",
+      "avgCompletionRate": "Tasa de Completación Promedio",
+      "acrossShorts": "en {count} Shorts",
+      "bestPerforming": "Mejor Retención",
+      "lowestPerforming": "Menor Retención",
+      "completionTooltip": "% promedio del video visto por los espectadores. Mayor significa que más personas ven hasta el final.",
+      "avgDuration": "Duración promedio: {seconds}s"
+    },
+    "monetization": {
+      "title": "Revisión de Monetización",
+      "marketSize": "Tamaño del Mercado",
+      "competition": "Competencia",
+      "growthPotential": "Potencial de Crecimiento",
+      "revenueEstimate": "Estimación de Ingresos",
+      "cpmRange": "Rango de CPM",
+      "monthlyRevenue": "Ingresos Mensuales Est.",
+      "strategies": "Estrategias de Monetización",
+      "recommendation": "Recomendación",
+      "nicheAdvice": "Consejo de Nicho",
+      "levels": {
+        "small": "Pequeño",
+        "medium": "Mediano",
+        "large": "Grande",
+        "massive": "Masivo",
+        "low": "Bajo",
+        "high": "Alto",
+        "saturated": "Saturado",
+        "declining": "En Declive",
+        "stable": "Estable",
+        "growing": "En Crecimiento",
+        "explosive": "Explosivo"
+      }
     }
   }
 }
