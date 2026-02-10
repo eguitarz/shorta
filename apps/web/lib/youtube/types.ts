@@ -221,6 +221,7 @@ export interface VideoRetentionCurve {
 
 /** Combined channel analytics response */
 export interface ChannelAnalytics {
+  tier: string;
   profile: ChannelProfile | null;
   connection: YouTubeConnectionInfo | null;
   stats: {

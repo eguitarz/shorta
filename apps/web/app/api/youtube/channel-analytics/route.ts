@@ -28,6 +28,15 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createServiceClient();
 
+    // Fetch user tier
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('tier')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const tier = userProfile?.tier || 'free';
+
     // Fetch channel profile (niche info)
     const { data: profile } = await supabase
       .from('channel_profiles')
@@ -198,6 +207,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
+      tier,
       profile,
       connection: connectionInfo,
       stats: {
