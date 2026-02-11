@@ -61,7 +61,18 @@ export async function middleware(request: NextRequest) {
   supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
 
   // Inject locale for i18n
-  const locale = getPreferredLocale(request);
+  const pathname = request.nextUrl.pathname;
+  let locale: string;
+  if (pathname === '/ko' || pathname.startsWith('/ko/')) {
+    locale = 'ko';
+    supabaseResponse.cookies.set('NEXT_LOCALE', 'ko', {
+      maxAge: 365 * 24 * 60 * 60,
+      path: '/',
+      sameSite: 'lax',
+    });
+  } else {
+    locale = getPreferredLocale(request);
+  }
   supabaseResponse.headers.set('x-locale', locale);
 
   // Allow anonymous access to /try page (trial form)
