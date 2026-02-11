@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     // Authenticated user - check user_profiles
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('tier, credits, credits_cap')
+      .select('tier, credits, credits_cap, current_period_end')
       .eq('user_id', user.id)
       .single();
 
@@ -103,6 +103,7 @@ export async function GET(request: NextRequest) {
         credits_cap: creditsCap,
         can_analyze: credits >= storyboardCost,
         can_create_storyboard: credits >= storyboardCost,
+        current_period_end: profile.current_period_end ?? null,
       });
     }
 

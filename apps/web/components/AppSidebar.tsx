@@ -31,6 +31,7 @@ interface UsageData {
   credits?: number | null;
   credits_cap?: number | null;
   can_create_storyboard?: boolean;
+  current_period_end?: string | null;
 }
 
 // YouTube brand icon (simplified SVG path)
