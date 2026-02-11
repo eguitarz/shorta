@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://shorta.ai/pricing",
+    languages: {
+      en: "https://shorta.ai/pricing",
+      ko: "https://shorta.ai/ko/pricing",
+    },
   },
 };
 
