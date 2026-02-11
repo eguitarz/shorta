@@ -238,6 +238,7 @@ export async function POST(req: NextRequest) {
           subscription_status: 'active',
           credits: newCreditBalance,
           credits_cap: plan.cap,
+          current_period_end: new Date(subscription.items.data[0].current_period_end * 1000).toISOString(),
         }, { onConflict: 'user_id' });
 
       if (updateError) {
@@ -261,6 +262,7 @@ export async function POST(req: NextRequest) {
           .update({
             subscription_status: 'canceling',
             subscription_end_date: periodEnd,
+            current_period_end: new Date(subscription.items.data[0].current_period_end * 1000).toISOString(),
           })
           .eq('stripe_customer_id', customerId);
 
@@ -276,6 +278,7 @@ export async function POST(req: NextRequest) {
           .update({
             subscription_status: 'active',
             subscription_end_date: null,
+            current_period_end: new Date(subscription.items.data[0].current_period_end * 1000).toISOString(),
           })
           .eq('stripe_customer_id', customerId);
 
@@ -302,6 +305,7 @@ export async function POST(req: NextRequest) {
           credits_cap: 0,
           stripe_subscription_id: null,
           subscription_end_date: null,
+          current_period_end: null,
         })
         .eq('stripe_customer_id', customerId);
 
