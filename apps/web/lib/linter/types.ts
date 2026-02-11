@@ -1,6 +1,6 @@
 export type RuleSeverity = 'critical' | 'moderate' | 'minor';
 export type RuleCategory = 'hook' | 'retention' | 'audio' | 'visual' | 'pacing' | 'structure' | 'cta';
-export type VideoFormat = 'talking_head' | 'gameplay' | 'other';
+export type VideoFormat = 'talking_head' | 'gameplay' | 'demo' | 'other';
 
 export interface Rule {
   id: string;

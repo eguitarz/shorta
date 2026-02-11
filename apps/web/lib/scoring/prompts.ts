@@ -21,12 +21,13 @@ IMPORTANT: Do NOT provide scores or opinions. Extract ONLY factual measurements.
 First, identify the VIDEO FORMAT:
 - **Talking Head**: Person speaking directly to camera
 - **Gameplay**: Gaming content with or without commentary
-- **Faceless/Other**: Screen recordings, B-roll montages, text-based, no visible speaker
+- **Demo**: Screen recordings, product demos, software walkthroughs, tool tutorials — primary visual is a screen/UI/product
+- **Faceless/Other**: B-roll montages, text-based, animations, lifestyle — no visible speaker and not a demo
 
 Return ONLY valid JSON in this exact format:
 
 {
-  "format": "<talking_head|gameplay|other>",
+  "format": "<talking_head|gameplay|demo|other>",
   "signals": {
     "hook": {
       "TTClaim": <number - seconds until first VALUE SIGNAL to viewer. See detailed guidelines below>,
@@ -98,7 +99,19 @@ Return ONLY valid JSON in this exact format:
 - EC: Action intensity variation (not just voice)
 - PP: True if there's a climax, win, or satisfying conclusion
 
-**FACELESS/OTHER (screen recordings, B-roll, text-based):**
+**DEMO (screen recordings, product demos, software walkthroughs, tutorials):**
+- TTClaim: Seconds until first VALUE SIGNAL. For demos, this is typically when the outcome/result is first shown OR when the viewer understands what they will learn. Setup actions (opening apps, navigating menus) do NOT count. The result preview or clear promise counts.
+- PB: Rate based on visual impact of the opening. Showing a finished result = 4-5. Starting with a raw app/browser = 1-2.
+- Spec: Count specific elements: tool names, version numbers, time savings ("in 10 seconds"), metrics, specific features
+- pauseCount: Count deliberate pauses in voiceover. If no voiceover, use 2 (neutral)
+- fillerCount: Count fillers in voiceover. If no voiceover, use 0
+- wordCount: Count voiceover words + text overlay words
+- EC: Visual/audio intensity variation (zooms, transitions, music changes, speed ramps)
+- PP: True if the promised demo result is clearly shown (the tool working, the output generated, the feature in action)
+- SC: Rate complexity of the explanation. Simple step-by-step = 1-2. Technical deep-dive = 4-5.
+- TJ: Count jumps between unrelated features or tools. A linear walkthrough = 0. Jumping between apps = 2+.
+
+**FACELESS/OTHER (B-roll montages, text-based, animations, lifestyle):**
 - TTClaim: Seconds until first VALUE SIGNAL appears (text hook with promise/emotion, key reveal, surprising visual)
 - pauseCount: Use 2 (neutral)
 - fillerCount: 0 (no speech)

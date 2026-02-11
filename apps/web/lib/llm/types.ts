@@ -37,11 +37,11 @@ export interface LLMEnv {
 }
 
 export interface VideoClassification {
-  format: 'talking_head' | 'gameplay' | 'other';
+  format: 'talking_head' | 'gameplay' | 'demo' | 'other';
   confidence: number;
   evidence: string[];
   fallback: {
-    format: 'talking_head' | 'gameplay' | 'other';
+    format: 'talking_head' | 'gameplay' | 'demo' | 'other';
     confidence: number;
   };
 }

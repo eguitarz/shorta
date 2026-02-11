@@ -341,9 +341,10 @@ export function calculateDeliveryScore(
   score: number;
   breakdown: DeliveryScoreBreakdown;
 } {
-  // For non-talking-head formats, pause/filler metrics are less relevant
+  // For non-speech formats, pause/filler metrics are less relevant
   // Use neutral values if the format doesn't have speech
-  const isVoiceBased = format === 'talking_head';
+  // Demo and talking_head both typically have voiceover/speech
+  const isVoiceBased = format === 'talking_head' || format === 'demo';
 
   const breakdown: DeliveryScoreBreakdown = {
     LS: scoreLS(signals.LS),

@@ -50,7 +50,7 @@ export interface AnalysisJobRow {
 	lint_bonus_points: number | null;
 
 	// Video Metadata
-	video_format: 'talking_head' | 'gameplay' | 'other' | null;
+	video_format: 'talking_head' | 'gameplay' | 'demo' | 'other' | null;
 	hook_category: HookCategory | null;
 	hook_pattern: string | null;
 	niche_category: string | null;
@@ -167,7 +167,7 @@ export interface AnalysisSearchParams {
 	minClarity?: number;
 
 	// Metadata filters
-	format?: 'talking_head' | 'gameplay' | 'other';
+	format?: 'talking_head' | 'gameplay' | 'demo' | 'other';
 	hookCategory?: HookCategory;
 	niche?: string;
 	contentType?: string;

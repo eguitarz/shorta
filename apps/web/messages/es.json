@@ -202,10 +202,10 @@
       "overall": "Puntuación General",
       "howCalculated": "¿Cómo se calcula esta puntuación?",
       "calculationExplanation": "La Puntuación General (0-100) se calcula a partir de 4 categorías ponderadas:",
-      "hookWeight": "Gancho (35%) - Qué tan rápido captas la atención",
-      "structureWeight": "Estructura (25%) - Flujo y entrega de valor",
-      "clarityWeight": "Claridad (25%) - Ritmo al hablar y simplicidad",
-      "deliveryWeight": "Entrega (15%) - Calidad de audio y energía",
+      "hookWeight": "Gancho ({percent}%) - Qué tan rápido captas la atención",
+      "structureWeight": "Estructura ({percent}%) - Flujo y entrega de valor",
+      "clarityWeight": "Claridad ({percent}%) - Ritmo al hablar y simplicidad",
+      "deliveryWeight": "Entrega ({percent}%) - Calidad de audio y energía",
       "deterministic": "Determinista: El mismo video siempre obtiene la misma puntuación.",
       "grades": "Calificaciones: S (100+), A (80-99), B (70-79), C (60-69), D (50-59), F (<50)",
       "comments": {
@@ -217,6 +217,28 @@
         "F": "Requiere Re-trabajo Significativo"
       },
       "perfectBeats": "{perfect} de {total} beats perfectos"
+    },
+    "format": {
+      "label": "Formato",
+      "talking_head": "Cámara frontal",
+      "gameplay": "Gameplay",
+      "demo": "Demo / Grabación de pantalla",
+      "other": "General",
+      "guidance": {
+        "talking_head": "Para videos de cámara frontal, la energía del gancho y la entrega al hablar son lo más importante. Contacto visual, ritmo y una promesa clara en los primeros 2 segundos son clave.",
+        "gameplay": "Para clips de gameplay, la acción inicial y el momento destacado son críticos. Un ritmo rápido y un clímax claro mantienen a los espectadores.",
+        "demo": "Para videos demo, muestra el resultado final primero — luego explica cómo. Elimina tiempos muertos (carga, escritura), haz zoom en áreas clave de la UI y añade texto para contexto.",
+        "other": "La fuerza del gancho y la estructura narrativa son los factores más importantes. Asegúrate de cumplir la promesa de tu apertura."
+      }
+    },
+    "nextStep": {
+      "title": "Siguiente paso",
+      "description": "Aplica correcciones abajo, luego genera un storyboard mejorado →",
+      "howItWorks": "Cómo funciona:",
+      "step1": "Haz clic en \"Aplicar corrección\" en los problemas que quieras resolver",
+      "step2": "Tus correcciones se acumulan en la barra lateral →",
+      "step3": "Presiona \"Generar\" para crear un storyboard de director con tus correcciones aplicadas",
+      "openSidebar": "Abrir panel de cambios"
     },
     "director": {
       "take": "Opinión del Director",
@@ -409,6 +431,8 @@
       "noIssues": "Sin problemas",
       "showDetails": "Mostrar detalles",
       "hideDetails": "Ocultar detalles",
+      "showMoreBeats": "Mostrar {count} beats más",
+      "collapseBeats": "Colapsar",
       "retentionDrop": "Caída de retención estimada",
       "beatMini": "Beat {number}",
       "transcript": "Transcripción",

@@ -445,7 +445,7 @@ function parseSignalJSON(content: string): SignalExtractionResult {
     }
 
     // Validate and normalize format
-    const validFormats = ['talking_head', 'gameplay', 'other'];
+    const validFormats = ['talking_head', 'gameplay', 'demo', 'other'];
     const format = validFormats.includes(parsed.format) ? parsed.format : 'talking_head';
 
     // Provide defaults for missing optional fields
