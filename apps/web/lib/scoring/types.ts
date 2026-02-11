@@ -67,7 +67,7 @@ export interface VideoSignals {
 // Signal Extraction Response (from LLM)
 // ============================================
 
-export type VideoFormat = 'talking_head' | 'gameplay' | 'other';
+export type VideoFormat = 'talking_head' | 'gameplay' | 'demo' | 'other';
 
 export interface BeatTimestamp {
   beatNumber: number;

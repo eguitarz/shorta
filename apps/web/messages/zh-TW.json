@@ -206,10 +206,10 @@
       "overall": "總分",
       "howCalculated": "評分是如何計算的？",
       "calculationExplanation": "總分 (0-100) 是根據 4 個加權類別計算的：",
-      "hookWeight": "開場 (35%) - 吸引注意力的速度",
-      "structureWeight": "結構 (25%) - 流程和價值傳遞",
-      "clarityWeight": "清晰度 (25%) - 說話節奏和簡潔度",
-      "deliveryWeight": "表達 (15%) - 音訊品質和能量",
+      "hookWeight": "開場 ({percent}%) - 吸引注意力的速度",
+      "structureWeight": "結構 ({percent}%) - 流程和價值傳遞",
+      "clarityWeight": "清晰度 ({percent}%) - 說話節奏和簡潔度",
+      "deliveryWeight": "表達 ({percent}%) - 音訊品質和能量",
       "deterministic": "確定性：相同的影片將始終獲得相同的評分。",
       "grades": "等級：S (100+), A (80-99), B (70-79), C (60-69), D (50-59), F (<50)",
       "comments": {
@@ -221,6 +221,28 @@
         "F": "需要大幅修改"
       },
       "perfectBeats": "{total} 個節拍中有 {perfect} 個節拍完美"
+    },
+    "format": {
+      "label": "格式",
+      "talking_head": "真人出鏡",
+      "gameplay": "遊戲實況",
+      "demo": "示範 / 螢幕錄製",
+      "other": "一般",
+      "guidance": {
+        "talking_head": "真人出鏡影片中，開場能量和語言表達最為重要。眼神接觸、節奏和前2秒的明確承諾是關鍵。",
+        "gameplay": "遊戲片段中，開場動作和高光時刻至關重要。快節奏和明確的高潮能留住觀眾。",
+        "demo": "示範影片請先展示最終成果 — 然後再講解方法。刪除等待時間（載入、打字），放大關鍵 UI 區域，並添加文字說明提供上下文。",
+        "other": "開場強度和故事結構是最重要的因素。確保兌現開頭的承諾。"
+      }
+    },
+    "nextStep": {
+      "title": "下一步",
+      "description": "在下方套用修正，然後生成改進後的分鏡腳本 →",
+      "howItWorks": "運作方式：",
+      "step1": "在您想解決的問題上點擊「套用修正」",
+      "step2": "您的修正會收集在側邊欄 →",
+      "step3": "按下「生成」來創建已套用修正的導演分鏡腳本",
+      "openSidebar": "開啟變更面板"
     },
     "director": {
       "take": "導演點評",
@@ -427,6 +449,8 @@
       "noIssues": "查無問題",
       "showDetails": "顯示詳情",
       "hideDetails": "隱藏詳情",
+      "showMoreBeats": "顯示其餘 {count} 個節拍",
+      "collapseBeats": "收合",
       "retentionDrop": "預估留存降幅",
       "beatMini": "節拍 {number}",
       "transcript": "逐字稿",

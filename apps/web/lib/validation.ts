@@ -49,7 +49,7 @@ export const youtubeUrlSchema = z.string()
 /**
  * Video format validation schema
  */
-export const videoFormatSchema = z.enum(['talking_head', 'gameplay', 'other']);
+export const videoFormatSchema = z.enum(['talking_head', 'gameplay', 'demo', 'other']);
 
 /**
  * Message schema for chat endpoints

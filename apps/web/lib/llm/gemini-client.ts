@@ -94,15 +94,16 @@ Do NOT give feedback, suggestions, or evaluation.
 **Available Formats (choose ONE):**
 1. **talking_head** - Person speaking directly to camera (can include b-roll, but speaker is the PRIMARY focus)
 2. **gameplay** - Video game footage (can include commentary, but gameplay is the PRIMARY visual)
-3. **other** - Everything else (tutorials, animations, vlogs, montages, product reviews, etc.)
+3. **demo** - Screen recording, product demo, software walkthrough, or tutorial showing a screen/app/tool. The PRIMARY visual is a screen, UI, or product being demonstrated (with or without voiceover/facecam). Key indicators: cursor movement, UI interactions, code editors, browser windows, app interfaces, product showcases.
+4. **other** - Everything else (animations, vlogs, montages, lifestyle content, etc.)
 
 Return ONLY this JSON structure:
 {
-  "format": "talking_head | gameplay | other",
+  "format": "talking_head | gameplay | demo | other",
   "confidence": 0.95,
   "evidence": ["short bullet points explaining why"],
   "fallback": {
-    "format": "talking_head | gameplay | other",
+    "format": "talking_head | gameplay | demo | other",
     "confidence": 0.0
   }
 }`;
@@ -113,14 +114,15 @@ IMPORTANT:
 - Return ONLY the JSON structure above
 - NO additional commentary
 - Choose the MOST DOMINANT format
+- If the video primarily shows a screen, UI, app, or product being demonstrated, classify as "demo"
 
 Return JSON:
 {
-  "format": "talking_head | gameplay | other",
+  "format": "talking_head | gameplay | demo | other",
   "confidence": 0.95,
   "evidence": ["short bullet points explaining why"],
   "fallback": {
-    "format": "talking_head | gameplay | other",
+    "format": "talking_head | gameplay | demo | other",
     "confidence": 0.0
   }
 }`;

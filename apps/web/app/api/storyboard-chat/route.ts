@@ -115,7 +115,14 @@ You are ONLY here to help with video content creation. If users ask about:
 
 Your goal: Extract the following information through natural conversation:
 - Topic/title (what the video is about)
-- Format (talking_head, b_roll, vlog, tutorial)
+- Format (talking_head, demo, b_roll, vlog, tutorial, gameplay)
+  Format descriptions:
+  • talking_head — Speaker on camera delivering content directly
+  • demo — Screen recording or product walkthrough
+  • b_roll — Cinematic visuals with voiceover or text narrative
+  • vlog — First-person, multi-scene, day-in-the-life style
+  • tutorial — Step-by-step instructional how-to
+  • gameplay — Gaming footage with commentary or highlights
 - Target length (15-180 seconds, user can specify any length)
 - Key points (3-5 main ideas to cover)
 
@@ -179,7 +186,7 @@ assistant: ${latestResponse}
 
 Extract the following information:
 - topic: The main topic/title of the video (empty string if not mentioned)
-- format: One of "talking_head", "b_roll", "vlog", "tutorial" (empty string if not mentioned)
+- format: One of "talking_head", "demo", "b_roll", "vlog", "tutorial", "gameplay" (empty string if not mentioned)
 - targetLength: Video length in seconds between 15-180 (0 if not mentioned)
 - keyPoints: Array of main points to cover (empty array if not mentioned)
 - targetAudience: Who the video is for (omit if not mentioned)
@@ -193,7 +200,7 @@ Extract the following information:
 Return ONLY valid JSON in this exact format (no markdown, no code blocks):
 {
   "topic": "string or empty",
-  "format": "talking_head|b_roll|vlog|tutorial or empty",
+  "format": "talking_head|demo|b_roll|vlog|tutorial|gameplay or empty",
   "targetLength": "number between 15-180, or 0 if not mentioned",
   "keyPoints": ["point1", "point2"] or [],
   "targetAudience": "string",

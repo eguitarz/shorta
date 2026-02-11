@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['talking_head', 'gameplay', 'other'].includes(format)) {
+    if (!['talking_head', 'gameplay', 'demo', 'other'].includes(format)) {
       return NextResponse.json(
-        { error: 'Invalid format. Must be: talking_head, gameplay, or other' },
+        { error: 'Invalid format. Must be: talking_head, gameplay, demo, or other' },
         { status: 400 }
       );
     }

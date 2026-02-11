@@ -216,10 +216,10 @@
       "overall": "Overall Score",
       "howCalculated": "How is this score calculated?",
       "calculationExplanation": "The Overall Score (0-100) is calculated from 4 weighted categories:",
-      "hookWeight": "Hook (35%) - How quickly you grab attention",
-      "structureWeight": "Structure (25%) - Flow and payoff delivery",
-      "clarityWeight": "Clarity (25%) - Speaking pace and simplicity",
-      "deliveryWeight": "Delivery (15%) - Audio quality and energy",
+      "hookWeight": "Hook ({percent}%) - How quickly you grab attention",
+      "structureWeight": "Structure ({percent}%) - Flow and payoff delivery",
+      "clarityWeight": "Clarity ({percent}%) - Speaking pace and simplicity",
+      "deliveryWeight": "Delivery ({percent}%) - Audio quality and energy",
       "deterministic": "Deterministic: Same video always gets the same score.",
       "grades": "Grades: S (100+), A (80-99), B (70-79), C (60-69), D (50-59), F (<50)",
       "comments": {
@@ -231,6 +231,28 @@
         "F": "Major Rework Needed"
       },
       "perfectBeats": "{perfect} of {total} beats perfect"
+    },
+    "format": {
+      "label": "Format",
+      "talking_head": "Talking Head",
+      "gameplay": "Gameplay",
+      "demo": "Demo / Screen Recording",
+      "other": "General",
+      "guidance": {
+        "talking_head": "For talking head videos, your hook energy and speaking delivery matter most. Eye contact, pace, and a clear promise in the first 2 seconds are key.",
+        "gameplay": "For gameplay clips, the opening action and highlight moment are critical. Fast pacing and a clear climax keep viewers watching.",
+        "demo": "For demo videos, show the end result first — then walk through the how. Cut dead time (loading, typing), zoom into key UI areas, and add text overlays for context.",
+        "other": "Hook strength and story structure are the biggest factors. Make sure you deliver on the promise from your opening."
+      }
+    },
+    "nextStep": {
+      "title": "Next Step",
+      "description": "Apply fixes below, then generate an improved storyboard →",
+      "howItWorks": "How it works:",
+      "step1": "Click \"Apply Fix\" on issues you want to address",
+      "step2": "Your fixes collect in the sidebar →",
+      "step3": "Hit \"Generate\" to create a director's storyboard with your fixes applied",
+      "openSidebar": "Open Changes Panel"
     },
     "whatToFix": {
       "title": "🎯 What to Fix",
@@ -447,6 +469,8 @@
       "noIssues": "No issues",
       "showDetails": "Show Details",
       "hideDetails": "Hide Details",
+      "showMoreBeats": "Show {count} more beats",
+      "collapseBeats": "Collapse",
       "retentionDrop": "Retention Drop Estimate",
       "beatMini": "Beat {number}",
       "retention": {

@@ -22,6 +22,7 @@ export const TOTAL_WEIGHTS = {
  * Niche-specific weights
  * - Talking head: balanced, delivery matters
  * - Gameplay: hook and structure matter most, less speech-dependent
+ * - Demo: hook and structure heavy, clarity important for tutorials, delivery less critical
  * - Faceless/Other: hook and structure heavy, minimal delivery weight
  */
 export interface CategoryWeights {
@@ -43,6 +44,12 @@ export const NICHE_WEIGHTS: Record<VideoFormat, CategoryWeights> = {
     structure: 0.30,
     clarity: 0.15,
     delivery: 0.15,
+  },
+  demo: {
+    hook: 0.35,
+    structure: 0.30,
+    clarity: 0.25,
+    delivery: 0.10,
   },
   other: {
     hook: 0.40,

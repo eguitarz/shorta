@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
           content: prompt,
         }
       ], {
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3-pro-preview',
         temperature: 0.7,
         maxTokens: 16384,
       });
@@ -303,6 +303,61 @@ export async function POST(request: NextRequest) {
   }
 }
 
+function getFormatGuidance(format: string): string {
+  switch (format) {
+    case 'talking_head':
+      return `FORMAT DIRECTION (Talking Head):
+- Lead with energy — the speaker IS the content. Confident posture, direct eye contact from frame 1.
+- Vary framing between CU and MCU to maintain visual interest; avoid static medium shots for more than 10s.
+- Build emotional connection: lean in for emphasis, use hand gestures, modulate vocal energy.
+- Pace delivery in short bursts (1-2 sentences) then pause or shift energy to prevent monotony.
+- Break up talking with B-roll inserts every 15-20s to give the viewer's eyes a rest.
+- Match facial expression to content tone — excitement, concern, curiosity should be visible.`;
+    case 'demo':
+      return `FORMAT DIRECTION (Demo / Screen Recording):
+- Open with the OUTCOME first — show what the finished result looks like before explaining how.
+- Keep screen recordings readable: zoom into the active area, use cursor highlights, avoid full-desktop shots.
+- Use zoom-in / focus transitions to guide the eye to exactly where the action is happening.
+- Cut dead time ruthlessly — skip loading screens, typing pauses, and navigation. Every second should teach.
+- Add text overlays for key steps and shortcuts so viewers can follow even on mute.
+- Pace voiceover slightly ahead of on-screen action so the viewer knows what to look for next.`;
+    case 'gameplay':
+      return `FORMAT DIRECTION (Gameplay):
+- Start with the most intense or impressive moment — hook with action, explain later.
+- Identify 2-3 highlight moments per minute and build pacing around them.
+- Keep cuts fast (2-4s per clip in montage sections) to match gaming energy.
+- Time commentary to land between action beats — don't talk over clutch moments.
+- If using facecam, keep it small and in a consistent corner; enlarge only for genuine reactions.
+- Use slow-motion or replay for the single best moment — overuse kills impact.`;
+    case 'b_roll':
+      return `FORMAT DIRECTION (B-Roll / Cinematic):
+- Tell the story through visuals alone — every shot must advance the narrative or set mood.
+- Alternate between wide establishing shots and tight detail shots for rhythm.
+- Let the music drive pacing: cut on beats, hold shots through phrases, breathe with the track.
+- Use text overlays or captions as the narrative voice — keep them brief and let visuals do heavy lifting.
+- Plan transitions intentionally: match motion direction, use natural wipes, avoid gratuitous effects.
+- Every shot should answer "what does the viewer FEEL here?" not just "what do they see?"`;
+    case 'vlog':
+      return `FORMAT DIRECTION (Vlog):
+- Prioritize authentic, unpolished feel — overly produced vlogs lose trust. Embrace natural moments.
+- Vary locations and scenes frequently (every 20-30s) to maintain visual freshness.
+- Keep a conversational, first-person tone — talk TO the viewer like a friend, not AT them.
+- Use natural transitions: walking between locations, time-lapses, ambient scene changes.
+- Build an energy arc across the video — start chill, build to the highlight, reflect at the end.
+- Sprinkle in reaction moments and genuine emotion — these are the clips viewers remember.`;
+    case 'tutorial':
+      return `FORMAT DIRECTION (Tutorial / How-To):
+- Structure as clear numbered steps — the viewer should always know where they are in the process.
+- Use visual aids (arrows, highlights, split-screen before/after) to reinforce each instruction.
+- Pace for comprehension: pause briefly after each step, don't rush to the next one.
+- Add brief recap moments after complex sections — "so now we have X, next we'll do Y."
+- Show the before/after transformation early to motivate viewers to watch the full tutorial.
+- Keep energy calm but confident — tutorial viewers want clarity, not hype.`;
+    default:
+      return '';
+  }
+}
+
 function createGenerationPrompt(input: CreateStoryboardInput): string {
   const keyPointsList = input.keyPoints.map((point, i) => `${i + 1}. ${point}`).join('\n');
 
@@ -344,248 +399,98 @@ CRITICAL: The user's own successful patterns should be the PRIMARY influence on 
 ` : '';
 
   const hookDuration = Math.min(5, Math.floor(input.targetLength * 0.15));
+  const hookVariantCount = getHookVariantCount(input);
+  const hasViral = input.viralPatterns?.hookPatterns && input.viralPatterns.hookPatterns.length > 0;
+  const hasLibrary = !!input.libraryInsights?.recommendedHookStyle;
+  const defaultStyle = hasViral ? 'VIRAL' : hasLibrary ? 'LIBRARY' : 'BOLD';
+
+  // Build hook styles list inline
+  const hookStyles: string[] = [];
+  let num = 1;
+  if (hasViral) {
+    hookStyles.push(`${num}. VIRAL (RECOMMENDED): Apply the top viral hook pattern: "${input.viralPatterns!.hookPatterns[0]}". Trending in this niche with avg ${input.viralPatterns!.averageViews.toLocaleString()} views.`);
+    num++;
+  }
+  if (hasLibrary) {
+    hookStyles.push(`${num}. LIBRARY: Use the "${input.libraryInsights!.recommendedHookStyle}" style from the user's past success.${input.libraryInsights!.referenceHookText ? ` Model after: "${input.libraryInsights!.referenceHookText}"` : ''}`);
+    num++;
+  }
+  hookStyles.push(`${num}. BOLD: Confident claim or promise. Lead with the result. Assertive and direct.`);
+  num++;
+  hookStyles.push(`${num}. QUESTION: Thought-provoking question or curiosity gap. Make viewers NEED the answer.`);
+  num++;
+  hookStyles.push(`${num}. EMOTIONAL: Connect with the viewer's struggle or desire. Empathy, urgency, relatability.`);
+  num++;
+  hookStyles.push(`${num}. SPECIFIC: Concrete numbers, data, timeframes, or measurable outcomes.`);
 
   return `You are an expert video director creating a storyboard for short-form content.
 
-Create a complete storyboard for a ${input.format} video with the following details:
-
-VIDEO DETAILS:
+VIDEO BRIEF:
 - Topic: ${input.topic}
 - Format: ${input.format}
-- Target Length: ${input.targetLength} seconds
+- Length: ${input.targetLength}s
 - Content Type: ${input.contentType || 'educational'}
-- Target Audience: ${input.targetAudience || 'general audience'}
+- Audience: ${input.targetAudience || 'general audience'}
 
-KEY POINTS TO COVER:
-${keyPointsList}${viralPatternsSection}${libraryInsightsSection}
+KEY POINTS:
+${keyPointsList}
 
-STRUCTURE REQUIREMENTS:
-1. Break the video into ${getBeatCount(input.targetLength, input.keyPoints.length)} beats (hook, setup, main points, payoff, CTA)
-2. Each beat should have:
-   - Beat number (starting from 1)
-   - Start and end time (in seconds)
-   - Type (hook, setup, main_content, payoff, cta)
-   - Title (descriptive name)
-   - Director notes (3-5 bullet points with actionable shooting instructions)
-   - Script (what to say)
-   - Visual (what to show)
-   - Audio (music, sound effects)
-   - Shot type: CU (close-up), MCU (medium close-up), MS (medium shot), MLS (medium long shot), WS (wide shot), OTS (over-the-shoulder), POV, INSERT
-   - Camera movement: static, pan, tilt, track, zoom, handheld, dolly
-   - Transition to next beat: cut, dissolve, fade, zoom, swipe, whip, none
-   - Text overlays: array of text to appear on screen with position and timing
-   - B-roll suggestions: 2-3 ideas for supplementary footage
-   - Retention tip: brief note on why this beat keeps viewers watching
+${getFormatGuidance(input.format)}
+${viralPatternsSection}${libraryInsightsSection}
+STRUCTURE: ${getBeatCount(input.targetLength, input.keyPoints.length)} beats total. Types: hook, setup, main_content, payoff, cta.
 
-HOOK VARIANTS REQUIREMENT:
-Generate ${getHookVariantCount(input)} different hook options with distinct styles. Each variant should:
-- Cover the same hook duration (0-${hookDuration}s)
-- Have the same timing as Beat 1 but with different approaches
-- Include a brief explanation of why it works
+HOOK VARIANTS: Generate ${hookVariantCount} variants (0-${hookDuration}s each) in these styles:
+${hookStyles.join('\n')}
 
-${getHookStylesDescription(input)}
+Each variant needs: id (style name lowercase), style, label, script, visual, audio, directorNotes, whyItWorks (topic-specific, not generic). Every script must be COMPLETELY DIFFERENT — not word variations.
+
+BEAT SCHEMA (every beat must include ALL fields):
+- beatNumber (int), startTime (float), endTime (float), type (string)
+- title (string), directorNotes (string), script (string), visual (string), audio (string)
+- shotType: CU|MCU|MS|MLS|WS|OTS|POV|INSERT
+- cameraMovement: static|pan|tilt|track|zoom|handheld|dolly
+- transition: cut|dissolve|fade|zoom|swipe|whip|none
+- textOverlays: [{text, position: top|center|bottom|lower-third, timing}]
+- bRollSuggestions: [string, string] (2-3 ideas)
+- retentionTip: string
 
 DIRECTOR NOTES GUIDELINES:
 - Start with action verbs (Start, Show, Cut, Maintain, etc.)
 - Be specific about camera angles, pacing, energy, delivery
-- Keep each point concise and actionable
 - Format as bullet points: "• First instruction\\n• Second instruction"
 - 3-5 points per beat
-- HIGHLIGHT CRITICAL NOTES: Wrap the 1-2 MOST IMPORTANT notes in **double asterisks** for emphasis
-- Example: "• **Start with direct eye contact - this is crucial**\\n• Use high energy throughout\\n• Cut to B-roll at 0:03"
-- Only highlight notes that are truly critical to the beat's success
+- Wrap the 1-2 MOST IMPORTANT notes in **double asterisks**
 
 VISUAL GUIDELINES:
-- 2-3 concise bullet points maximum
+- 2-3 concise bullet points, each under 10 words
 - Format: "• Camera angle/shot type\\n• Key visual element\\n• Context/setting"
-- Examples: "• Medium close-up", "• Natural home setting", "• Hold prop for context"
-- Keep each bullet under 10 words
 
 AUDIO GUIDELINES:
-- 1-2 concise bullet points maximum
+- 1-2 concise bullet points, each under 8 words
 - Format: "• Music description\\n• Sound effect (if needed)"
-- Examples: "• Upbeat acoustic guitar", "• Subtle whoosh on text reveal"
-- Keep each bullet under 8 words
 
-TIMING GUIDELINES:
-- Hook: 0-${hookDuration}s (grab attention immediately)
-- Setup: Brief context if needed (20-25% of video)
-- Main content: Cover all key points (50-60% of video)
-- Payoff: Deliver the conclusion (10-15% of video)
-- CTA: Clear next step (last 3-5 seconds)
+TIMING:
+- Hook: 0-${hookDuration}s | Setup: 20-25% | Main: 50-60% | Payoff: 10-15% | CTA: last 3-5s
 
-Return VALID JSON ONLY in this format:
-{
-  "overview": {
-    "title": "${input.topic}",
-    "contentType": "${input.contentType || 'educational'}",
-    "nicheCategory": "appropriate category based on topic",
-    "targetAudience": "${input.targetAudience || 'general audience'}",
-    "length": ${input.targetLength}
-  },
-  "hookVariants": [
-${generateHookVariantsTemplate(input)}
-  ],
-  "beats": [
-    {
-      "beatNumber": 1,
-      "startTime": 0,
-      "endTime": ${hookDuration},
-      "type": "hook",
-      "title": "Hook - [Descriptive Title]",
-      "directorNotes": "• First actionable instruction\\n• Second instruction\\n• Third instruction",
-      "script": "Use the BOLD hook variant as the default Beat 1 script",
-      "visual": "• Medium close-up\\n• Natural setting\\n• Direct eye contact",
-      "audio": "• Upbeat acoustic music\\n• Subtle whoosh effect",
-      "shotType": "MCU",
-      "cameraMovement": "static",
-      "transition": "cut",
-      "textOverlays": [
-        { "text": "Key phrase or hook text", "position": "center", "timing": "0:01-0:03" }
-      ],
-      "bRollSuggestions": ["Relevant visual example", "Supporting footage idea"],
-      "retentionTip": "Brief explanation of why viewers stay for this beat"
-    }
-  ]
-}
-
-IMPORTANT:
-- The "beats" array Beat 1 should use the ${input.viralPatterns?.hookPatterns?.length ? 'VIRAL' : input.libraryInsights?.recommendedHookStyle ? 'LIBRARY' : 'BOLD'} hook variant as default
-- All ${getHookVariantCount(input)} hookVariants must have COMPLETELY DIFFERENT scripts that achieve the same goal differently
-- Each hookVariant.whyItWorks should be specific to the topic, not generic
-- Make each hook genuinely distinct - not just word variations
-${input.locale && input.locale !== 'en' ? `- ALL text content (scripts, titles, director notes, etc.) must be written in ${getLanguageName(input.locale)}` : ''}
-
+RESPONSE FORMAT: Return ONLY a JSON object with keys: overview {title, contentType, nicheCategory, targetAudience, length}, hookVariants [...], beats [...].
+Beat 1 script must use the ${defaultStyle} hook variant as default.
+${input.locale && input.locale !== 'en' ? `ALL text content must be written in ${getLanguageName(input.locale)}.` : ''}
 NO markdown code blocks. Return ONLY the JSON object.`;
 }
 
 function getBeatCount(length: number, keyPointsCount: number): number {
-  // Minimum: hook + CTA = 2 beats
-  // Add beats based on key points and length
   if (length <= 30) {
-    return Math.min(3, keyPointsCount + 2); // Short videos: 3-5 beats max
+    return Math.min(3, keyPointsCount + 2);
   } else if (length <= 60) {
-    return keyPointsCount + 2; // Hook + points + CTA
+    return keyPointsCount + 2;
   } else {
-    return keyPointsCount + 3; // Hook + setup + points + payoff + CTA
+    return keyPointsCount + 3;
   }
 }
 
 function getHookVariantCount(input: CreateStoryboardInput): number {
   let count = 4; // Base: bold, question, emotional, specific
-  if (input.libraryInsights?.recommendedHookStyle) count++; // Add library
-  if (input.viralPatterns?.hookPatterns?.length) count++; // Add viral
+  if (input.libraryInsights?.recommendedHookStyle) count++;
+  if (input.viralPatterns?.hookPatterns?.length) count++;
   return count;
-}
-
-function getHookStylesDescription(input: CreateStoryboardInput): string {
-  const hasLibrary = !!input.libraryInsights?.recommendedHookStyle;
-  const hasViral = input.viralPatterns?.hookPatterns && input.viralPatterns.hookPatterns.length > 0;
-
-  const styles: string[] = [];
-  let num = 1;
-
-  if (hasViral) {
-    const topPattern = input.viralPatterns!.hookPatterns[0];
-    styles.push(`${num}. VIRAL (RECOMMENDED - based on ${input.viralPatterns!.videosAnalyzed} viral videos): Apply the top-performing hook pattern: "${topPattern}". This style is currently trending in this niche with average ${input.viralPatterns!.averageViews.toLocaleString()} views.`);
-    num++;
-  }
-
-  if (hasLibrary) {
-    styles.push(`${num}. LIBRARY (based on user's past success): Use the "${input.libraryInsights!.recommendedHookStyle}" style that worked well in their past content.${input.libraryInsights!.referenceHookText ? ` Model after their successful hook: "${input.libraryInsights!.referenceHookText}"` : ''}`);
-    num++;
-  }
-
-  styles.push(`${num}. BOLD: Make a confident claim or promise. Lead with the result or outcome. Be assertive and direct. Use power words.`);
-  num++;
-
-  styles.push(`${num}. QUESTION: Open with a thought-provoking question or create a curiosity gap. Make viewers NEED to know the answer.`);
-  num++;
-
-  styles.push(`${num}. EMOTIONAL: Connect with the viewer's struggle, pain point, or desire. Use empathy, urgency, and relatability.`);
-  num++;
-
-  styles.push(`${num}. SPECIFIC: Lead with concrete numbers, data, timeframes, or specific results. Ground the hook in measurable outcomes.`);
-
-  return `The hook styles are:\n${styles.join('\n')}`;
-}
-
-function generateHookVariantsTemplate(input: CreateStoryboardInput): string {
-  const hasLibrary = !!input.libraryInsights?.recommendedHookStyle;
-  const hasViral = input.viralPatterns?.hookPatterns && input.viralPatterns.hookPatterns.length > 0;
-
-  const variants: string[] = [];
-
-  if (hasViral) {
-    const topPattern = input.viralPatterns!.hookPatterns[0];
-    variants.push(`    {
-      "id": "viral",
-      "style": "viral",
-      "label": "Viral Trend",
-      "script": "Hook applying the viral pattern: ${topPattern}",
-      "visual": "• Match successful viral video style\\n• High-energy framing\\n• Attention-grabbing visual",
-      "audio": "• Trending audio style\\n• Impactful intro sound",
-      "directorNotes": "• **Apply viral pattern: ${topPattern}**\\n• Mirror what's working now\\n• Capture trending energy",
-      "whyItWorks": "Based on ${input.viralPatterns!.videosAnalyzed} viral videos averaging ${input.viralPatterns!.averageViews.toLocaleString()} views - this pattern is proven to work right now"
-    }`);
-  }
-
-  if (hasLibrary) {
-    variants.push(`    {
-      "id": "library",
-      "style": "library",
-      "label": "From Your Library",
-      "script": "Hook modeled after your successful '${input.libraryInsights!.recommendedHookStyle}' style",
-      "visual": "• Match the visual style of your reference video\\n• Familiar framing\\n• Proven setup",
-      "audio": "• Similar audio approach to reference\\n• Consistent with past success",
-      "directorNotes": "• **Model after your proven ${input.libraryInsights!.recommendedHookStyle} hook**\\n• Maintain what worked\\n• Adapt to new topic",
-      "whyItWorks": "This style performed well in your past videos - stick with what works for your audience"
-    }`);
-  }
-
-  variants.push(`    {
-      "id": "bold",
-      "style": "bold",
-      "label": "Bold & Direct",
-      "script": "The direct, confident opening script",
-      "visual": "• Close-up shot\\n• Confident posture\\n• Direct eye contact",
-      "audio": "• Powerful intro beat\\n• Quick sound effect",
-      "directorNotes": "• **Lead with confidence**\\n• Maintain strong eye contact\\n• Speak with authority",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    }`);
-
-  variants.push(`    {
-      "id": "question",
-      "style": "question",
-      "label": "Curiosity Hook",
-      "script": "The question or curiosity-gap opening",
-      "visual": "• Medium shot\\n• Curious expression\\n• Lean in slightly",
-      "audio": "• Intriguing music\\n• Pause for effect",
-      "directorNotes": "• **Pause after the question**\\n• Show genuine curiosity\\n• Create tension",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    }`);
-
-  variants.push(`    {
-      "id": "emotional",
-      "style": "emotional",
-      "label": "Pain Point",
-      "script": "The empathetic, relatable opening",
-      "visual": "• Warm lighting\\n• Relatable setting\\n• Empathetic expression",
-      "audio": "• Soft intro music\\n• Conversational tone",
-      "directorNotes": "• **Connect emotionally first**\\n• Show understanding\\n• Be authentic",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    }`);
-
-  variants.push(`    {
-      "id": "specific",
-      "style": "specific",
-      "label": "Data-Driven",
-      "script": "The opening with specific numbers or metrics",
-      "visual": "• Text overlay with number\\n• Medium shot\\n• Authoritative stance",
-      "audio": "• Clean, professional intro\\n• Subtle emphasis sound",
-      "directorNotes": "• **Emphasize the number clearly**\\n• Let the data speak\\n• Show credibility",
-      "whyItWorks": "A brief 1-2 sentence explanation of why this hook style works for this topic"
-    }`);
-
-  return variants.join(',\n');
 }

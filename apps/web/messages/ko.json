@@ -202,10 +202,10 @@
       "overall": "종합 점수",
       "howCalculated": "점수 계산 방식",
       "calculationExplanation": "종합 점수(0-100)는 4가지 가중치 카테고리를 기준으로 계산됩니다:",
-      "hookWeight": "훅 (35%) - 주의를 얼마나 빨리 끄는가",
-      "structureWeight": "구조 (25%) - 흐름 및 가치 전달",
-      "clarityWeight": "명확성 (25%) - 말하기 속도 및 간결함",
-      "deliveryWeight": "전달 (15%) - 오디오 품질 및 에너지",
+      "hookWeight": "훅 ({percent}%) - 주의를 얼마나 빨리 끄는가",
+      "structureWeight": "구조 ({percent}%) - 흐름 및 가치 전달",
+      "clarityWeight": "명확성 ({percent}%) - 말하기 속도 및 간결함",
+      "deliveryWeight": "전달 ({percent}%) - 오디오 품질 및 에너지",
       "deterministic": "결정론적: 동일한 비디오는 항상 동일한 점수를 받습니다.",
       "grades": "등급: S (100+), A (80-99), B (70-79), C (60-69), D (50-59), F (<50)",
       "comments": {
@@ -217,6 +217,28 @@
         "F": "대대적인 수정 필요"
       },
       "perfectBeats": "{total}개 비트 중 {perfect}개 비트가 완벽함"
+    },
+    "format": {
+      "label": "형식",
+      "talking_head": "토킹 헤드",
+      "gameplay": "게임플레이",
+      "demo": "데모 / 화면 녹화",
+      "other": "일반",
+      "guidance": {
+        "talking_head": "토킹 헤드 영상은 훅 에너지와 전달력이 가장 중요합니다. 아이 컨택, 속도, 첫 2초 안에 명확한 약속이 핵심입니다.",
+        "gameplay": "게임 클립은 오프닝 액션과 하이라이트 순간이 중요합니다. 빠른 페이싱과 확실한 클라이맥스가 시청을 유지시킵니다.",
+        "demo": "데모 영상은 결과를 먼저 보여주세요 — 그 다음 방법을 설명합니다. 대기 시간(로딩, 타이핑)을 제거하고, 중요한 UI를 확대하며, 텍스트 오버레이로 맥락을 제공하세요.",
+        "other": "훅 강도와 스토리 구조가 가장 큰 요소입니다. 오프닝의 약속을 확실히 이행하세요."
+      }
+    },
+    "nextStep": {
+      "title": "다음 단계",
+      "description": "아래에서 수정 사항을 적용한 다음, 개선된 스토리보드를 생성하세요 →",
+      "howItWorks": "작동 방식:",
+      "step1": "해결하려는 이슈에 \"수정 적용\"을 클릭하세요",
+      "step2": "수정 사항이 사이드바에 수집됩니다 →",
+      "step3": "\"생성\"을 눌러 수정 사항이 적용된 감독 스토리보드를 만드세요",
+      "openSidebar": "변경사항 패널 열기"
     },
     "director": {
       "take": "감독의 판정",
@@ -448,6 +470,8 @@
       "noIssues": "문제 없음",
       "showDetails": "세부 정보 표시",
       "hideDetails": "세부 정보 숨기기",
+      "showMoreBeats": "{count}개 비트 더 보기",
+      "collapseBeats": "접기",
       "retentionDrop": "예상 유지율 하락",
       "beatMini": "비트 {number}",
       "transcript": "트랜스크립트",

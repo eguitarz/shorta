@@ -30,7 +30,9 @@ import {
   Upload,
   Copy,
   Sparkles,
-  GitCompare
+  GitCompare,
+  ArrowRight,
+  PanelRightOpen
 } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 import { ExportSubtitleButton } from "@/components/ExportSubtitleButton";
@@ -44,7 +46,9 @@ import { getSeverityColor } from "@/lib/preferences/issue-key";
 import { VideoPickerModal, type UserVideo } from "@/components/VideoPickerModal";
 import { CompareModal } from "@/components/CompareModal";
 import { HOOK_TYPES, HOOK_TYPE_DESCRIPTIONS, type HookCategory } from "@/lib/scoring/hook-types";
+import { NICHE_WEIGHTS } from "@/lib/scoring/constants";
 import { REHOOK_PRESETS, type RehookPreset } from "@/lib/rehook";
+import type { VideoFormat } from "@/lib/linter/types";
 import { RetentionCurveChart } from "@/components/RetentionCurveChart";
 import type { VideoRetentionCurve } from "@/lib/youtube/types";
 
@@ -158,7 +162,7 @@ interface AnalysisData {
       patternVariations: string[];
     };
     // Deterministic scoring signals
-    _format?: 'talking_head' | 'gameplay' | 'other';
+    _format?: 'talking_head' | 'gameplay' | 'demo' | 'other';
     _signals?: {
       hook: {
         TTClaim: number;
@@ -345,8 +349,9 @@ export default function AnalyzerResultsPage() {
   };
 
   const scrollToBeat = (beatNumber: number) => {
-    // Expand beat breakdown if collapsed
-    if (beatBreakdownCollapsed) {
+    // Expand beat breakdown if collapsed and targeting beat > 1
+    const needsExpand = beatBreakdownCollapsed && beatNumber > 1;
+    if (needsExpand) {
       setBeatBreakdownCollapsed(false);
     }
 
@@ -361,7 +366,7 @@ export default function AnalyzerResultsPage() {
           beatElement.style.backgroundColor = '';
         }, 1000);
       }
-    }, beatBreakdownCollapsed ? 300 : 0);
+    }, needsExpand ? 300 : 0);
   };
 
   const approveFix = (beatNumber: number, beatTitle: string, issue: any) => {
@@ -1311,36 +1316,42 @@ export default function AnalyzerResultsPage() {
                         <div className="text-xs text-gray-500 uppercase tracking-wider">{t('scores.overall')}</div>
                         <div className="relative group">
                           <InfoIcon className="w-3.5 h-3.5 text-gray-600 hover:text-gray-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-6 w-72 bg-gray-900 border border-gray-700 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl">
-                            <div className="text-xs text-gray-300 space-y-2">
-                              <p className="font-semibold text-white">{t('scores.howCalculated')}</p>
-                              <p>{t('scores.calculationExplanation')}</p>
-                              <ul className="space-y-1 pl-3">
-                                <li className="flex items-start gap-1.5">
-                                  <span className="text-orange-500 mt-0.5">•</span>
-                                  <span>{t('scores.hookWeight')}</span>
-                                </li>
-                                <li className="flex items-start gap-1.5">
-                                  <span className="text-green-500 mt-0.5">•</span>
-                                  <span>{t('scores.structureWeight')}</span>
-                                </li>
-                                <li className="flex items-start gap-1.5">
-                                  <span className="text-purple-500 mt-0.5">•</span>
-                                  <span>{t('scores.clarityWeight')}</span>
-                                </li>
-                                <li className="flex items-start gap-1.5">
-                                  <span className="text-blue-500 mt-0.5">•</span>
-                                  <span>{t('scores.deliveryWeight')}</span>
-                                </li>
-                              </ul>
-                              <p className="pt-2 border-t border-gray-800 text-[11px] text-gray-400">
-                                <span className="font-medium text-gray-300">{t('scores.deterministic')}</span>
-                              </p>
-                              <p className="pt-2 border-t border-gray-800 text-[11px]">
-                                {t('scores.grades')}
-                              </p>
-                            </div>
-                          </div>
+                          {(() => {
+                            const fmt = (analysisData?.storyboard?._format || analysisData?.classification?.format || 'talking_head') as VideoFormat;
+                            const weights = NICHE_WEIGHTS[fmt] || NICHE_WEIGHTS.talking_head;
+                            return (
+                              <div className="absolute left-0 top-6 w-72 bg-gray-900 border border-gray-700 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl">
+                                <div className="text-xs text-gray-300 space-y-2">
+                                  <p className="font-semibold text-white">{t('scores.howCalculated')}</p>
+                                  <p>{t('scores.calculationExplanation')}</p>
+                                  <ul className="space-y-1 pl-3">
+                                    <li className="flex items-start gap-1.5">
+                                      <span className="text-orange-500 mt-0.5">•</span>
+                                      <span>{t('scores.hookWeight', { percent: Math.round(weights.hook * 100) })}</span>
+                                    </li>
+                                    <li className="flex items-start gap-1.5">
+                                      <span className="text-green-500 mt-0.5">•</span>
+                                      <span>{t('scores.structureWeight', { percent: Math.round(weights.structure * 100) })}</span>
+                                    </li>
+                                    <li className="flex items-start gap-1.5">
+                                      <span className="text-purple-500 mt-0.5">•</span>
+                                      <span>{t('scores.clarityWeight', { percent: Math.round(weights.clarity * 100) })}</span>
+                                    </li>
+                                    <li className="flex items-start gap-1.5">
+                                      <span className="text-blue-500 mt-0.5">•</span>
+                                      <span>{t('scores.deliveryWeight', { percent: Math.round(weights.delivery * 100) })}</span>
+                                    </li>
+                                  </ul>
+                                  <p className="pt-2 border-t border-gray-800 text-[11px] text-gray-400">
+                                    <span className="font-medium text-gray-300">{t('scores.deterministic')}</span>
+                                  </p>
+                                  <p className="pt-2 border-t border-gray-800 text-[11px]">
+                                    {t('scores.grades')}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                       {(() => {
@@ -1422,6 +1433,28 @@ export default function AnalyzerResultsPage() {
                           })()}
                         </div>
                       </div>
+
+                      {/* Format Badge + Guidance */}
+                      {(() => {
+                        const videoFormat = (analysisData.storyboard._format || analysisData.classification?.format || 'other') as VideoFormat;
+                        const formatColors: Record<string, string> = {
+                          talking_head: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                          gameplay: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+                          demo: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                          other: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+                        };
+                        return (
+                          <div className="mt-3 pt-3 border-t border-gray-800">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-2">{t('format.label')}</div>
+                            <span className={`inline-block px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wide border ${formatColors[videoFormat] || formatColors.other}`}>
+                              {t(`format.${videoFormat}` as any)}
+                            </span>
+                            <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                              {t(`format.guidance.${videoFormat}` as any)}
+                            </p>
+                          </div>
+                        );
+                      })()}
 
                       {/* Niche Category */}
                       {analysisData.storyboard.overview.nicheCategory && (
@@ -2164,6 +2197,46 @@ export default function AnalyzerResultsPage() {
               </div>
             )}
 
+            {/* Next Step CTA */}
+            {!loading && allIssues.length > 0 && (
+              <div className="mb-8 bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 border border-violet-500/20 rounded-xl p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-violet-500/20 rounded-lg flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-violet-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-base font-semibold text-white mb-1">{t('nextStep.title')}</h4>
+                    <p className="text-sm text-gray-400 mb-3">{t('nextStep.description')}</p>
+                    <div className="text-xs text-gray-500 mb-2 font-medium">{t('nextStep.howItWorks')}</div>
+                    <div className="flex flex-col gap-1.5 mb-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <span className="flex-shrink-0 w-5 h-5 bg-violet-500/20 rounded-full flex items-center justify-center text-[10px] font-bold text-violet-400">1</span>
+                        {t('nextStep.step1')}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <span className="flex-shrink-0 w-5 h-5 bg-violet-500/20 rounded-full flex items-center justify-center text-[10px] font-bold text-violet-400">2</span>
+                        {t('nextStep.step2')}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <span className="flex-shrink-0 w-5 h-5 bg-violet-500/20 rounded-full flex items-center justify-center text-[10px] font-bold text-violet-400">3</span>
+                        {t('nextStep.step3')}
+                      </div>
+                    </div>
+                    {approvedChangesCollapsed && (
+                      <button
+                        onClick={() => setApprovedChangesCollapsed(false)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/30 rounded-lg text-sm font-medium text-violet-300 transition-colors"
+                      >
+                        <PanelRightOpen className="w-4 h-4" />
+                        {t('nextStep.openSidebar')}
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Beat-by-Beat Breakdown */}
             {loading ? (
               <div className="mb-8">
@@ -2253,28 +2326,256 @@ export default function AnalyzerResultsPage() {
                         <span className="text-sm font-semibold text-green-500">{t('beatsbybeat.noIssues')}</span>
                       </div>
                     )}
-                    <button
-                      onClick={() => setBeatBreakdownCollapsed(!beatBreakdownCollapsed)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 hover:bg-gray-800 rounded-lg transition-colors text-sm text-gray-400 hover:text-gray-300"
-                    >
-                      {beatBreakdownCollapsed ? (
-                        <>
-                          <span>{t('beatsbybeat.showDetails')}</span>
-                          <ChevronDown className="w-4 h-4" />
-                        </>
-                      ) : (
-                        <>
-                          <span>{t('beatsbybeat.hideDetails')}</span>
-                          <ChevronUp className="w-4 h-4" />
-                        </>
-                      )}
-                    </button>
                   </div>
                 </div>
 
-                {!beatBreakdownCollapsed && (
                   <div className="space-y-4">
-                    {analysisData?.storyboard.beats.map((beat) => (
+                    {analysisData?.storyboard.beats.filter((beat) => beat.beatNumber === 1).map((beat) => (
+                      <div
+                        key={beat.beatNumber}
+                        ref={(el) => { beatRefs.current[beat.beatNumber] = el; }}
+                        className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-5 transition-colors duration-300"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs text-gray-500 font-semibold">{t('whatToFix.beat', { number: beat.beatNumber })}</span>
+                              <button
+                                onClick={() => seekToTimestamp(beat.startTime)}
+                                className="text-xs font-mono text-gray-500 hover:text-orange-500 transition-colors hover:underline cursor-pointer"
+                                title="Click to jump to this beat"
+                              >
+                                {formatTime(beat.startTime)} - {formatTime(beat.endTime)}
+                              </button>
+                              <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs font-semibold">
+                                {beat.type}
+                              </span>
+                            </div>
+                            <h4 className="font-medium text-white mb-3">{beat.title}</h4>
+
+                            <div className="space-y-2 mb-3">
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">{t('beatsbybeat.transcript')}</div>
+                                <p className="text-sm text-gray-300">"{beat.transcript}"</p>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">{t('beatsbybeat.visual')}</div>
+                                <p className="text-sm text-gray-300">{beat.visual}</p>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">{t('beatsbybeat.audio')}</div>
+                                <p className="text-sm text-gray-300">{beat.audio}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          className={`mb-3 ${shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                            }`}
+                          onClick={() => {
+                            if (shouldBlur && beat.beatNumber > 1) {
+                              setUpgradeFeature('performance-cards');
+                              setShowUpgradeModal(true);
+                            }
+                          }}
+                          style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                        >
+                          <div className="text-xs text-gray-500 mb-1">{t('beatsbybeat.retentionDrop')}</div>
+                          <div className={`text-sm font-semibold ${beat.retention?.issues?.some(i => i.severity === 'critical')
+                            ? 'text-red-500'
+                            : beat.retention?.issues?.some(i => i.severity === 'moderate')
+                              ? 'text-orange-500'
+                              : beat.retention?.issues?.some(i => i.severity === 'minor')
+                                ? 'text-blue-500'
+                                : 'text-green-500'
+                            }`}>
+                            {beat.retention?.issues?.some(i => i.severity === 'critical')
+                              ? t('beatsbybeat.retention.high')
+                              : beat.retention?.issues?.some(i => i.severity === 'moderate')
+                                ? t('beatsbybeat.retention.moderate')
+                                : beat.retention?.issues?.some(i => i.severity === 'minor')
+                                  ? t('beatsbybeat.retention.minor')
+                                  : t('beatsbybeat.retention.strong')}
+                          </div>
+                        </div>
+                        {(beat.retention?.issues?.length ?? 0) > 0 ? (
+                          <div
+                            className={`space-y-2 ${shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                              }`}
+                            onClick={() => {
+                              if (shouldBlur && beat.beatNumber > 1) {
+                                setUpgradeFeature('performance-cards');
+                                setShowUpgradeModal(true);
+                              }
+                            }}
+                            style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                          >
+                            {beat.retention?.issues?.map((issue, idx) => {
+                              // Get effective severity (respecting user preferences)
+                              const effectiveSeverity = getEffectiveSeverity({
+                                ruleId: (issue as any).ruleId,
+                                message: issue.message,
+                                severity: issue.severity,
+                              });
+
+                              const isAlreadyApproved = approvedChanges.some(
+                                change =>
+                                  change.type === 'fix' &&
+                                  change.beatNumber === beat.beatNumber &&
+                                  change.issue?.suggestion === issue.suggestion
+                              );
+
+                              const issueHasPreference = hasPreference({
+                                ruleId: (issue as any).ruleId,
+                                message: issue.message,
+                              });
+
+                              const severityColors = getSeverityColor(effectiveSeverity);
+                              const isIgnored = effectiveSeverity === 'ignored';
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`border rounded-lg p-4 ${severityColors.border} ${severityColors.bg} ${issueHasPreference ? 'ring-1 ring-purple-500/40' : ''
+                                    } ${isIgnored ? 'opacity-60 grayscale' : ''}`}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    {/* Severity Icon */}
+                                    <div className="flex-shrink-0 mt-0.5">
+                                      {getSeverityIcon(effectiveSeverity, "w-4 h-4")}
+                                    </div>
+
+                                    <div className="flex-1 min-w-0">
+                                      {/* Header: Severity + Vote Buttons + Timestamp + Rule Badge */}
+                                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                        <span className={`text-[10px] font-bold uppercase ${severityColors.text}`}>
+                                          {t(`beatsbybeat.severity.${effectiveSeverity as 'critical' | 'moderate' | 'minor' | 'ignored'}`)}
+                                        </span>
+                                        {/* Severity Vote Buttons */}
+                                        <SeverityVoteButtons
+                                          currentSeverity={effectiveSeverity}
+                                          originalSeverity={issue.severity}
+                                          isLoggedIn={isLoggedIn}
+                                          onVoteUp={() => voteUp({
+                                            ruleId: (issue as any).ruleId,
+                                            message: issue.message,
+                                            severity: issue.severity,
+                                          })}
+                                          onVoteDown={() => voteDown({
+                                            ruleId: (issue as any).ruleId,
+                                            message: issue.message,
+                                            severity: issue.severity,
+                                          })}
+                                          onReset={() => resetPreference({
+                                            ruleId: (issue as any).ruleId,
+                                            message: issue.message,
+                                          })}
+                                          disabled={shouldDisableButtons}
+                                        />
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            seekToTimestamp(issue.timestamp ? parseTimestamp(issue.timestamp) : beat.startTime);
+                                          }}
+                                          className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-orange-500 transition-colors group"
+                                          title="Click to jump to this moment in the video"
+                                        >
+                                          <Clock className="w-2.5 h-2.5 group-hover:text-orange-500" />
+                                          <span className="group-hover:underline font-mono">
+                                            {issue.timestamp || `${formatTime(beat.startTime)}-${formatTime(beat.endTime)}`}
+                                          </span>
+                                        </button>
+                                        {(issue as any).ruleId ? (
+                                          <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium">
+                                            {(issue as any).ruleName || (issue as any).ruleId}
+                                          </span>
+                                        ) : (
+                                          <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-medium">
+                                            AI Analysis
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      {/* Issue Message */}
+                                      <p className={`text-sm mb-3 ${isIgnored ? 'text-gray-500' : 'text-gray-200'}`}>{issue.message}</p>
+
+                                      {/* Suggestion + Apply Fix Button */}
+                                      {issue.suggestion && (
+                                        <div className="space-y-2">
+                                          <p className={`text-xs ${isIgnored ? 'text-gray-600' : 'text-gray-400'}`}>
+                                            💡 {issue.suggestion}
+                                          </p>
+                                          <button
+                                            onClick={() => {
+                                              if (shouldDisableButtons) {
+                                                setUpgradeFeature('apply-fix');
+                                                setShowUpgradeModal(true);
+                                                return;
+                                              }
+                                              if (!isAlreadyApproved) {
+                                                approveFix(beat.beatNumber, beat.title, issue);
+                                              }
+                                            }}
+                                            disabled={isAlreadyApproved}
+                                            className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${isAlreadyApproved || shouldDisableButtons
+                                              ? 'text-gray-500 bg-gray-800 border border-gray-700 cursor-not-allowed opacity-50'
+                                              : 'text-green-500 hover:text-white bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500'
+                                              }`}
+                                          >
+                                            {isAlreadyApproved ? t('whatToFix.applied') : t('whatToFix.apply')}
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div
+                            className={`flex items-start gap-3 bg-green-500/5 border border-green-500/20 rounded-lg p-4 ${shouldBlur && beat.beatNumber > 1 ? 'blur-sm cursor-pointer select-none' : ''
+                              }`}
+                            onClick={() => {
+                              if (shouldBlur && beat.beatNumber > 1) {
+                                setUpgradeFeature('performance-cards');
+                                setShowUpgradeModal(true);
+                              }
+                            }}
+                            style={shouldBlur && beat.beatNumber > 1 ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
+                          >
+                            <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="text-xs font-semibold text-green-500 uppercase mb-1">No Issues</div>
+                              <p className="text-sm text-gray-400 leading-relaxed">{beat.retention?.analysis || 'No analysis available'}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Expand/Collapse toggle after Beat 1 */}
+                    {(analysisData?.storyboard.beats.length ?? 0) > 1 && (
+                      <button
+                        onClick={() => setBeatBreakdownCollapsed(!beatBreakdownCollapsed)}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-800/30 hover:bg-gray-800/60 border border-gray-800 rounded-xl transition-colors text-sm text-gray-400 hover:text-gray-300"
+                      >
+                        {beatBreakdownCollapsed ? (
+                          <>
+                            <span>{t('beatsbybeat.showMoreBeats', { count: (analysisData?.storyboard.beats.length ?? 1) - 1 })}</span>
+                            <ChevronDown className="w-4 h-4" />
+                          </>
+                        ) : (
+                          <>
+                            <span>{t('beatsbybeat.collapseBeats')}</span>
+                            <ChevronUp className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {/* Remaining beats */}
+                    {!beatBreakdownCollapsed && analysisData?.storyboard.beats.filter((beat) => beat.beatNumber > 1).map((beat) => (
                       <div
                         key={beat.beatNumber}
                         ref={(el) => { beatRefs.current[beat.beatNumber] = el; }}
@@ -2498,7 +2799,6 @@ export default function AnalyzerResultsPage() {
                       </div>
                     ))}
                   </div>
-                )}
               </div>
             )}
 

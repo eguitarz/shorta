@@ -1,6 +1,7 @@
 import type { VideoFormat, RuleSet, LintResult, RuleViolation } from './types';
 import { talkingHeadRules } from './rules/talking_head';
 import { gameplayRules } from './rules/gameplay';
+import { demoRules } from './rules/demo';
 import { otherRules } from './rules/other';
 import type { LLMClient } from '../llm';
 
@@ -20,6 +21,8 @@ export class VideoLinter {
         return talkingHeadRules;
       case 'gameplay':
         return gameplayRules;
+      case 'demo':
+        return demoRules;
       case 'other':
         return otherRules;
       default:
