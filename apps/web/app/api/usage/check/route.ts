@@ -91,8 +91,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Lifetime and paid tiers use credits
-    if (['lifetime', 'hobby', 'pro', 'producer'].includes(profile.tier)) {
+    // Lifetime, paid tiers, and beta use credits
+    if (['lifetime', 'hobby', 'pro', 'producer', 'beta'].includes(profile.tier)) {
       const credits = profile.credits ?? 0;
       const creditsCap = profile.credits_cap ?? 0;
       const storyboardCost = 100;
