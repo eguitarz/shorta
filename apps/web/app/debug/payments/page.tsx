@@ -80,13 +80,13 @@ function truncateId(id: string) {
 function detectIssues(profiles: UserProfile[]): Issue[] {
   const issues: Issue[] = [];
   for (const p of profiles) {
-    if (p.tier !== 'free' && p.tier !== 'founder' && p.tier !== 'lifetime' && !p.stripe_customer_id) {
+    if (p.tier !== 'free' && p.tier !== 'founder' && p.tier !== 'lifetime' && p.tier !== 'beta' && !p.stripe_customer_id) {
       issues.push({ user_id: p.user_id, tier: p.tier, message: `Paid tier "${p.tier}" but missing stripe_customer_id` });
     }
     if (p.subscription_status === 'active' && p.credits === 0 && p.tier !== 'founder') {
       issues.push({ user_id: p.user_id, tier: p.tier, message: 'Active subscription but 0 credits remaining' });
     }
-    if (p.tier !== 'free' && p.tier !== 'founder' && p.tier !== 'lifetime' && !p.stripe_subscription_id) {
+    if (p.tier !== 'free' && p.tier !== 'founder' && p.tier !== 'lifetime' && p.tier !== 'beta' && !p.stripe_subscription_id) {
       issues.push({ user_id: p.user_id, tier: p.tier, message: `Paid tier "${p.tier}" but missing stripe_subscription_id` });
     }
     if (p.subscription_status === 'canceled' && p.credits > 0) {

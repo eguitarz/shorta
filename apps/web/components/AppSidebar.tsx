@@ -242,7 +242,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         )}
 
         {/* Credits display - show for free, lifetime and paid tiers */}
-        {usageData && ['free', 'lifetime', 'hobby', 'pro', 'producer'].includes(usageData.tier) && usageData.credits != null && (
+        {usageData && ['free', 'lifetime', 'hobby', 'pro', 'producer', 'beta'].includes(usageData.tier) && usageData.credits != null && (
           <div className="mb-4 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-500 uppercase tracking-wider">
