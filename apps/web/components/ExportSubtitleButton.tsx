@@ -41,7 +41,7 @@ export function ExportSubtitleButton({ beats, videoTitle = 'video' }: ExportSubt
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${videoTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_subtitles.srt`;
+    link.download = `${videoTitle.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, '_')}_subtitles.srt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
