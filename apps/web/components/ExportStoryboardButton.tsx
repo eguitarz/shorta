@@ -110,7 +110,7 @@ export function ExportStoryboardButton({ analysisData }: ExportStoryboardButtonP
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    const filename = storyboard.overview.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = storyboard.overview.title.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, '_');
     link.download = `${filename}_storyboard.txt`;
     document.body.appendChild(link);
     link.click();
