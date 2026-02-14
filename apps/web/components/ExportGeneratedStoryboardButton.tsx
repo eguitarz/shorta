@@ -104,7 +104,7 @@ export function ExportGeneratedStoryboardButton({ generatedData }: ExportGenerat
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    const filename = generated.overview.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = generated.overview.title.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, '_');
     link.download = `${filename}_storyboard.txt`;
     document.body.appendChild(link);
     link.click();
