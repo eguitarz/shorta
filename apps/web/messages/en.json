@@ -172,7 +172,27 @@
       "empty": "No popular Shorts found in the last 7 days.",
       "views": "views",
       "viewsPerHour": "views/hr",
-      "engagement": "engagement"
+      "engagement": "engagement",
+      "myList": "My List",
+      "predefined": "Curated",
+      "manageWatchList": "Manage Watch List",
+      "watchListLabel": "My Watch List",
+      "watchListTitle": "Watch List (7-Day)",
+      "watchListSubtitle": "From your watch list channels · ranked by views/hour",
+      "watchListEmpty": "Your watch list is empty. Add channels to track their latest Shorts.",
+      "watchListNoRecent": "No recent Shorts from your watch list channels in the last 7 days.",
+      "addChannels": "Add Channels"
+    },
+    "watchList": {
+      "title": "Watch List",
+      "searchPlaceholder": "Search YouTube channels...",
+      "loading": "Loading...",
+      "empty": "No channels yet. Search above to add channels to your watch list.",
+      "added": "Added",
+      "adding": "Adding...",
+      "searching": "Searching...",
+      "paidOnly": "Watch list is available for paid plan subscribers. Upgrade to track your favorite channels.",
+      "upgradeCta": "View Plans"
     }
   },
   "analyzer": {

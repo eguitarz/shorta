@@ -162,7 +162,27 @@
       "empty": "最近 7 天沒有熱門 Shorts。",
       "views": "次觀看",
       "viewsPerHour": "次/小時",
-      "engagement": "互動率"
+      "engagement": "互動率",
+      "myList": "我的清單",
+      "predefined": "精選",
+      "manageWatchList": "管理追蹤清單",
+      "watchListLabel": "我的追蹤清單",
+      "watchListTitle": "追蹤清單（7 天）",
+      "watchListSubtitle": "來自追蹤頻道 · 以每小時觀看數排序",
+      "watchListEmpty": "追蹤清單是空的。新增頻道以追蹤最新的 Shorts。",
+      "watchListNoRecent": "最近 7 天追蹤頻道沒有新的 Shorts。",
+      "addChannels": "新增頻道"
+    },
+    "watchList": {
+      "title": "追蹤清單",
+      "searchPlaceholder": "搜尋 YouTube 頻道...",
+      "loading": "載入中...",
+      "empty": "尚無頻道。在上方搜尋以新增頻道到追蹤清單。",
+      "added": "已新增",
+      "adding": "新增中...",
+      "searching": "搜尋中...",
+      "paidOnly": "追蹤清單僅供付費訂閱者使用。升級以追蹤您喜愛的頻道。",
+      "upgradeCta": "查看方案"
     }
   },
   "analyzer": {
