@@ -158,7 +158,28 @@
       "empty": "최근 7일 내 인기 쇼츠가 없습니다.",
       "views": "조회수",
       "viewsPerHour": "조회수/시간",
-      "engagement": "참여율"
+      "engagement": "참여율",
+      "myList": "내 목록",
+      "predefined": "추천",
+      "manageWatchList": "관심 목록 관리",
+      "watchListLabel": "내 관심 목록",
+      "watchListTitle": "관심 목록 (7일)",
+      "watchListSubtitle": "관심 목록 채널 · 시간당 조회수 기준",
+      "watchListEmpty": "관심 목록이 비어 있습니다. 채널을 추가하여 최신 쇼츠를 추적하세요.",
+      "watchListNoRecent": "최근 7일 내 관심 목록 채널의 쇼츠가 없습니다.",
+      "addChannels": "채널 추가"
+    },
+    "watchList": {
+      "title": "관심 목록",
+      "urlPlaceholder": "YouTube 채널 링크 붙여넣기...",
+      "urlHint": "예: youtube.com/@MrBeast 또는 youtube.com/channel/UC...",
+      "loading": "불러오는 중...",
+      "empty": "아직 채널이 없습니다. 위에 YouTube 채널 링크를 붙여넣어 시작하세요.",
+      "adding": "추가 중...",
+      "addFailed": "채널을 추가할 수 없습니다. 링크를 확인하고 다시 시도해 주세요.",
+      "invalidUrl": "올바른 YouTube 채널 링크를 붙여넣어 주세요.",
+      "paidOnly": "관심 목록은 유료 구독자만 사용할 수 있습니다. 업그레이드하여 즐겨찾는 채널을 추적하세요.",
+      "upgradeCta": "요금제 보기"
     }
   },
   "analyzer": {

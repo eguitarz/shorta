@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload, Sparkles, Flame } from "lucide-react";
+import { Link2, Lightbulb, BarChart3, Hammer, ChevronRight, Upload, Sparkles, Flame, Settings, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VideoUpload } from "@/components/video-upload";
 import { YouTubeConnectCard } from "@/components/YouTubeConnectCard";
+import { WatchListManager } from "@/components/watch-list-manager";
 import { useTranslations } from "next-intl";
 
 type AnalyzeMode = "url" | "upload";
@@ -58,6 +59,7 @@ interface TrendsResponse {
   regionSource: string;
   usedFallback: boolean;
   generatedAt: string;
+  source?: 'predefined' | 'watchlist';
 }
 
 // Letter grade helper
@@ -130,9 +132,14 @@ export default function DashboardContent() {
   const [trendsUpdatedAt, setTrendsUpdatedAt] = useState<string | null>(null);
   const [trendsPage, setTrendsPage] = useState(1);
   const [trendsChannelSet, setTrendsChannelSet] = useState<'us' | 'kr'>('us');
+  const [trendsSource, setTrendsSource] = useState<'predefined' | 'watchlist'>('predefined');
+  const [watchListIsPaid, setWatchListIsPaid] = useState(false);
+  const [watchListCount, setWatchListCount] = useState(0);
+  const [watchListManagerOpen, setWatchListManagerOpen] = useState(false);
   const trendsPageSize = 4;
   const didLoadActivities = useRef(false);
   const didLoadTrends = useRef(false);
+  const didLoadWatchList = useRef(false);
 
   const handleAnalyze = () => {
     if (!analyzeUrl.trim()) return;
@@ -216,15 +223,21 @@ export default function DashboardContent() {
     fetchActivities();
   }, []);
 
-  const loadTrends = async (channelSetOverride?: 'us' | 'kr') => {
+  const loadTrends = useCallback(async (opts?: { channelSet?: 'us' | 'kr'; source?: 'predefined' | 'watchlist' }) => {
     try {
       setTrendsLoading(true);
       setTrendsError(null);
 
+      const source = opts?.source ?? trendsSource;
       const params = new URLSearchParams();
       params.set('limit', '300');
-      const channelSet = channelSetOverride || trendsChannelSet;
-      params.set('channelSet', channelSet);
+
+      if (source === 'watchlist') {
+        params.set('source', 'watchlist');
+      } else {
+        const channelSet = opts?.channelSet || trendsChannelSet;
+        params.set('channelSet', channelSet);
+      }
 
       const response = await fetch(`/api/trends/shorts?${params.toString()}`);
       if (!response.ok) {
@@ -243,20 +256,63 @@ export default function DashboardContent() {
     } finally {
       setTrendsLoading(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trendsSource, trendsChannelSet]);
+
+  // Fetch watch list state to determine if user has a custom list
+  const fetchWatchListState = useCallback(async () => {
+    try {
+      const res = await fetch('/api/watch-list');
+      if (res.ok) {
+        const data = await res.json();
+        setWatchListIsPaid(data.isPaid ?? false);
+        const count = (data.channels || []).length;
+        setWatchListCount(count);
+        return { isPaid: data.isPaid ?? false, count };
+      }
+    } catch {
+      // ignore
+    }
+    return { isPaid: false, count: 0 };
+  }, []);
 
   useEffect(() => {
     if (didLoadTrends.current) return;
     didLoadTrends.current = true;
-    const locale = navigator.language || '';
-    if (locale.toLowerCase().startsWith('ko')) {
-      setTrendsChannelSet('kr');
-      loadTrends('kr');
-      return;
-    }
-    loadTrends('us');
+
+    const init = async () => {
+      // Check watch list first
+      const { isPaid, count } = await fetchWatchListState();
+
+      // If paid user with watch list channels, default to watchlist source
+      if (isPaid && count > 0) {
+        setTrendsSource('watchlist');
+        loadTrends({ source: 'watchlist' });
+        return;
+      }
+
+      // Otherwise, predefined trends
+      const locale = navigator.language || '';
+      if (locale.toLowerCase().startsWith('ko')) {
+        setTrendsChannelSet('kr');
+        loadTrends({ channelSet: 'kr', source: 'predefined' });
+        return;
+      }
+      loadTrends({ source: 'predefined' });
+    };
+
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleWatchListChannelsChange = useCallback(() => {
+    fetchWatchListState().then(({ count }) => {
+      if (count > 0 && trendsSource === 'watchlist') {
+        loadTrends({ source: 'watchlist' });
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trendsSource]);
 
   const handleActivityClick = (activity: Activity) => {
     if (activity.activityType === 'created') {
@@ -418,36 +474,80 @@ export default function DashboardContent() {
               <div>
                 <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider">
                   <Flame className="w-4 h-4" />
-                  <span>{t('trends.label')}</span>
+                  <span>{trendsSource === 'watchlist' ? t('trends.watchListLabel') : t('trends.label')}</span>
                 </div>
-                <h2 className="text-2xl font-semibold mt-2">{t('trends.title')}</h2>
+                <h2 className="text-2xl font-semibold mt-2">
+                  {trendsSource === 'watchlist' ? t('trends.watchListTitle') : t('trends.title')}
+                </h2>
                 <p className="text-sm text-gray-400 mt-1">
-                  {t('trends.subtitle')}
-                  {trendsRegion ? ` · ${trendsRegion}` : ''}
+                  {trendsSource === 'watchlist' ? t('trends.watchListSubtitle') : t('trends.subtitle')}
+                  {trendsSource === 'predefined' && trendsRegion ? ` · ${trendsRegion}` : ''}
                   {trendsUpdatedAt ? ` · ${t('trends.updated')} ${new Date(trendsUpdatedAt).toLocaleTimeString()}` : ''}
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1 bg-black/40 rounded-full p-1 text-xs">
+                {/* Source toggle: Watch List vs Predefined (only for paid users with channels) */}
+                {watchListIsPaid && (
+                  <div className="flex items-center gap-1 bg-black/40 rounded-full p-1 text-xs">
+                    {watchListCount > 0 && (
+                      <button
+                        onClick={() => { setTrendsSource('watchlist'); loadTrends({ source: 'watchlist' }); }}
+                        className={`flex items-center gap-1 px-3 py-1 rounded-full transition-colors ${trendsSource === 'watchlist'
+                          ? 'bg-orange-500/20 text-orange-300'
+                          : 'text-gray-400 hover:text-white'
+                          }`}
+                      >
+                        <List className="w-3 h-3" />
+                        {t('trends.myList')}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setTrendsSource('predefined'); loadTrends({ source: 'predefined' }); }}
+                      className={`px-3 py-1 rounded-full transition-colors ${trendsSource === 'predefined'
+                        ? 'bg-orange-500/20 text-orange-300'
+                        : 'text-gray-400 hover:text-white'
+                        }`}
+                    >
+                      {t('trends.predefined')}
+                    </button>
+                  </div>
+                )}
+
+                {/* Region toggle (only for predefined source) */}
+                {trendsSource === 'predefined' && (
+                  <div className="flex items-center gap-1 bg-black/40 rounded-full p-1 text-xs">
+                    <button
+                      onClick={() => { setTrendsChannelSet('us'); loadTrends({ channelSet: 'us' }); }}
+                      className={`px-3 py-1 rounded-full transition-colors ${trendsChannelSet === 'us'
+                        ? 'bg-orange-500/20 text-orange-300'
+                        : 'text-gray-400 hover:text-white'
+                        }`}
+                    >
+                      US
+                    </button>
+                    <button
+                      onClick={() => { setTrendsChannelSet('kr'); loadTrends({ channelSet: 'kr' }); }}
+                      className={`px-3 py-1 rounded-full transition-colors ${trendsChannelSet === 'kr'
+                        ? 'bg-orange-500/20 text-orange-300'
+                        : 'text-gray-400 hover:text-white'
+                        }`}
+                    >
+                      KR
+                    </button>
+                  </div>
+                )}
+
+                {/* Manage watch list button (paid users) */}
+                {watchListIsPaid && (
                   <button
-                    onClick={() => { setTrendsChannelSet('us'); loadTrends('us'); }}
-                    className={`px-3 py-1 rounded-full transition-colors ${trendsChannelSet === 'us'
-                      ? 'bg-orange-500/20 text-orange-300'
-                      : 'text-gray-400 hover:text-white'
-                      }`}
+                    onClick={() => setWatchListManagerOpen(true)}
+                    className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors"
+                    title={t('trends.manageWatchList')}
                   >
-                    US
+                    <Settings className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => { setTrendsChannelSet('kr'); loadTrends('kr'); }}
-                    className={`px-3 py-1 rounded-full transition-colors ${trendsChannelSet === 'kr'
-                      ? 'bg-orange-500/20 text-orange-300'
-                      : 'text-gray-400 hover:text-white'
-                      }`}
-                  >
-                    KR
-                  </button>
-                </div>
+                )}
+
                 <button
                   onClick={() => loadTrends()}
                   className="text-sm text-orange-500 hover:text-orange-400 font-medium"
@@ -473,7 +573,21 @@ export default function DashboardContent() {
               </div>
             ) : trends.length === 0 ? (
               <div className="text-center py-10 text-gray-500">
-                {t('trends.empty')}
+                {trendsSource === 'watchlist' && watchListCount === 0 ? (
+                  <>
+                    <p className="mb-3">{t('trends.watchListEmpty')}</p>
+                    <button
+                      onClick={() => setWatchListManagerOpen(true)}
+                      className="text-sm text-orange-500 hover:text-orange-400 font-medium"
+                    >
+                      {t('trends.addChannels')}
+                    </button>
+                  </>
+                ) : trendsSource === 'watchlist' ? (
+                  <p>{t('trends.watchListNoRecent')}</p>
+                ) : (
+                  <p>{t('trends.empty')}</p>
+                )}
               </div>
             ) : (
               <>
@@ -620,6 +734,13 @@ export default function DashboardContent() {
           </div>
         </div>
       </main>
+
+      <WatchListManager
+        open={watchListManagerOpen}
+        onOpenChange={setWatchListManagerOpen}
+        isPaid={watchListIsPaid}
+        onChannelsChange={handleWatchListChannelsChange}
+      />
     </>
   );
 }
