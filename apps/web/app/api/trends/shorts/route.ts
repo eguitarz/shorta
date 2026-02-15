@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth-helpers';
+import { getAuthenticatedUser, requireAuth } from '@/lib/auth-helpers';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_REGION = 'US';
 const DEFAULT_LIMIT = 12;
+const WATCHLIST_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const WATCHLIST_CACHE_TTL_SECONDS = 6 * 60 * 60;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_RESULTS = 300;
 const CACHE_TTL_SECONDS = 24 * 60 * 60;
@@ -66,6 +70,7 @@ interface TrendsResponse {
   usedFallback: boolean;
   generatedAt: string;
   channelSet?: 'us' | 'kr';
+  source?: 'predefined' | 'watchlist';
 }
 
 const trendsCache = new Map<string, { expiresAt: number; data: TrendsResponse }>();
@@ -216,13 +221,16 @@ async function buildTrends(params: {
   limit: number;
   channelSet: 'us' | 'kr';
   location?: { lat: number; lng: number } | null;
+  customChannelIds?: string[];
 }) {
   const publishedAfter = getPublishedAfter(168);
   const publishedAfterMs = new Date(publishedAfter).getTime();
   const maxResults = Math.min(MAX_RESULTS, Math.max(200, params.limit * 2, params.limit));
 
-  const channelIds = (params.channelSet === 'kr' ? CHANNEL_SEED_IDS_KR : CHANNEL_SEED_IDS_US)
-    .slice(0, maxResults);
+  const channelIds = params.customChannelIds
+    ? params.customChannelIds
+    : (params.channelSet === 'kr' ? CHANNEL_SEED_IDS_KR : CHANNEL_SEED_IDS_US)
+      .slice(0, maxResults);
   const uploadsMap = await fetchChannelUploads({
     apiKey: params.apiKey,
     channelIds,
@@ -319,6 +327,97 @@ export async function GET(request: NextRequest) {
     MAX_RESULTS,
     Number.isFinite(limitParam) ? Math.max(1, limitParam) : DEFAULT_LIMIT
   );
+  const source = searchParams.get('source') === 'watchlist' ? 'watchlist' : 'predefined';
+
+  // --- Watchlist source: use user's custom channel list ---
+  if (source === 'watchlist') {
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll(); },
+          setAll(cookiesToSet) {
+            try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch { /* ignore */ }
+          },
+        },
+      }
+    );
+
+    const { data: channels } = await supabase
+      .from('watch_list_channels')
+      .select('channel_id')
+      .eq('user_id', user.id)
+      .order('position', { ascending: true });
+
+    const customChannelIds = (channels || []).map((c) => c.channel_id);
+    if (customChannelIds.length === 0) {
+      return NextResponse.json({
+        items: [],
+        region: DEFAULT_REGION,
+        regionSource: 'default',
+        usedFallback: false,
+        generatedAt: new Date().toISOString(),
+        source: 'watchlist',
+      } satisfies TrendsResponse);
+    }
+
+    // Per-user cache key (shorter TTL)
+    const cacheKey = `watchlist:${user.id}:${limit}:${new Date().toISOString().slice(0, 10)}`;
+    const kv = getKvNamespace();
+
+    if (kv) {
+      try {
+        const cached = await kv.get(cacheKey, 'json');
+        if (cached) return NextResponse.json(cached);
+      } catch (error) {
+        console.warn('KV cache read failed:', error);
+      }
+    } else {
+      const cached = trendsCache.get(cacheKey);
+      if (cached && cached.expiresAt > Date.now()) {
+        return NextResponse.json(cached.data);
+      }
+    }
+
+    try {
+      const { items, usedFallback } = await buildTrends({
+        apiKey: youtubeApiKey,
+        region: DEFAULT_REGION,
+        limit,
+        channelSet: 'us',
+        customChannelIds,
+      });
+
+      const response: TrendsResponse = {
+        items,
+        region: DEFAULT_REGION,
+        regionSource: 'default',
+        usedFallback,
+        generatedAt: new Date().toISOString(),
+        source: 'watchlist',
+      };
+
+      if (kv) {
+        try { await kv.put(cacheKey, JSON.stringify(response), { expirationTtl: WATCHLIST_CACHE_TTL_SECONDS }); } catch { /* ignore */ }
+      } else {
+        trendsCache.set(cacheKey, { expiresAt: Date.now() + WATCHLIST_CACHE_TTL_MS, data: response });
+      }
+
+      return NextResponse.json(response);
+    } catch (error) {
+      console.error('Error building watchlist trends:', error);
+      return NextResponse.json({ error: 'Failed to fetch watch list trends' }, { status: 500 });
+    }
+  }
+
+  // --- Predefined source (default) ---
   const channelSet = searchParams.get('channelSet') === 'kr' ? 'kr' : 'us';
   const region = channelSet === 'kr' ? 'KR' : DEFAULT_REGION;
   const regionSource: TrendsResponse['regionSource'] = 'default';
@@ -361,6 +460,7 @@ export async function GET(request: NextRequest) {
       usedFallback,
       generatedAt: new Date().toISOString(),
       channelSet,
+      source: 'predefined',
     };
 
     if (kv) {

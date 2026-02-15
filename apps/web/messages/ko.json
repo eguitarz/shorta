@@ -158,7 +158,27 @@
       "empty": "최근 7일 내 인기 쇼츠가 없습니다.",
       "views": "조회수",
       "viewsPerHour": "조회수/시간",
-      "engagement": "참여율"
+      "engagement": "참여율",
+      "myList": "내 목록",
+      "predefined": "추천",
+      "manageWatchList": "관심 목록 관리",
+      "watchListLabel": "내 관심 목록",
+      "watchListTitle": "관심 목록 (7일)",
+      "watchListSubtitle": "관심 목록 채널 · 시간당 조회수 기준",
+      "watchListEmpty": "관심 목록이 비어 있습니다. 채널을 추가하여 최신 쇼츠를 추적하세요.",
+      "watchListNoRecent": "최근 7일 내 관심 목록 채널의 쇼츠가 없습니다.",
+      "addChannels": "채널 추가"
+    },
+    "watchList": {
+      "title": "관심 목록",
+      "searchPlaceholder": "YouTube 채널 검색...",
+      "loading": "불러오는 중...",
+      "empty": "아직 채널이 없습니다. 위에서 검색하여 관심 목록에 추가하세요.",
+      "added": "추가됨",
+      "adding": "추가 중...",
+      "searching": "검색 중...",
+      "paidOnly": "관심 목록은 유료 구독자만 사용할 수 있습니다. 업그레이드하여 즐겨찾는 채널을 추적하세요.",
+      "upgradeCta": "요금제 보기"
     }
   },
   "analyzer": {
