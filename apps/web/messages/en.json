@@ -185,12 +185,13 @@
     },
     "watchList": {
       "title": "Watch List",
-      "searchPlaceholder": "Search YouTube channels...",
+      "urlPlaceholder": "Paste YouTube channel link...",
+      "urlHint": "e.g. youtube.com/@MrBeast or youtube.com/channel/UC...",
       "loading": "Loading...",
-      "empty": "No channels yet. Search above to add channels to your watch list.",
-      "added": "Added",
+      "empty": "No channels yet. Paste a YouTube channel link above to get started.",
       "adding": "Adding...",
-      "searching": "Searching...",
+      "addFailed": "Could not add channel. Please check the link and try again.",
+      "invalidUrl": "Please paste a valid YouTube channel link.",
       "paidOnly": "Watch list is available for paid plan subscribers. Upgrade to track your favorite channels.",
       "upgradeCta": "View Plans"
     }

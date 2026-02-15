@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { X, Search, Plus, Trash2, Crown } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Link2, Plus, Trash2, Crown, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
 
@@ -21,14 +20,55 @@ interface WatchListChannel {
   position: number;
 }
 
-interface SearchResult {
-  channelId: string;
-  title: string;
-  thumbnail: string | null;
-  description: string;
-}
-
 const MAX_CHANNELS = 10;
+
+/**
+ * Extract a YouTube channel ID from various URL formats:
+ *  - https://www.youtube.com/channel/UC...
+ *  - https://www.youtube.com/@handle
+ *  - https://youtube.com/c/ChannelName
+ *  - raw channel ID (UC...)
+ */
+function parseChannelInput(input: string): { type: 'id' | 'handle' | 'slug'; value: string } | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  // Raw channel ID (starts with UC and is 24 chars)
+  if (/^UC[\w-]{22}$/.test(trimmed)) {
+    return { type: 'id', value: trimmed };
+  }
+
+  try {
+    const url = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+    if (!url.hostname.includes('youtube.com') && !url.hostname.includes('youtu.be')) {
+      return null;
+    }
+
+    const path = url.pathname;
+
+    // /channel/UC...
+    const channelMatch = path.match(/^\/channel\/(UC[\w-]{22})/);
+    if (channelMatch) {
+      return { type: 'id', value: channelMatch[1] };
+    }
+
+    // /@handle
+    const handleMatch = path.match(/^\/@([\w.-]+)/);
+    if (handleMatch) {
+      return { type: 'handle', value: handleMatch[1] };
+    }
+
+    // /c/Name or /user/Name
+    const slugMatch = path.match(/^\/(c|user)\/([\w.-]+)/);
+    if (slugMatch) {
+      return { type: 'slug', value: slugMatch[2] };
+    }
+  } catch {
+    // not a valid URL
+  }
+
+  return null;
+}
 
 export function WatchListManager({
   open,
@@ -44,12 +84,10 @@ export function WatchListManager({
   const t = useTranslations("dashboard.watchList");
   const [channels, setChannels] = useState<WatchListChannel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [adding, setAdding] = useState<string | null>(null);
+  const [urlInput, setUrlInput] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const fetchChannels = useCallback(async () => {
     try {
@@ -72,53 +110,42 @@ export function WatchListManager({
     }
   }, [open, isPaid, fetchChannels]);
 
-  useEffect(() => {
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    if (!searchQuery.trim() || searchQuery.trim().length < 2) {
-      setSearchResults([]);
+  const handleAdd = async () => {
+    setAddError(null);
+    const parsed = parseChannelInput(urlInput);
+
+    if (!parsed) {
+      setAddError(t("invalidUrl"));
       return;
     }
 
-    searchTimeout.current = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const res = await fetch(
-          `/api/watch-list/search?q=${encodeURIComponent(searchQuery.trim())}`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setSearchResults(data.results || []);
-        }
-      } catch (error) {
-        console.error("Search error:", error);
-      } finally {
-        setSearching(false);
-      }
-    }, 400);
-
-    return () => {
-      if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    };
-  }, [searchQuery]);
-
-  const handleAdd = async (channelId: string) => {
-    setAdding(channelId);
+    setAdding(true);
     try {
       const res = await fetch("/api/watch-list", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channelId }),
+        body: JSON.stringify(
+          parsed.type === 'id'
+            ? { channelId: parsed.value }
+            : parsed.type === 'handle'
+              ? { handle: parsed.value }
+              : { slug: parsed.value }
+        ),
       });
+
       if (res.ok) {
         await fetchChannels();
-        setSearchQuery("");
-        setSearchResults([]);
+        setUrlInput("");
         onChannelsChange();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setAddError(data.error || t("addFailed"));
       }
     } catch (error) {
       console.error("Failed to add channel:", error);
+      setAddError(t("addFailed"));
     } finally {
-      setAdding(null);
+      setAdding(false);
     }
   };
 
@@ -140,8 +167,6 @@ export function WatchListManager({
       setRemoving(null);
     }
   };
-
-  const existingIds = new Set(channels.map((c) => c.channel_id));
 
   if (!isPaid) {
     return (
@@ -180,65 +205,40 @@ export function WatchListManager({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Search input */}
+        {/* Add channel by URL */}
         {channels.length < MAX_CHANNELS && (
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <Input
-              placeholder={t("searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-[#0a0a0a] border-gray-800 text-white placeholder:text-gray-600"
-            />
+          <div>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <Input
+                  placeholder={t("urlPlaceholder")}
+                  value={urlInput}
+                  onChange={(e) => { setUrlInput(e.target.value); setAddError(null); }}
+                  onKeyDown={(e) => e.key === "Enter" && urlInput.trim() && handleAdd()}
+                  className="pl-9 bg-[#0a0a0a] border-gray-800 text-white placeholder:text-gray-600"
+                />
+              </div>
+              <Button
+                onClick={handleAdd}
+                disabled={!urlInput.trim() || adding}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4"
+              >
+                {adding ? (
+                  <span className="text-sm">{t("adding")}</span>
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            {addError && (
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-red-400">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>{addError}</span>
+              </div>
+            )}
+            <p className="text-xs text-gray-600 mt-2">{t("urlHint")}</p>
           </div>
-        )}
-
-        {/* Search results */}
-        {searchResults.length > 0 && (
-          <div className="border border-gray-800 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
-            {searchResults.map((result) => {
-              const alreadyAdded = existingIds.has(result.channelId);
-              return (
-                <div
-                  key={result.channelId}
-                  className="flex items-center gap-3 p-3 hover:bg-gray-800/50 border-b border-gray-800 last:border-b-0"
-                >
-                  {result.thumbnail && (
-                    <img
-                      src={result.thumbnail}
-                      alt=""
-                      className="w-8 h-8 rounded-full flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {result.title}
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={alreadyAdded || adding === result.channelId}
-                    onClick={() => handleAdd(result.channelId)}
-                    className="text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 h-8 px-2"
-                  >
-                    {alreadyAdded ? (
-                      <span className="text-xs text-gray-500">
-                        {t("added")}
-                      </span>
-                    ) : adding === result.channelId ? (
-                      <span className="text-xs">{t("adding")}</span>
-                    ) : (
-                      <Plus className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {searching && (
-          <p className="text-xs text-gray-500 text-center">{t("searching")}</p>
         )}
 
         {/* Current channels list */}
