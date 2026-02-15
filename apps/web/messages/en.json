@@ -853,6 +853,8 @@
     "nicheEmpty": {
       "title": "Niche Analysis Unlocks at 3 Shorts",
       "description": "Upload at least 3 Shorts to your channel — our AI will analyze your content to identify your niche, audience, and style.",
+      "readyTitle": "Ready to Analyze Your Niche",
+      "readyDescription": "You have enough Shorts! Click Sync Now to run AI niche analysis on your channel.",
       "blogLink": "Guide: How to Start a YouTube Channel"
     },
     "nicheLocked": {

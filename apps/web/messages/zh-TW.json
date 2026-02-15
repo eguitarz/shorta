@@ -843,6 +843,8 @@
     "nicheEmpty": {
       "title": "上傳 3 支短影片即可解鎖領域分析",
       "description": "上傳至少 3 支短影片到你的頻道 — AI 會分析你的內容，找出你的領域、受眾和風格。",
+      "readyTitle": "已準備好分析你的領域",
+      "readyDescription": "你的短影片數量足夠了！點擊「立即同步」來執行 AI 領域分析。",
       "blogLink": "指南：如何開始經營 YouTube 頻道"
     },
     "nicheLocked": {
