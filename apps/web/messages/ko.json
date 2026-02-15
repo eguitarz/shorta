@@ -829,6 +829,8 @@
     "nicheEmpty": {
       "title": "쇼츠 3개 업로드 시 니치 분석 활성화",
       "description": "채널에 쇼츠를 3개 이상 업로드하세요 — AI가 콘텐츠를 분석하여 니치, 시청자, 스타일을 파악합니다.",
+      "readyTitle": "니치 분석 준비 완료",
+      "readyDescription": "쇼츠가 충분합니다! 지금 동기화를 클릭하여 AI 니치 분석을 실행하세요.",
       "blogLink": "가이드: 유튜브 채널 시작하기"
     },
     "nicheLocked": {

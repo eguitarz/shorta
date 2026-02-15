@@ -1002,18 +1002,41 @@ export default function ChannelContent() {
               <div className="w-12 h-12 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Video className="w-6 h-6 text-orange-500" />
               </div>
-              <p className="text-white font-medium mb-1">
-                {t("nicheEmpty.title")}
-              </p>
-              <p className="text-gray-400 text-sm mb-4">
-                {t("nicheEmpty.description")}
-              </p>
-              <Link href="/blog/2026-02-07-start-youtube-channel-hands-on-guide">
-                <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:text-white">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  {t("nicheEmpty.blogLink")}
-                </Button>
-              </Link>
+              {stats.shortsCount >= 3 ? (
+                <>
+                  <p className="text-white font-medium mb-1">
+                    {t("nicheEmpty.readyTitle")}
+                  </p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    {t("nicheEmpty.readyDescription")}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSyncNow}
+                    disabled={syncing}
+                    className="border-gray-700 text-gray-300 hover:text-white"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? "animate-spin" : ""}`} />
+                    {syncing ? t("syncing") : t("syncNow")}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-white font-medium mb-1">
+                    {t("nicheEmpty.title")}
+                  </p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    {t("nicheEmpty.description")}
+                  </p>
+                  <Link href="/blog/2026-02-07-start-youtube-channel-hands-on-guide">
+                    <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:text-white">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      {t("nicheEmpty.blogLink")}
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

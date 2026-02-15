@@ -837,6 +837,8 @@
     "nicheEmpty": {
       "title": "Análisis de Nicho se desbloquea con 3 Shorts",
       "description": "Sube al menos 3 Shorts a tu canal — nuestra IA analizará tu contenido para identificar tu nicho, audiencia y estilo.",
+      "readyTitle": "Listo para analizar tu nicho",
+      "readyDescription": "Tienes suficientes Shorts. Haz clic en Sincronizar para ejecutar el análisis de nicho con IA.",
       "blogLink": "Guía: Cómo empezar un canal de YouTube"
     },
     "nicheLocked": {
