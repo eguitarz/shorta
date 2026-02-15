@@ -158,7 +158,28 @@
       "empty": "No se encontraron Shorts populares en los últimos 7 días.",
       "views": "vistas",
       "viewsPerHour": "vistas/h",
-      "engagement": "interacción"
+      "engagement": "interacción",
+      "myList": "Mi lista",
+      "predefined": "Selección",
+      "manageWatchList": "Gestionar lista",
+      "watchListLabel": "Mi lista de seguimiento",
+      "watchListTitle": "Lista de seguimiento (7 días)",
+      "watchListSubtitle": "De tus canales seguidos · ordenados por vistas/hora",
+      "watchListEmpty": "Tu lista está vacía. Agrega canales para seguir sus últimos Shorts.",
+      "watchListNoRecent": "No hay Shorts recientes de tus canales en los últimos 7 días.",
+      "addChannels": "Agregar canales"
+    },
+    "watchList": {
+      "title": "Lista de seguimiento",
+      "urlPlaceholder": "Pega el enlace del canal de YouTube...",
+      "urlHint": "ej. youtube.com/@MrBeast o youtube.com/channel/UC...",
+      "loading": "Cargando...",
+      "empty": "Aún no hay canales. Pega un enlace de canal de YouTube arriba para comenzar.",
+      "adding": "Agregando...",
+      "addFailed": "No se pudo agregar el canal. Verifica el enlace e intenta de nuevo.",
+      "invalidUrl": "Pega un enlace válido de canal de YouTube.",
+      "paidOnly": "La lista de seguimiento está disponible para suscriptores de pago. Mejora tu plan para seguir tus canales favoritos.",
+      "upgradeCta": "Ver planes"
     }
   },
   "analyzer": {
