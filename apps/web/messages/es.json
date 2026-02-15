@@ -171,12 +171,13 @@
     },
     "watchList": {
       "title": "Lista de seguimiento",
-      "searchPlaceholder": "Buscar canales de YouTube...",
+      "urlPlaceholder": "Pega el enlace del canal de YouTube...",
+      "urlHint": "ej. youtube.com/@MrBeast o youtube.com/channel/UC...",
       "loading": "Cargando...",
-      "empty": "Aún no hay canales. Busca arriba para agregar canales a tu lista.",
-      "added": "Agregado",
+      "empty": "Aún no hay canales. Pega un enlace de canal de YouTube arriba para comenzar.",
       "adding": "Agregando...",
-      "searching": "Buscando...",
+      "addFailed": "No se pudo agregar el canal. Verifica el enlace e intenta de nuevo.",
+      "invalidUrl": "Pega un enlace válido de canal de YouTube.",
       "paidOnly": "La lista de seguimiento está disponible para suscriptores de pago. Mejora tu plan para seguir tus canales favoritos.",
       "upgradeCta": "Ver planes"
     }

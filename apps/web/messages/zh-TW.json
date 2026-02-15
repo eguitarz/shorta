@@ -175,12 +175,13 @@
     },
     "watchList": {
       "title": "追蹤清單",
-      "searchPlaceholder": "搜尋 YouTube 頻道...",
+      "urlPlaceholder": "貼上 YouTube 頻道連結...",
+      "urlHint": "例如 youtube.com/@MrBeast 或 youtube.com/channel/UC...",
       "loading": "載入中...",
-      "empty": "尚無頻道。在上方搜尋以新增頻道到追蹤清單。",
-      "added": "已新增",
+      "empty": "尚無頻道。在上方貼上 YouTube 頻道連結即可開始。",
       "adding": "新增中...",
-      "searching": "搜尋中...",
+      "addFailed": "無法新增頻道。請檢查連結後再試一次。",
+      "invalidUrl": "請貼上有效的 YouTube 頻道連結。",
       "paidOnly": "追蹤清單僅供付費訂閱者使用。升級以追蹤您喜愛的頻道。",
       "upgradeCta": "查看方案"
     }

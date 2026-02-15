@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/watch-list
  * Add a channel to the user's watch list
- * Body: { channelId: string } — YouTube channel ID
+ * Body: { channelId: string } | { handle: string } | { slug: string }
  */
 export async function POST(request: NextRequest) {
   const authError = await requireAuthWithCsrf(request);
@@ -98,10 +98,12 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const channelId = body.channelId?.trim();
+  const directChannelId = body.channelId?.trim();
+  const handle = body.handle?.trim();
+  const slug = body.slug?.trim();
 
-  if (!channelId) {
-    return NextResponse.json({ error: 'channelId is required' }, { status: 400 });
+  if (!directChannelId && !handle && !slug) {
+    return NextResponse.json({ error: 'channelId, handle, or slug is required' }, { status: 400 });
   }
 
   // Check max channels
@@ -125,8 +127,15 @@ export async function POST(request: NextRequest) {
 
   const ytUrl = new URL('https://www.googleapis.com/youtube/v3/channels');
   ytUrl.searchParams.set('part', 'snippet');
-  ytUrl.searchParams.set('id', channelId);
   ytUrl.searchParams.set('key', youtubeApiKey);
+
+  if (directChannelId) {
+    ytUrl.searchParams.set('id', directChannelId);
+  } else if (handle) {
+    ytUrl.searchParams.set('forHandle', handle);
+  } else {
+    ytUrl.searchParams.set('forUsername', slug!);
+  }
 
   const ytRes = await fetch(ytUrl.toString());
   if (!ytRes.ok) {
@@ -139,6 +148,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'YouTube channel not found' }, { status: 404 });
   }
 
+  const channelId = ytChannel.id;
   const channelTitle = ytChannel.snippet?.title || 'Unknown';
   const channelThumbnail =
     ytChannel.snippet?.thumbnails?.medium?.url ||
