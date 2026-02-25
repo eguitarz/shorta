@@ -668,8 +668,12 @@ export default function DashboardContent() {
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
                 {t('activity.title')}
               </h3>
-              <button className="text-sm text-orange-500 hover:text-orange-400 font-medium">
+              <button
+                onClick={() => router.push('/library')}
+                className="text-sm text-orange-500 hover:text-orange-400 font-medium flex items-center gap-1"
+              >
                 {t('activity.viewAll')}
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
