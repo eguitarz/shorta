@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp, Camera, Move, Film, Type, Video, Zap, Trash2, Copy, ArrowUp, ArrowDown, Plus, RefreshCw } from "lucide-react";
-import { ExportGeneratedSubtitleButton } from "@/components/ExportGeneratedSubtitleButton";
-import { ExportGeneratedStoryboardButton } from "@/components/ExportGeneratedStoryboardButton";
+import { Loader2, Pencil, Lightbulb, ArrowLeft, Sparkles, X, Send, Check, ChevronDown, ChevronUp, Camera, Move, Film, Type, Video, Zap, Trash2, Copy, ArrowUp, ArrowDown, Plus, RefreshCw, ImageIcon, Upload, Download } from "lucide-react";
+import { toast } from "sonner";
+import type { BeatImageMap, ReferenceImage } from "@/lib/image-generation/types";
+import { ExportDropdown } from "@/components/ExportDropdown";
 import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
 import { TechnicalBadge } from "@/components/TechnicalBadge";
 import { useTranslations, useLocale } from "next-intl";
@@ -98,19 +99,38 @@ export default function StoryboardResultsPage() {
   // Regenerate and highlight state
   const [regeneratingBeat, setRegeneratingBeat] = useState<number | null>(null);
   const [highlightedBeatNumber, setHighlightedBeatNumber] = useState<number | null>(null);
+
+  // Image generation state
+  const [beatImages, setBeatImages] = useState<BeatImageMap>({});
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false);
+  const [generatingImageBeats, setGeneratingImageBeats] = useState<Set<number>>(new Set());
+  const [imagesCompleted, setImagesCompleted] = useState(0);
+  const [regeneratingImageBeat, setRegeneratingImageBeat] = useState<number | null>(null);
+  const [referenceImage, setReferenceImage] = useState<ReferenceImage | null>(null);
+  const [referencePreviewUrl, setReferencePreviewUrl] = useState<string | null>(null);
+  const referenceInputRef = useRef<HTMLInputElement>(null);
   const beatRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   useEffect(() => {
     const loadStoryboard = async () => {
       const id = params.id as string;
 
-      // First try sessionStorage
+      // First try sessionStorage for fast initial load
       const stored = sessionStorage.getItem(`created_${id}`);
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
           setStoryboardData(parsed);
           setLoading(false);
+
+          // Still fetch from DB to hydrate beat images
+          const response = await fetch(`/api/storyboards/generated/${id}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.beatImages && Object.keys(data.beatImages).length > 0) {
+              setBeatImages(data.beatImages);
+            }
+          }
           return;
         } catch (err) {
           console.error("Error parsing sessionStorage data:", err);
@@ -146,6 +166,11 @@ export default function StoryboardResultsPage() {
         };
 
         setStoryboardData(transformedData);
+
+        // Hydrate beat images from database
+        if (data.beatImages && Object.keys(data.beatImages).length > 0) {
+          setBeatImages(data.beatImages);
+        }
 
         // Cache in sessionStorage for faster access
         sessionStorage.setItem(`created_${id}`, JSON.stringify(transformedData));
@@ -515,6 +540,204 @@ export default function StoryboardResultsPage() {
     }
   };
 
+  // Reference image upload handler
+  const handleReferenceImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t('imageGeneration.referenceInvalidType'));
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(t('imageGeneration.referenceTooLarge'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const base64 = dataUrl.split(',')[1];
+      setReferenceImage({
+        mimeType: file.type,
+        data: base64,
+        name: file.name,
+      });
+      setReferencePreviewUrl(dataUrl);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleRemoveReferenceImage = () => {
+    setReferenceImage(null);
+    setReferencePreviewUrl(null);
+  };
+
+  // Generate images for all beats
+  const handleGenerateAllImages = async () => {
+    if (!storyboardData || isGeneratingImages) return;
+
+    setIsGeneratingImages(true);
+    setImagesCompleted(0);
+    setBeatImages({}); // Clear old images so user sees fresh loading state
+
+    const beats = storyboardData.beats;
+    const allBeats = new Set(beats.map(b => b.beatNumber));
+    setGeneratingImageBeats(allBeats);
+
+    try {
+      const response = await fetch("/api/storyboard-images/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storyboardId: params.id,
+          overview: storyboardData.overview,
+          beats: beats.map(b => ({
+            beatNumber: b.beatNumber,
+            title: b.title,
+            type: b.type,
+            visual: b.visual,
+            script: b.script,
+            directorNotes: b.directorNotes,
+            shotType: b.shotType,
+            cameraMovement: b.cameraMovement,
+            bRollSuggestions: b.bRollSuggestions,
+          })),
+          referenceImage: referenceImage || undefined,
+          locale,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 403) {
+          toast.error(t('imageGeneration.noCredits'));
+        } else {
+          toast.error(errorData.error || t('imageGeneration.failed'));
+        }
+        return;
+      }
+
+      const data = await response.json();
+
+      // Update state with generated images (fresh map, not merging old)
+      const newBeatImages: BeatImageMap = {};
+      for (const result of data.images) {
+        newBeatImages[result.beatNumber.toString()] = {
+          url: result.imageUrl,
+          storagePath: '',
+          prompt: result.prompt,
+          generatedAt: new Date().toISOString(),
+        };
+      }
+      setBeatImages(newBeatImages);
+      setImagesCompleted(data.images.length);
+
+      if (data.images.length === beats.length) {
+        toast.success(t('imageGeneration.success', { count: data.images.length }));
+      } else if (data.images.length > 0) {
+        toast.warning(t('imageGeneration.partial', { completed: data.images.length, total: beats.length }));
+      } else {
+        toast.error(t('imageGeneration.failed'));
+      }
+    } catch (error) {
+      console.error("Generate images error:", error);
+      toast.error(t('imageGeneration.failed'));
+    } finally {
+      setIsGeneratingImages(false);
+      setGeneratingImageBeats(new Set());
+    }
+  };
+
+  // Regenerate image for a single beat
+  const handleRegenerateImage = async (beatNumber: number) => {
+    if (!storyboardData || regeneratingImageBeat !== null) return;
+
+    setRegeneratingImageBeat(beatNumber);
+
+    const beat = storyboardData.beats.find(b => b.beatNumber === beatNumber);
+    if (!beat) return;
+
+    try {
+      const response = await fetch("/api/storyboard-images/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storyboardId: params.id,
+          overview: storyboardData.overview,
+          beats: [{
+            beatNumber: beat.beatNumber,
+            title: beat.title,
+            type: beat.type,
+            visual: beat.visual,
+            script: beat.script,
+            directorNotes: beat.directorNotes,
+            shotType: beat.shotType,
+            cameraMovement: beat.cameraMovement,
+            bRollSuggestions: beat.bRollSuggestions,
+          }],
+          referenceImage: referenceImage || undefined,
+          locale,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.error || t('imageGeneration.regenerateFailed'));
+        return;
+      }
+
+      const data = await response.json();
+      if (data.images?.length) {
+        const result = data.images[0];
+        setBeatImages(prev => {
+          const updatedImages = {
+            ...prev,
+            [result.beatNumber.toString()]: {
+              url: result.imageUrl,
+              storagePath: '',
+              prompt: result.prompt,
+              generatedAt: new Date().toISOString(),
+            },
+          };
+          return updatedImages;
+        });
+        toast.success(t('imageGeneration.regenerateSuccess', { beatNumber }));
+      }
+    } catch (error) {
+      console.error("Regenerate image error:", error);
+      toast.error(t('imageGeneration.regenerateFailed'));
+    } finally {
+      setRegeneratingImageBeat(null);
+    }
+  };
+
+  // Download a beat image
+  const handleDownloadImage = async (beatNumber: number) => {
+    const imageData = beatImages[beatNumber.toString()];
+    if (!imageData?.url) return;
+
+    try {
+      const response = await fetch(imageData.url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const title = storyboardData?.overview.title.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, '_') || 'storyboard';
+      link.download = `${title}_beat_${beatNumber}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download image error:', error);
+      toast.error('Failed to download image');
+    }
+  };
+
   // Scroll to and highlight a beat
   const scrollToBeat = (beatNumber: number) => {
     setTimeout(() => {
@@ -583,17 +806,66 @@ export default function StoryboardResultsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <ExportGeneratedSubtitleButton
+                  {/* Image Generation Group */}
+                  <div className="flex items-center bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+                    {/* Reference Image Upload */}
+                    <input
+                      ref={referenceInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={handleReferenceImageSelect}
+                      className="hidden"
+                    />
+                    {referenceImage ? (
+                      <div className="flex items-center gap-2 px-3 py-1.5 border-r border-gray-700">
+                        <img
+                          src={referencePreviewUrl!}
+                          alt="Reference"
+                          className="w-7 h-7 rounded object-cover"
+                        />
+                        <span className="text-xs text-gray-300 max-w-[80px] truncate">{referenceImage.name}</span>
+                        <button
+                          onClick={handleRemoveReferenceImage}
+                          className="p-0.5 hover:bg-gray-700 rounded transition-colors"
+                          title={t('imageGeneration.removeReference')}
+                        >
+                          <X className="w-3.5 h-3.5 text-gray-400" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => referenceInputRef.current?.click()}
+                        disabled={isGeneratingImages}
+                        className="flex items-center gap-1.5 px-3 py-2 text-gray-400 hover:text-amber-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs border-r border-gray-700"
+                        title={t('imageGeneration.addReference')}
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{t('imageGeneration.reference')}</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={handleGenerateAllImages}
+                      disabled={isGeneratingImages}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                    >
+                      {isGeneratingImages ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>{t('imageGeneration.generating', { completed: imagesCompleted, total: storyboardData.beats.length })}</span>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="w-4 h-4" />
+                          <span>{t('imageGeneration.generate')}</span>
+                          <span className="text-amber-200 text-xs">{storyboardData.beats.length * 10} credits</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <ExportDropdown
+                    overview={storyboardData.overview}
                     beats={storyboardData.beats}
-                    videoTitle={storyboardData.overview.title}
-                  />
-                  <ExportGeneratedStoryboardButton
-                    generatedData={{
-                      generated: {
-                        overview: storyboardData.overview,
-                        beats: storyboardData.beats
-                      }
-                    }}
+                    beatImages={beatImages}
                   />
                 </div>
               </div>
@@ -767,41 +1039,88 @@ export default function StoryboardResultsPage() {
 
                     {/* Beat Content */}
                     <div className="p-6 space-y-6">
-                      {/* Script - Primary Focus */}
-                      <div>
-                        <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-3 font-semibold">{t('beatContent.whatToSay')}</h4>
-                        <p className="text-lg leading-relaxed text-gray-100 font-medium">{beat.script}</p>
-                      </div>
+                      <div className="flex gap-5">
+                        {/* Beat Image - left column */}
+                        {beatImages[beat.beatNumber.toString()] && (
+                          <div className="relative group flex-shrink-0">
+                            <img
+                              src={beatImages[beat.beatNumber.toString()].url}
+                              alt={`Beat ${beat.beatNumber}: ${beat.title}`}
+                              className="w-32 aspect-[9/16] object-cover rounded-lg border border-gray-700"
+                            />
+                            <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                              <button
+                                onClick={() => handleDownloadImage(beat.beatNumber)}
+                                className="p-1 bg-black/70 rounded-md hover:bg-black/90 transition-colors"
+                                title={t('imageGeneration.download')}
+                              >
+                                <Download className="w-3.5 h-3.5 text-gray-300" />
+                              </button>
+                              <button
+                                onClick={() => handleRegenerateImage(beat.beatNumber)}
+                                disabled={regeneratingImageBeat === beat.beatNumber}
+                                className="p-1 bg-black/70 rounded-md hover:bg-black/90 transition-colors"
+                                title={t('imageGeneration.regenerate')}
+                              >
+                                {regeneratingImageBeat === beat.beatNumber ? (
+                                  <Loader2 className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+                                ) : (
+                                  <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
-                      {/* Visual & Audio - Concise Bullets */}
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">{t('beatContent.visual')}</h4>
-                          <ul className="text-sm text-gray-400 space-y-1 list-none">
-                            {(() => {
-                              const visual = beat.visual.split('\n').filter(line => line.trim());
-                              return visual.map((line, idx) => (
-                                <li key={idx} className="flex gap-2 items-start">
-                                  <span className="text-gray-600 flex-shrink-0">•</span>
-                                  <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
-                                </li>
-                              ));
-                            })()}
-                          </ul>
-                        </div>
-                        <div>
-                          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">{t('beatContent.audio')}</h4>
-                          <ul className="text-sm text-gray-400 space-y-1 list-none">
-                            {(() => {
-                              const audio = beat.audio.split('\n').filter(line => line.trim());
-                              return audio.map((line, idx) => (
-                                <li key={idx} className="flex gap-2 items-start">
-                                  <span className="text-gray-600 flex-shrink-0">•</span>
-                                  <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
-                                </li>
-                              ));
-                            })()}
-                          </ul>
+                        {/* Image generating placeholder */}
+                        {generatingImageBeats.has(beat.beatNumber) && !beatImages[beat.beatNumber.toString()] && (
+                          <div className="w-32 aspect-[9/16] bg-gray-800/50 rounded-lg border border-gray-700 flex items-center justify-center flex-shrink-0">
+                            <div className="flex flex-col items-center gap-1.5">
+                              <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
+                              <span className="text-xs text-gray-400">{t('imageGeneration.generatingBeat')}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Script + Visual/Audio - right column */}
+                        <div className="flex-1 space-y-4 min-w-0">
+                          {/* Script - Primary Focus */}
+                          <div>
+                            <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">{t('beatContent.whatToSay')}</h4>
+                            <p className="text-lg leading-relaxed text-gray-100 font-medium">{beat.script}</p>
+                          </div>
+
+                          {/* Visual & Audio - Concise Bullets */}
+                          <div className="grid grid-cols-2 gap-6">
+                            <div>
+                              <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">{t('beatContent.visual')}</h4>
+                              <ul className="text-sm text-gray-400 space-y-1 list-none">
+                                {(() => {
+                                  const visual = beat.visual.split('\n').filter(line => line.trim());
+                                  return visual.map((line, idx) => (
+                                    <li key={idx} className="flex gap-2 items-start">
+                                      <span className="text-gray-600 flex-shrink-0">•</span>
+                                      <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
+                                    </li>
+                                  ));
+                                })()}
+                              </ul>
+                            </div>
+                            <div>
+                              <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">{t('beatContent.audio')}</h4>
+                              <ul className="text-sm text-gray-400 space-y-1 list-none">
+                                {(() => {
+                                  const audio = beat.audio.split('\n').filter(line => line.trim());
+                                  return audio.map((line, idx) => (
+                                    <li key={idx} className="flex gap-2 items-start">
+                                      <span className="text-gray-600 flex-shrink-0">•</span>
+                                      <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
+                                    </li>
+                                  ));
+                                })()}
+                              </ul>
+                            </div>
+                          </div>
                         </div>
                       </div>
 

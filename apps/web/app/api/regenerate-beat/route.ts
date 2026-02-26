@@ -156,6 +156,10 @@ REQUIREMENTS:
 3. Ensure smooth flow from previous beat and into next beat
 4. Be creative - don't just rephrase, try a different angle or approach
 5. Match the overall tone and style of the video
+6. CONSISTENCY: This beat is part of the SAME video as the other beats. Maintain the same setting, lighting, wardrobe, audio style, and text overlay style. Only change what needs to be fresh (script, angle, approach), not the production identity.
+7. Only include textOverlays if they genuinely reinforce this beat's message. Omit if not needed.
+8. Only include bRollSuggestions if cutaways genuinely enhance this beat. Omit if the main shot is sufficient.
+9. Only include retentionTip if there's a unique insight. Omit if it would be generic.
 
 Return ONLY valid JSON (no markdown):
 {
@@ -167,13 +171,13 @@ Return ONLY valid JSON (no markdown):
   "audio": "• Audio instruction 1\\n• Audio instruction 2",
   "shotType": "MCU",
   "cameraMovement": "static",
-  "transition": "cut",
-  "textOverlays": [
-    { "text": "Key text overlay", "position": "center", "timing": "0:01-0:03" }
-  ],
-  "bRollSuggestions": ["B-roll idea 1", "B-roll idea 2"],
-  "retentionTip": "Why viewers stay engaged during this beat"
+  "transition": "cut"
 }
+
+Optional fields (include ONLY when they add value):
+  "textOverlays": [{ "text": "...", "position": "center", "timing": "0:01-0:03" }]
+  "bRollSuggestions": ["B-roll idea 1", "B-roll idea 2"]
+  "retentionTip": "Why viewers stay engaged during this beat"
 
 Shot types: CU, MCU, MS, MLS, WS, OTS, POV, INSERT
 Camera movements: static, pan, tilt, track, zoom, handheld, dolly
