@@ -444,15 +444,17 @@ ${hookStyles.join('\n')}
 
 Each variant needs: id (style name lowercase), style, label, script, visual, audio, directorNotes, whyItWorks (topic-specific, not generic). Every script must be COMPLETELY DIFFERENT — not word variations.
 
-BEAT SCHEMA (every beat must include ALL fields):
+BEAT SCHEMA:
+Required fields (every beat):
 - beatNumber (int), startTime (float), endTime (float), type (string)
 - title (string), directorNotes (string), script (string), visual (string), audio (string)
 - shotType: CU|MCU|MS|MLS|WS|OTS|POV|INSERT
 - cameraMovement: static|pan|tilt|track|zoom|handheld|dolly
 - transition: cut|dissolve|fade|zoom|swipe|whip|none
-- textOverlays: [{text, position: top|center|bottom|lower-third, timing}]
-- bRollSuggestions: [string, string] (2-3 ideas)
-- retentionTip: string
+Optional fields (include ONLY when they add real value to the beat):
+- textOverlays: [{text, position: top|center|bottom|lower-third, timing}] — omit if no overlay needed
+- bRollSuggestions: [string, string] — omit if main shot is sufficient
+- retentionTip: string — omit if no unique retention insight for this beat
 
 DIRECTOR NOTES GUIDELINES:
 - Start with action verbs (Start, Show, Cut, Maintain, etc.)
@@ -468,6 +470,15 @@ VISUAL GUIDELINES:
 AUDIO GUIDELINES:
 - 1-2 concise bullet points, each under 8 words
 - Format: "• Music description\\n• Sound effect (if needed)"
+
+CROSS-BEAT CONSISTENCY (CRITICAL):
+All beats are part of the SAME video. Maintain a unified production identity:
+- VISUAL: Use the same setting/location, lighting, color palette, and wardrobe across beats. Vary camera angles and framing for visual interest, but the environment should feel continuous.
+- AUDIO: Maintain the same background music track and audio mood throughout. Only change music for deliberate dramatic shifts. Sound effects should follow a consistent style.
+- TEXT OVERLAYS: Use a consistent text overlay style (same position preference, same tone/voice). Not every beat needs text overlays — only add them where they genuinely reinforce the message (key stats, step numbers, quotes). Omit textOverlays array entirely for beats that don't need them.
+- B-ROLL: B-roll suggestions should reference the same visual world (same location, same props, same subject). Not every beat needs B-roll — only include bRollSuggestions for beats where cutaways genuinely enhance the content. Omit for beats where the main shot is sufficient.
+- RETENTION TIPS: Only include retentionTip when there's a genuine insight. Omit for beats where it would be generic filler.
+- Think of this as ONE continuous video shoot, not isolated scenes stitched together.
 
 TIMING:
 - Hook: 0-${hookDuration}s | Setup: 20-25% | Main: 50-60% | Payoff: 10-15% | CTA: last 3-5s

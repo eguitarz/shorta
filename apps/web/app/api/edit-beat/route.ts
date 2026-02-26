@@ -165,6 +165,7 @@ IMPORTANT CONSTRAINTS:
 - Don't exceed total video length (${storyboard.overview.length}s)
 - Keep consistent tone with overall ${storyboard.overview.contentType} style
 - If changing timing, ensure it doesn't conflict with adjacent beats
+- CONSISTENCY: All beats are part of the SAME video. Preserve the same setting, lighting, wardrobe, audio style, and text overlay style across beats. Edits should feel like refining a scene, not creating a different production.
 
 Response format:
 [Your conversational explanation of changes]

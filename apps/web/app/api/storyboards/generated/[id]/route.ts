@@ -96,6 +96,9 @@ export async function GET(
             nicheCategory: storyboard.niche_category,
             contentType: storyboard.content_type,
             hookPattern: storyboard.hook_pattern,
+
+            // Beat images
+            beatImages: storyboard.beat_images || {},
         });
     } catch (error) {
         console.error('[Storyboard] API error:', error);
