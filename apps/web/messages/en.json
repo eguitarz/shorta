@@ -653,8 +653,10 @@
       "copySuffix": "Copy"
     },
     "export": {
-      "subtitle": "Export Subtitle",
-      "storyboard": "Export Storyboard"
+      "button": "Export",
+      "subtitle": "Subtitle (.srt)",
+      "storyboard": "Storyboard (.txt)",
+      "pdf": "Storyboard (.pdf)"
     },
     "compare": "Compare",
     "fields": {
@@ -724,6 +726,24 @@
           "simplify": "Simplify the language and make it easier to understand",
           "energize": "Make this beat more energetic and exciting"
         }
+      },
+      "imageGeneration": {
+        "generate": "Generate Images",
+        "generating": "Generating ({completed}/{total})...",
+        "generatingBeat": "Generating image...",
+        "regenerate": "Regenerate image",
+        "success": "Generated images for {count} beats",
+        "partial": "Generated {completed} of {total} images",
+        "failed": "Failed to generate images",
+        "regenerateSuccess": "Regenerated image for Beat {beatNumber}",
+        "regenerateFailed": "Failed to regenerate image",
+        "noCredits": "Insufficient credits for image generation",
+        "addReference": "Add Reference",
+        "removeReference": "Remove",
+        "reference": "Reference",
+        "referenceInvalidType": "Please upload a PNG, JPEG, or WebP image",
+        "referenceTooLarge": "Reference image must be under 10MB",
+        "download": "Download image"
       }
     },
     "technicalBadge": {

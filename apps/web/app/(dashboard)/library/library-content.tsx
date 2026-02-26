@@ -17,6 +17,8 @@ import {
   GripVertical,
   Sparkles,
   Play,
+  Hammer,
+  FileText,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -200,6 +202,21 @@ interface FilterOptions {
   counts: { total: number; starred: number };
 }
 
+interface StoryboardItem {
+  id: string;
+  title: string | null;
+  niche_category: string | null;
+  content_type: string | null;
+  hook_pattern: string | null;
+  video_length_seconds: number | null;
+  changes_count: number | null;
+  analysis_job_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+type LibraryTab = 'analyses' | 'storyboards';
+
 function getThumbnailUrl(item: LibraryItem): string | null {
   // Use existing thumbnail_url from channel_videos
   if (item.thumbnail_url) return item.thumbnail_url;
@@ -275,8 +292,280 @@ function getScoreColor(score: number | null): string {
   return "text-red-500";
 }
 
+function StoryboardsSection() {
+  const router = useRouter();
+  const [items, setItems] = useState<StoryboardItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const fetchStoryboards = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    params.set("sortBy", sortBy);
+    params.set("sortOrder", sortOrder);
+    params.set("page", page.toString());
+
+    try {
+      const res = await fetch(`/api/library/storyboards?${params}`);
+      const data = await res.json();
+      setItems(data.items || []);
+      setTotalPages(data.totalPages || 1);
+    } catch (error) {
+      console.error("Failed to fetch storyboards:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, sortBy, sortOrder, page]);
+
+  useEffect(() => {
+    fetchStoryboards();
+  }, [fetchStoryboards]);
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(column);
+      setSortOrder("desc");
+    }
+  };
+
+  const handleClick = (item: StoryboardItem) => {
+    if (item.analysis_job_id) {
+      router.push(`/analyzer/generate/${item.id}`);
+    } else {
+      router.push(`/storyboard/generate/${item.id}`);
+    }
+  };
+
+  if (!loading && items.length === 0 && !search) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-purple-500" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2">No storyboards yet</h2>
+          <p className="text-gray-400 mb-6">
+            Create a storyboard from scratch or generate one from an analyzed video.
+          </p>
+          <Button
+            onClick={() => router.push("/storyboard/create")}
+            className="bg-orange-500 hover:bg-orange-600"
+          >
+            Create Storyboard
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Top Bar */}
+      <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
+        <h1 className="text-xl font-semibold">Generated Storyboards</h1>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Input
+              type="text"
+              placeholder="Search storyboards..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-64 h-9 bg-gray-800 border-gray-700 pl-9 text-sm"
+            />
+          </div>
+        </div>
+      </header>
+
+      {/* Table */}
+      <div className="flex-1 overflow-auto">
+        <table className="w-full">
+          <thead className="sticky top-0 bg-[#0a0a0a] z-10">
+            <tr className="border-b border-gray-800">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center gap-1">
+                  <span
+                    className="hover:text-white cursor-pointer"
+                    onClick={() => handleSort("title")}
+                  >
+                    Title
+                  </span>
+                  {sortBy === "title" ? (
+                    sortOrder === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                  ) : (
+                    <ArrowUpDown className="w-3 h-3 opacity-30" />
+                  )}
+                </div>
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Source
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center gap-1">
+                  <span
+                    className="hover:text-white cursor-pointer"
+                    onClick={() => handleSort("niche_category")}
+                  >
+                    Niche
+                  </span>
+                  {sortBy === "niche_category" ? (
+                    sortOrder === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                  ) : (
+                    <ArrowUpDown className="w-3 h-3 opacity-30" />
+                  )}
+                </div>
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center gap-1">
+                  <span
+                    className="hover:text-white cursor-pointer"
+                    onClick={() => handleSort("content_type")}
+                  >
+                    Type
+                  </span>
+                  {sortBy === "content_type" ? (
+                    sortOrder === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                  ) : (
+                    <ArrowUpDown className="w-3 h-3 opacity-30" />
+                  )}
+                </div>
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Duration
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center gap-1">
+                  <span
+                    className="hover:text-white cursor-pointer"
+                    onClick={() => handleSort("created_at")}
+                  >
+                    Created
+                  </span>
+                  {sortBy === "created_at" ? (
+                    sortOrder === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                  ) : (
+                    <ArrowUpDown className="w-3 h-3 opacity-30" />
+                  )}
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                  Loading...
+                </td>
+              </tr>
+            ) : items.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                  No storyboards match your search
+                </td>
+              </tr>
+            ) : (
+              items.map((item) => (
+                <tr
+                  key={item.id}
+                  className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer group"
+                  onClick={() => handleClick(item)}
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        item.analysis_job_id ? 'bg-purple-500/10' : 'bg-green-500/10'
+                      }`}>
+                        {item.analysis_job_id ? (
+                          <Sparkles className="w-5 h-5 text-purple-500" />
+                        ) : (
+                          <Hammer className="w-5 h-5 text-green-500" />
+                        )}
+                      </div>
+                      <span className="text-white group-hover:text-orange-500 transition-colors font-medium truncate max-w-[250px]">
+                        {item.title || "Untitled Storyboard"}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                      item.analysis_job_id
+                        ? 'bg-purple-500/10 text-purple-400'
+                        : 'bg-green-500/10 text-green-400'
+                    }`}>
+                      {item.analysis_job_id ? 'From Analysis' : 'From Scratch'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-300">
+                      {item.niche_category || "—"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-300">
+                      {item.content_type || "—"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-gray-400">
+                      {item.video_length_seconds
+                        ? formatDuration(item.video_length_seconds)
+                        : "—"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-gray-400">{formatDate(item.created_at)}</span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Footer */}
+      <footer className="h-12 border-t border-gray-800 flex items-center justify-between px-6 text-sm text-gray-500">
+        <span>Showing {items.length} storyboards</span>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 w-7 p-0 border-gray-700"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-xs tabular-nums">
+              {page} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 w-7 p-0 border-gray-700"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+      </footer>
+    </div>
+  );
+}
+
 export default function LibraryContent() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<LibraryTab>('analyses');
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
@@ -587,12 +876,54 @@ export default function LibraryContent() {
     }
   };
 
-  // Empty state
+  // Tab switcher component (shared between empty and non-empty states)
+  const tabSwitcher = (
+    <div className="flex items-center gap-1 p-1 bg-gray-900 rounded-lg">
+      <button
+        onClick={() => setActiveTab('analyses')}
+        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          activeTab === 'analyses'
+            ? 'bg-gray-800 text-white'
+            : 'text-gray-400 hover:text-white'
+        }`}
+      >
+        <BarChart3 className="w-4 h-4" />
+        Analyses
+      </button>
+      <button
+        onClick={() => setActiveTab('storyboards')}
+        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          activeTab === 'storyboards'
+            ? 'bg-gray-800 text-white'
+            : 'text-gray-400 hover:text-white'
+        }`}
+      >
+        <FileText className="w-4 h-4" />
+        Storyboards
+      </button>
+    </div>
+  );
+
+  // Storyboards tab
+  if (activeTab === 'storyboards') {
+    return (
+      <div className="flex flex-col h-full">
+        <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
+          <h1 className="text-xl font-semibold">Library</h1>
+          {tabSwitcher}
+        </header>
+        <StoryboardsSection />
+      </div>
+    );
+  }
+
+  // Empty state for analyses tab
   if (!loading && items.length === 0 && !hasActiveFilters) {
     return (
       <div className="flex flex-col h-full">
-        <header className="h-16 border-b border-gray-800 flex items-center px-6">
+        <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
           <h1 className="text-xl font-semibold">Library</h1>
+          {tabSwitcher}
         </header>
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md">
@@ -820,7 +1151,10 @@ export default function LibraryContent() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6">
-          <h1 className="text-xl font-semibold">Library</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-semibold">Library</h1>
+            {tabSwitcher}
+          </div>
           <div className="flex items-center gap-3">
             {/* Search */}
             <div className="relative">

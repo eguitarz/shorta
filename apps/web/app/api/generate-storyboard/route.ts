@@ -338,6 +338,12 @@ IMPORTANT GUIDELINES:
 - Only highlight notes that are truly critical to the beat's success
 - LANGUAGE ALIGNMENT (CRITICAL): ALL output (directorNotes, script, visual, audio) MUST be in the SAME language as the original transcript. If the original script is in English, output ONLY in English. Do NOT switch to Hindi or any other language.
 
+CROSS-BEAT CONSISTENCY (CRITICAL):
+All beats are from the SAME video shoot. Maintain unified production identity:
+- VISUAL: Same setting, lighting, color palette, wardrobe across beats. Vary angles for interest, but the environment should feel continuous.
+- AUDIO: Same background music track and audio mood throughout. Only shift for deliberate dramatic effect.
+- Keep text overlay style consistent if used. Not every beat needs overlays — only where they reinforce the message.
+
 VISUAL FORMATTING:
 - 2-3 concise bullet points maximum
 - Format: "• Camera angle/shot type\\n• Key visual element\\n• Context/setting"
