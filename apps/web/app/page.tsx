@@ -488,6 +488,7 @@ export default function HomePage() {
           { text: "Privacy", href: "/privacy" },
           { text: "Terms", href: "/terms" },
           { text: "Contact", href: "mailto:support@shorta.ai" },
+          { text: "Slime", href: "https://getslime.app" },
         ]}
       />
 
