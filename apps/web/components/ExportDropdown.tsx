@@ -49,6 +49,29 @@ function sanitizeFilename(title: string): string {
   return title.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, '_');
 }
 
+function containsKorean(text: string): boolean {
+  return /[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uD7B0-\uD7FF]/.test(text);
+}
+
+async function registerKoreanFont(pdf: any): Promise<string> {
+  const response = await fetch('/fonts/NotoSansKR-Regular.ttf');
+  const buffer = await response.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  // Convert in chunks to avoid stack overflow with large fonts
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)));
+  }
+  const base64 = btoa(binary);
+
+  pdf.addFileToVFS('NotoSansKR-Regular.ttf', base64);
+  pdf.addFont('NotoSansKR-Regular.ttf', 'NotoSansKR', 'normal');
+  // Register same variable font for bold style (jsPDF requires explicit registration)
+  pdf.addFont('NotoSansKR-Regular.ttf', 'NotoSansKR', 'bold');
+  return 'NotoSansKR';
+}
+
 export function ExportDropdown({ overview, beats, appliedChanges, beatImages }: ExportDropdownProps) {
   const t = useTranslations('storyboard.export');
   const [isOpen, setIsOpen] = useState(false);
@@ -132,6 +155,22 @@ export function ExportDropdown({ overview, beats, appliedChanges, beatImages }: 
     const contentWidth = pageWidth - margin * 2;
     let y = margin;
 
+    // Detect Korean content and load font if needed
+    const allText = [
+      overview.title,
+      overview.contentType,
+      overview.targetAudience,
+      ...beats.flatMap(b => [b.title, b.script, b.visual, b.audio,
+        ...(Array.isArray(b.directorNotes) ? b.directorNotes : [b.directorNotes])]),
+    ].join('');
+    const useKorean = containsKorean(allText);
+    let fontFamily = 'helvetica';
+    if (useKorean) {
+      fontFamily = await registerKoreanFont(pdf);
+    }
+
+    const setFont = (style: string) => pdf.setFont(fontFamily, style);
+
     const checkPageBreak = (height: number) => {
       if (y + height > pageHeight - margin) {
         pdf.addPage();
@@ -141,14 +180,14 @@ export function ExportDropdown({ overview, beats, appliedChanges, beatImages }: 
 
     // Title page
     pdf.setFontSize(24);
-    pdf.setFont('helvetica', 'bold');
+    setFont('bold');
     y = 40;
     const titleLines = pdf.splitTextToSize(overview.title, contentWidth);
     pdf.text(titleLines, pageWidth / 2, y, { align: 'center' });
     y += titleLines.length * 10 + 8;
 
     pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
+    setFont('normal');
     pdf.setTextColor(100);
 
     if (overview.contentType) {
@@ -178,13 +217,13 @@ export function ExportDropdown({ overview, beats, appliedChanges, beatImages }: 
 
       // Beat header
       pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
+      setFont('bold');
       pdf.setTextColor(80, 60, 150); // Purple-ish
       pdf.text(`Beat ${beat.beatNumber}: ${beat.title}`, margin, y);
       y += 6;
 
       pdf.setFontSize(9);
-      pdf.setFont('helvetica', 'normal');
+      setFont('normal');
       pdf.setTextColor(120);
       pdf.text(`${formatTime(beat.startTime)} - ${formatTime(beat.endTime)}  |  ${beat.type}`, margin, y);
       y += 8;
@@ -211,9 +250,9 @@ export function ExportDropdown({ overview, beats, appliedChanges, beatImages }: 
           const scriptWidth = contentWidth - imgWidth - 5;
 
           pdf.setFontSize(10);
-          pdf.setFont('helvetica', 'bold');
+          setFont('bold');
           pdf.text('Script:', scriptX, y + 4);
-          pdf.setFont('helvetica', 'normal');
+          setFont('normal');
           pdf.setFontSize(10);
           const scriptLines = pdf.splitTextToSize(beat.script, scriptWidth);
           const maxScriptLines = Math.min(scriptLines.length, 12);
@@ -222,13 +261,13 @@ export function ExportDropdown({ overview, beats, appliedChanges, beatImages }: 
           y += Math.max(imgHeight, maxScriptLines * 4.5 + 10) + 5;
         } catch {
           // Image fetch failed, continue without it
-          printScriptSection(pdf, beat, margin, contentWidth, y);
+          printScriptSection(pdf, beat, margin, contentWidth, y, fontFamily);
           const scriptLines = pdf.splitTextToSize(beat.script, contentWidth);
           y += scriptLines.length * 4.5 + 12;
         }
       } else {
         // No image - just script
-        printScriptSection(pdf, beat, margin, contentWidth, y);
+        printScriptSection(pdf, beat, margin, contentWidth, y, fontFamily);
         const scriptLines = pdf.splitTextToSize(beat.script, contentWidth);
         y += scriptLines.length * 4.5 + 12;
       }
@@ -241,11 +280,11 @@ export function ExportDropdown({ overview, beats, appliedChanges, beatImages }: 
         : beat.directorNotes;
       if (notes) {
         pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'bold');
+        setFont('bold');
         pdf.setTextColor(100);
         pdf.text('Director Notes:', margin, y);
         y += 4;
-        pdf.setFont('helvetica', 'normal');
+        setFont('normal');
         const noteLines = pdf.splitTextToSize(notes, contentWidth);
         const maxNoteLines = Math.min(noteLines.length, 6);
         pdf.text(noteLines.slice(0, maxNoteLines), margin, y);
@@ -259,13 +298,13 @@ export function ExportDropdown({ overview, beats, appliedChanges, beatImages }: 
       const halfWidth = contentWidth / 2 - 2;
       pdf.setFontSize(9);
 
-      pdf.setFont('helvetica', 'bold');
+      setFont('bold');
       pdf.setTextColor(100);
       pdf.text('Visual:', margin, y);
       pdf.text('Audio:', margin + halfWidth + 4, y);
       y += 4;
 
-      pdf.setFont('helvetica', 'normal');
+      setFont('normal');
       pdf.setTextColor(60);
       const visualLines = pdf.splitTextToSize(beat.visual, halfWidth);
       const audioLines = pdf.splitTextToSize(beat.audio, halfWidth);
@@ -344,12 +383,13 @@ function printScriptSection(
   beat: { script: string },
   margin: number,
   contentWidth: number,
-  y: number
+  y: number,
+  fontFamily = 'helvetica'
 ) {
   pdf.setFontSize(10);
-  pdf.setFont('helvetica', 'bold');
+  pdf.setFont(fontFamily, 'bold');
   pdf.text('Script:', margin, y);
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont(fontFamily, 'normal');
   const scriptLines = pdf.splitTextToSize(beat.script, contentWidth);
   pdf.text(scriptLines, margin, y + 5);
 }
