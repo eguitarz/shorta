@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { VideoUpload } from "@/components/video-upload";
 import { YouTubeConnectCard } from "@/components/YouTubeConnectCard";
 import { WatchListManager } from "@/components/watch-list-manager";
+import { ScoreInsights } from "@/components/ScoreInsights";
 import { useTranslations } from "next-intl";
 
 type AnalyzeMode = "url" | "upload";
@@ -467,6 +468,9 @@ export default function DashboardContent() {
             {/* YouTube Connect Card */}
             <YouTubeConnectCard />
           </div>
+
+          {/* Score Improvement Insights */}
+          <ScoreInsights />
 
           {/* Local Viral Trends */}
           <div className="bg-[#141414] border border-gray-800 rounded-2xl p-6 mb-12">

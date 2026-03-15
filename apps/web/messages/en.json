@@ -194,6 +194,18 @@
       "invalidUrl": "Please paste a valid YouTube channel link.",
       "paidOnly": "Watch list is available for paid plan subscribers. Upgrade to track your favorite channels.",
       "upgradeCta": "View Plans"
+    },
+    "insights": {
+      "label": "Progress Tracker",
+      "title": "Your Score Improvement",
+      "viewHistory": "View History",
+      "trend": "vs. Last Month",
+      "points": "pts",
+      "avgThisMonth": "Avg Score (30 days)",
+      "avgScore": "Avg Score",
+      "bestScore": "Personal Best",
+      "basedOn": "Based on {count} completed analyses",
+      "chartLabel": "Score trend (latest analyses)"
     }
   },
   "analyzer": {

@@ -180,6 +180,18 @@
       "invalidUrl": "Pega un enlace válido de canal de YouTube.",
       "paidOnly": "La lista de seguimiento está disponible para suscriptores de pago. Mejora tu plan para seguir tus canales favoritos.",
       "upgradeCta": "Ver planes"
+    },
+    "insights": {
+      "label": "Seguimiento de progreso",
+      "title": "Tu mejora de puntuación",
+      "viewHistory": "Ver historial",
+      "trend": "vs. mes anterior",
+      "points": "pts",
+      "avgThisMonth": "Puntuación media (30 días)",
+      "avgScore": "Puntuación media",
+      "bestScore": "Mejor puntuación personal",
+      "basedOn": "Basado en {count} análisis completados",
+      "chartLabel": "Tendencia de puntuación (últimos análisis)"
     }
   },
   "analyzer": {
@@ -473,7 +485,6 @@
         "strong": "Retención fuerte"
       }
     },
-    "compare": "Comparar",
     "changes": {
       "title": "Cambios Aprobados",
       "noChanges": "Aún no hay cambios aprobados",

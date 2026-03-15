@@ -184,6 +184,18 @@
       "invalidUrl": "請貼上有效的 YouTube 頻道連結。",
       "paidOnly": "追蹤清單僅供付費訂閱者使用。升級以追蹤您喜愛的頻道。",
       "upgradeCta": "查看方案"
+    },
+    "insights": {
+      "label": "進度追蹤",
+      "title": "你的分數提升",
+      "viewHistory": "查看歷史記錄",
+      "trend": "對比上個月",
+      "points": "分",
+      "avgThisMonth": "平均分數（30天）",
+      "avgScore": "平均分數",
+      "bestScore": "個人最佳",
+      "basedOn": "基於 {count} 個已完成的分析",
+      "chartLabel": "分數趨勢（最近分析）"
     }
   },
   "analyzer": {
