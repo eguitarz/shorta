@@ -10,13 +10,18 @@ const MAX_DURATION_SECONDS = 180;
 // Maximum file size: 500MB
 const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024;
 
-// Supported video MIME types
+// Supported video MIME types (Gemini File API supported formats)
 const SUPPORTED_MIME_TYPES = [
   'video/mp4',
   'video/webm',
-  'video/quicktime',
-  'video/x-msvideo',
+  'video/quicktime',   // MOV
+  'video/x-msvideo',  // AVI
   'video/mpeg',
+  'video/x-matroska', // MKV
+  'video/3gpp',       // 3GP
+  'video/x-flv',      // FLV
+  'video/x-ms-wmv',   // WMV
+  'video/mp2t',       // TS
 ];
 
 /**
@@ -46,7 +51,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Unsupported video format',
-          details: `Supported formats: MP4, WebM, MOV, AVI. Got: ${file.type}`
+          details: `Supported formats: MP4, WebM, MOV, AVI, MKV, 3GP, FLV, WMV. Got: ${file.type}`
         },
         { status: 400 }
       );

@@ -14,7 +14,18 @@ const MAX_DURATION_SECONDS = 180;
 // Maximum file size: 500MB
 const MAX_FILE_SIZE_MB = 500;
 
-const SUPPORTED_FORMATS = ["video/mp4", "video/webm", "video/quicktime", "video/x-msvideo"];
+const SUPPORTED_FORMATS = [
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",   // MOV
+  "video/x-msvideo",  // AVI
+  "video/mpeg",
+  "video/x-matroska", // MKV
+  "video/3gpp",       // 3GP
+  "video/x-flv",      // FLV
+  "video/x-ms-wmv",   // WMV
+  "video/mp2t",       // TS
+];
 
 export function VideoUpload({ onUploadComplete, onError, disabled }: VideoUploadProps) {
     const [isDragging, setIsDragging] = useState(false);
@@ -33,7 +44,7 @@ export function VideoUpload({ onUploadComplete, onError, disabled }: VideoUpload
     const validateFile = useCallback(async (file: File): Promise<{ valid: boolean; duration?: number }> => {
         // Check file type
         if (!SUPPORTED_FORMATS.includes(file.type)) {
-            handleError(`Unsupported format. Please use MP4, WebM, MOV, or AVI.`);
+            handleError(`Unsupported format. Please use MP4, WebM, MOV, AVI, MKV, 3GP, FLV, or WMV.`);
             return { valid: false };
         }
 
@@ -218,7 +229,7 @@ export function VideoUpload({ onUploadComplete, onError, disabled }: VideoUpload
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,video/mpeg,video/x-matroska,video/3gpp,video/x-flv,video/x-ms-wmv,video/mp2t"
                 onChange={handleFileSelect}
                 className="hidden"
                 disabled={disabled || uploading}
@@ -249,7 +260,7 @@ export function VideoUpload({ onUploadComplete, onError, disabled }: VideoUpload
                                 {isDragging ? "Drop your video here" : "Drag and drop your video"}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                or click to browse • MP4, WebM, MOV • Max 3 minutes
+                                or click to browse • MP4, MOV, WebM, AVI, MKV, and more • Max 3 minutes
                             </p>
                         </div>
                     </div>

@@ -1,6 +1,43 @@
 import { GoogleGenAI } from '@google/genai';
 import type { Message, LLMResponse, LLMConfig, LLMClient, VideoClassification, CachedContent } from './types';
 
+// Retry configuration
+const MAX_RETRIES = 3;
+const INITIAL_BACKOFF_MS = 1000;
+
+/**
+ * Retry a Gemini API call with exponential backoff.
+ * Retries on transient errors: network failures, 429 (rate limit), 500/503.
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries = MAX_RETRIES,
+  backoffMs = INITIAL_BACKOFF_MS
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries === 0) throw error;
+
+    const message = error instanceof Error ? error.message : String(error);
+    const isTransient =
+      message.includes('503') ||
+      message.includes('500') ||
+      message.includes('429') ||
+      message.includes('UNAVAILABLE') ||
+      message.includes('network') ||
+      message.includes('fetch failed') ||
+      message.includes('RESOURCE_EXHAUSTED');
+
+    if (!isTransient) throw error;
+
+    const waitMs = backoffMs * (MAX_RETRIES - retries + 1);
+    console.log(`[Gemini] Transient error, retrying in ${waitMs}ms (${retries} attempts left):`, message);
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+    return withRetry(fn, retries - 1, backoffMs * 2);
+  }
+}
+
 export class GeminiClient implements LLMClient {
   private readonly ai: GoogleGenAI;
   private readonly defaultModel = 'gemini-2.5-flash';
@@ -139,14 +176,16 @@ Return JSON:
         },
       ];
 
-      const response = await this.ai.models.generateContent({
-        model: modelName,
-        contents,
-        config: {
-          temperature: 0.1,
-          maxOutputTokens: 1500,
-        },
-      });
+      const response = await withRetry(() =>
+        this.ai.models.generateContent({
+          model: modelName,
+          contents,
+          config: {
+            temperature: 0.1,
+            maxOutputTokens: 1500,
+          },
+        })
+      );
 
       const resultText = response.text;
 
@@ -199,14 +238,16 @@ Return JSON:
 
       const contents = [{ text: prompt }, videoContent];
 
-      const response = await this.ai.models.generateContent({
-        model: modelName,
-        contents,
-        config: {
-          temperature: config?.temperature ?? 0.7,
-          maxOutputTokens: config?.maxTokens ?? 8192,
-        },
-      });
+      const response = await withRetry(() =>
+        this.ai.models.generateContent({
+          model: modelName,
+          contents,
+          config: {
+            temperature: config?.temperature ?? 0.7,
+            maxOutputTokens: config?.maxTokens ?? 8192,
+          },
+        })
+      );
 
       // Handle safety blocks or empty responses
       if (!response.text) {
@@ -223,7 +264,12 @@ Return JSON:
       };
     } catch (error) {
       console.error('Video analysis error:', error);
-      throw new Error(`Gemini video analysis error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      // Surface video-length specific errors
+      if (message.includes('too long') || message.includes('exceeds') || message.includes('FILE_TOO_LARGE')) {
+        throw new Error('Video is too long for analysis. Please try a shorter video (under 10 minutes).');
+      }
+      throw new Error(`Gemini video analysis error: ${message}`);
     }
   }
 }
