@@ -445,6 +445,28 @@ Incorporating these into your storyboard...`;
             </div>
           ))}
 
+          {/* Quick-start format templates — only show before first user message */}
+          {messages.length === 1 && !isLoading && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {[
+                { label: "💡 Story + Lesson", prompt: "I want to create a talking-head Short where I share a personal story and end with a lesson or takeaway." },
+                { label: "📋 Top Tips List", prompt: "I want to create a 'top tips' style Short — a numbered list of actionable advice on my topic." },
+                { label: "🎭 Myth vs Fact", prompt: "I want to debunk a common misconception or myth about my topic in a Short." },
+                { label: "📖 Tutorial", prompt: "I want to create a step-by-step tutorial Short that teaches viewers how to do something." },
+                { label: "⚡ Controversial Take", prompt: "I want to share a controversial or unpopular opinion on my topic that will spark discussion." },
+                { label: "🔄 Before / After", prompt: "I want to create a before/after or transformation Short showing contrast or change." },
+              ].map(({ label, prompt }) => (
+                <button
+                  key={label}
+                  onClick={() => handleSendWithMessage(prompt)}
+                  className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-gray-300 transition-colors"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-gray-800 rounded-lg px-4 py-3">

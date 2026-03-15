@@ -167,7 +167,8 @@
       "watchListSubtitle": "관심 목록 채널 · 시간당 조회수 기준",
       "watchListEmpty": "관심 목록이 비어 있습니다. 채널을 추가하여 최신 쇼츠를 추적하세요.",
       "watchListNoRecent": "최근 7일 내 관심 목록 채널의 쇼츠가 없습니다.",
-      "addChannels": "채널 추가"
+      "addChannels": "채널 추가",
+      "analyze": "분석하기"
     },
     "watchList": {
       "title": "관심 목록",

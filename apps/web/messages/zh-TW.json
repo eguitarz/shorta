@@ -171,7 +171,8 @@
       "watchListSubtitle": "來自追蹤頻道 · 以每小時觀看數排序",
       "watchListEmpty": "追蹤清單是空的。新增頻道以追蹤最新的 Shorts。",
       "watchListNoRecent": "最近 7 天追蹤頻道沒有新的 Shorts。",
-      "addChannels": "新增頻道"
+      "addChannels": "新增頻道",
+      "analyze": "分析"
     },
     "watchList": {
       "title": "追蹤清單",

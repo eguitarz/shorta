@@ -167,7 +167,8 @@
       "watchListSubtitle": "De tus canales seguidos · ordenados por vistas/hora",
       "watchListEmpty": "Tu lista está vacía. Agrega canales para seguir sus últimos Shorts.",
       "watchListNoRecent": "No hay Shorts recientes de tus canales en los últimos 7 días.",
-      "addChannels": "Agregar canales"
+      "addChannels": "Agregar canales",
+      "analyze": "Analizar"
     },
     "watchList": {
       "title": "Lista de seguimiento",

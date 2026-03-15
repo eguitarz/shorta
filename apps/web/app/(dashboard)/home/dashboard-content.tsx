@@ -599,33 +599,37 @@ export default function DashboardContent() {
                   {trends
                     .slice((trendsPage - 1) * trendsPageSize, trendsPage * trendsPageSize)
                     .map((trend) => (
-                  <a
+                  <div
                     key={trend.videoId}
-                    href={trend.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group rounded-xl border border-gray-800 bg-[#0f0f0f] hover:bg-[#151515] transition-colors p-3"
+                    className="group rounded-xl border border-gray-800 bg-[#0f0f0f] hover:bg-[#151515] transition-colors p-3 flex flex-col"
                   >
-                    <div className="relative aspect-[9/16] rounded-lg overflow-hidden bg-black">
-                      {trend.thumbnail ? (
-                        <img
-                          src={trend.thumbnail}
-                          alt={trend.title}
-                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-gray-600 text-xs">
-                          No thumbnail
+                    <a
+                      href={trend.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block"
+                    >
+                      <div className="relative aspect-[9/16] rounded-lg overflow-hidden bg-black">
+                        {trend.thumbnail ? (
+                          <img
+                            src={trend.thumbnail}
+                            alt={trend.title}
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-gray-600 text-xs">
+                            No thumbnail
+                          </div>
+                        )}
+                        <div className="absolute top-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white">
+                          {formatCompactNumber(trend.viewCount)} {t('trends.views')}
                         </div>
-                      )}
-                      <div className="absolute top-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white">
-                        {formatCompactNumber(trend.viewCount)} {t('trends.views')}
+                        <div className="absolute bottom-2 right-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white">
+                          {formatDuration(trend.durationSeconds)}
+                        </div>
                       </div>
-                      <div className="absolute bottom-2 right-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white">
-                        {formatDuration(trend.durationSeconds)}
-                      </div>
-                    </div>
-                    <div className="mt-3 space-y-1">
+                    </a>
+                    <div className="mt-3 space-y-1 flex-1">
                       <p className="text-sm font-medium text-white line-clamp-2">{trend.title}</p>
                       <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
                         <span>{formatViewsPerHour(trend.viewsPerHour)} {t('trends.viewsPerHour')}</span>
@@ -638,7 +642,18 @@ export default function DashboardContent() {
                         {trend.channelTitle} • {formatTimeAgo(trend.publishedAt)}
                       </p>
                     </div>
-                  </a>
+                    <button
+                      onClick={() => {
+                        const analysisId = crypto.randomUUID();
+                        sessionStorage.setItem(`analysis_${analysisId}`, JSON.stringify({ url: trend.url, status: 'pending' }));
+                        router.push(`/analyzer/${analysisId}`);
+                      }}
+                      className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 text-xs font-medium border border-orange-500/20 transition-colors"
+                    >
+                      <BarChart3 className="w-3.5 h-3.5" />
+                      {t('trends.analyze')}
+                    </button>
+                  </div>
                   ))}
                 </div>
                 {trends.length > trendsPageSize && (

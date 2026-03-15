@@ -181,7 +181,8 @@
       "watchListSubtitle": "From your watch list channels · ranked by views/hour",
       "watchListEmpty": "Your watch list is empty. Add channels to track their latest Shorts.",
       "watchListNoRecent": "No recent Shorts from your watch list channels in the last 7 days.",
-      "addChannels": "Add Channels"
+      "addChannels": "Add Channels",
+      "analyze": "Analyze"
     },
     "watchList": {
       "title": "Watch List",
