@@ -91,6 +91,27 @@
     }
   },
   "dashboard": {
+    "onboarding": {
+      "label": "시작하기",
+      "title": "쇼츠 툴킷",
+      "subtitle": "Shorta의 모든 기능을 활용하는 3단계.",
+      "progress": "{total}개 중 {done}개 완료",
+      "dismiss": "닫기",
+      "step": {
+        "analyze": {
+          "title": "첫 번째 쇼츠 분석하기",
+          "description": "YouTube 쇼츠 URL을 붙여넣어 점수, 훅 분석, 비트별 분석을 받아보세요."
+        },
+        "storyboard": {
+          "title": "스토리보드 만들기",
+          "description": "어떤 주제든 훅 변형과 샷별 노트가 포함된 완전한 감독 스토리보드로 변환하세요."
+        },
+        "youtube": {
+          "title": "YouTube 채널 연결하기",
+          "description": "동영상을 가져오고 통계를 추적하며 맞춤형 니치 인사이트를 받으세요."
+        }
+      }
+    },
     "welcome": "다시 오신 것을 환영합니다",
     "recentAnalyses": "최근 분석",
     "noAnalyses": "아직 분석이 없습니다",

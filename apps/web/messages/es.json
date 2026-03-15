@@ -91,6 +91,27 @@
     }
   },
   "dashboard": {
+    "onboarding": {
+      "label": "Primeros Pasos",
+      "title": "Tu Kit de Shorts",
+      "subtitle": "3 pasos para desbloquear todo el poder de Shorta.",
+      "progress": "{done} de {total} completos",
+      "dismiss": "Descartar",
+      "step": {
+        "analyze": {
+          "title": "Analiza tu primer Short",
+          "description": "Pega una URL de YouTube Short para obtener puntuación, análisis del gancho y desglose beat a beat."
+        },
+        "storyboard": {
+          "title": "Crea un storyboard",
+          "description": "Convierte cualquier tema en un storyboard completo con variantes de gancho y notas de toma."
+        },
+        "youtube": {
+          "title": "Conecta tu canal de YouTube",
+          "description": "Importa tus videos, rastrea estadísticas y obtén insights de nicho personalizados."
+        }
+      }
+    },
     "welcome": "Bienvenido de nuevo",
     "recentAnalyses": "Análisis Recientes",
     "noAnalyses": "Sin análisis aún",

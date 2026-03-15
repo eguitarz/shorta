@@ -95,6 +95,27 @@
     }
   },
   "dashboard": {
+    "onboarding": {
+      "label": "Getting Started",
+      "title": "Your Shorts Toolkit",
+      "subtitle": "3 steps to unlock the full power of Shorta.",
+      "progress": "{done} of {total} complete",
+      "dismiss": "Dismiss",
+      "step": {
+        "analyze": {
+          "title": "Analyze your first Short",
+          "description": "Paste a YouTube Short URL to get a score, hook breakdown, and beat-by-beat analysis."
+        },
+        "storyboard": {
+          "title": "Create a storyboard",
+          "description": "Turn any topic into a full director storyboard with hook variants and shot-by-shot notes."
+        },
+        "youtube": {
+          "title": "Connect your YouTube channel",
+          "description": "Import your videos, track your stats, and get personalized niche insights."
+        }
+      }
+    },
     "welcome": "Welcome back",
     "recentAnalyses": "Recent Analyses",
     "noAnalyses": "No analyses yet",

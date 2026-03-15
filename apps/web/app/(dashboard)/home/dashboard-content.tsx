@@ -10,6 +10,7 @@ import { YouTubeConnectCard } from "@/components/YouTubeConnectCard";
 import { WatchListManager } from "@/components/watch-list-manager";
 import { ScoreInsights } from "@/components/ScoreInsights";
 import { QuickStartTemplates } from "@/components/QuickStartTemplates";
+import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { useTranslations } from "next-intl";
 
 type AnalyzeMode = "url" | "upload";
@@ -357,6 +358,14 @@ export default function DashboardContent() {
               {t('hero.subtitle')}
             </p>
           </div>
+
+          {/* Onboarding Checklist — visible until all steps completed or dismissed */}
+          {!activitiesLoading && (
+            <OnboardingChecklist
+              analysisCount={activities.filter((a) => a.activityType === 'analysis' && a.status === 'completed').length}
+              storyboardCount={activities.filter((a) => a.activityType === 'generated' || a.activityType === 'created').length}
+            />
+          )}
 
           {/* Action Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">

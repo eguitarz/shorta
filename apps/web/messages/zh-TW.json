@@ -95,6 +95,27 @@
     }
   },
   "dashboard": {
+    "onboarding": {
+      "label": "快速入門",
+      "title": "您的短片工具包",
+      "subtitle": "3 個步驟解鎖 Shorta 的完整功能。",
+      "progress": "{total} 個步驟中已完成 {done} 個",
+      "dismiss": "關閉",
+      "step": {
+        "analyze": {
+          "title": "分析您的第一支短片",
+          "description": "貼上 YouTube 短片網址，獲取評分、勾子分析和逐拍解析。"
+        },
+        "storyboard": {
+          "title": "建立故事板",
+          "description": "將任何主題轉換為包含勾子變體和鏡頭筆記的完整導演故事板。"
+        },
+        "youtube": {
+          "title": "連結您的 YouTube 頻道",
+          "description": "匯入您的影片、追蹤統計數據，並獲取個人化的利基洞察。"
+        }
+      }
+    },
     "welcome": "歡迎回來",
     "recentAnalyses": "最近的分析",
     "noAnalyses": "尚無分析",
