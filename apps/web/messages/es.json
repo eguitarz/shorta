@@ -193,6 +193,60 @@
       "bestScore": "Mejor puntuación personal",
       "basedOn": "Basado en {count} análisis completados",
       "chartLabel": "Tendencia de puntuación (últimos análisis)"
+    },
+    "templates": {
+      "label": "Inicio rápido",
+      "title": "Formatos probados",
+      "subtitle": "Elige una plantilla, añade tu tema y genera un storyboard en segundos.",
+      "generate": "Generar",
+      "tutorial": {
+        "title": "Tutorial exprés",
+        "tagline": "Paso a paso en 60 s",
+        "step1": "Promesa audaz",
+        "step2": "3 pasos rápidos",
+        "step3": "Resultado final",
+        "placeholder": "ej. cómo despertar temprano sin sentirte cansado"
+      },
+      "mistake": {
+        "title": "Error común",
+        "tagline": "Detecta el error, corrígelo",
+        "step1": "Nombra el error",
+        "step2": "Por qué duele",
+        "step3": "La forma correcta",
+        "placeholder": "ej. error de principiante en el gimnasio que malgasta tu tiempo"
+      },
+      "hottake": {
+        "title": "Opinión polémica",
+        "tagline": "Opinión provocadora",
+        "step1": "Afirmación atrevida",
+        "step2": "Evidencia y razonamiento",
+        "step3": "Llamada a la acción",
+        "placeholder": "ej. las rutinas matutinas están sobrevaloradas"
+      },
+      "beforeafter": {
+        "title": "Antes y después",
+        "tagline": "Muestra la transformación",
+        "step1": "Estado anterior (dolor)",
+        "step2": "El método o cambio",
+        "step3": "Estado posterior (resultado)",
+        "placeholder": "ej. mi productividad antes y después de dejar las redes sociales"
+      },
+      "listicle": {
+        "title": "Lista",
+        "tagline": "X cosas que no sabías",
+        "step1": "Gancho de curiosidad",
+        "step2": "3-5 puntos directos",
+        "step3": "El mejor al final",
+        "placeholder": "ej. 5 herramientas IA gratis que reemplazaron mi software de $500/mes"
+      },
+      "story": {
+        "title": "Mini arco narrativo",
+        "tagline": "Conflicto → resolución",
+        "step1": "Lucha cotidiana",
+        "step2": "Punto de inflexión",
+        "step3": "Aprendizaje",
+        "placeholder": "ej. cómo perdí un cliente y lo que aprendí"
+      }
     }
   },
   "analyzer": {

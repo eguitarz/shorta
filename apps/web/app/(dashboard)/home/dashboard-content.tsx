@@ -9,6 +9,7 @@ import { VideoUpload } from "@/components/video-upload";
 import { YouTubeConnectCard } from "@/components/YouTubeConnectCard";
 import { WatchListManager } from "@/components/watch-list-manager";
 import { ScoreInsights } from "@/components/ScoreInsights";
+import { QuickStartTemplates } from "@/components/QuickStartTemplates";
 import { useTranslations } from "next-intl";
 
 type AnalyzeMode = "url" | "upload";
@@ -468,6 +469,9 @@ export default function DashboardContent() {
             {/* YouTube Connect Card */}
             <YouTubeConnectCard />
           </div>
+
+          {/* Quick Start Templates */}
+          <QuickStartTemplates />
 
           {/* Score Improvement Insights */}
           <ScoreInsights />

@@ -197,6 +197,60 @@
       "bestScore": "個人最佳",
       "basedOn": "基於 {count} 個已完成的分析",
       "chartLabel": "分數趨勢（最近分析）"
+    },
+    "templates": {
+      "label": "快速開始",
+      "title": "經典格式",
+      "subtitle": "選擇模板、輸入主題，幾秒鐘即可生成分鏡腳本。",
+      "generate": "生成",
+      "tutorial": {
+        "title": "極速教學",
+        "tagline": "步驟式操作說明",
+        "step1": "開場承諾",
+        "step2": "3個快速步驟",
+        "step3": "揭曉成果",
+        "placeholder": "例：如何不感到疲勞地早起"
+      },
+      "mistake": {
+        "title": "常見錯誤",
+        "tagline": "找出錯誤，修正它",
+        "step1": "點出錯誤",
+        "step2": "說明危害",
+        "step3": "正確做法",
+        "placeholder": "例：浪費健身時間的新手錯誤"
+      },
+      "hottake": {
+        "title": "爭議觀點",
+        "tagline": "挑釁性意見",
+        "step1": "大膽的反常識主張",
+        "step2": "論據與推理",
+        "step3": "號召行動",
+        "placeholder": "例：晨間例行公事被過度神話了"
+      },
+      "beforeafter": {
+        "title": "前後對比",
+        "tagline": "展示蛻變過程",
+        "step1": "前期狀態（共鳴痛點）",
+        "step2": "轉變方法",
+        "step3": "後期狀態（成果）",
+        "placeholder": "例：戒掉社群媒體前後我的生產力變化"
+      },
+      "listicle": {
+        "title": "清單式",
+        "tagline": "你不知道的X件事",
+        "step1": "好奇心缺口鉤子",
+        "step2": "3-5個精簡要點",
+        "step3": "最好的放最後",
+        "placeholder": "例：5個取代每月500美元軟體的免費AI工具"
+      },
+      "story": {
+        "title": "迷你故事弧",
+        "tagline": "衝突 → 解決",
+        "step1": "共鳴困境",
+        "step2": "轉折點",
+        "step3": "啟示",
+        "placeholder": "例：我失去客戶的經歷與學到的教訓"
+      }
     }
   },
   "analyzer": {

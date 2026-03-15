@@ -207,6 +207,60 @@
       "bestScore": "Personal Best",
       "basedOn": "Based on {count} completed analyses",
       "chartLabel": "Score trend (latest analyses)"
+    },
+    "templates": {
+      "label": "Quick Start",
+      "title": "Proven Formats",
+      "subtitle": "Pick a template, add your topic, and generate a storyboard in seconds.",
+      "generate": "Generate",
+      "tutorial": {
+        "title": "Tutorial Speedrun",
+        "tagline": "Step-by-step how-to",
+        "step1": "Bold claim + promise",
+        "step2": "3 fast steps",
+        "step3": "Result reveal",
+        "placeholder": "e.g. how to wake up early without feeling tired"
+      },
+      "mistake": {
+        "title": "Common Mistake",
+        "tagline": "Spot the error, fix it",
+        "step1": "State the mistake",
+        "step2": "Why it hurts",
+        "step3": "The correct way",
+        "placeholder": "e.g. beginner gym mistake that wastes your time"
+      },
+      "hottake": {
+        "title": "Hot Take",
+        "tagline": "Provocative opinion",
+        "step1": "Bold contrarian claim",
+        "step2": "Evidence + reasoning",
+        "step3": "Call to action",
+        "placeholder": "e.g. morning routines are overrated"
+      },
+      "beforeafter": {
+        "title": "Before & After",
+        "tagline": "Show the transformation",
+        "step1": "Before state (relatable pain)",
+        "step2": "The shift or method",
+        "step3": "After state (payoff)",
+        "placeholder": "e.g. my productivity before and after quitting social media"
+      },
+      "listicle": {
+        "title": "Listicle",
+        "tagline": "X things you didn't know",
+        "step1": "Curiosity-gap hook",
+        "step2": "3-5 punchy items",
+        "step3": "Best item saved for last",
+        "placeholder": "e.g. 5 free AI tools that replaced my $500/month software"
+      },
+      "story": {
+        "title": "Mini Story Arc",
+        "tagline": "Conflict → resolution",
+        "step1": "Relatable struggle",
+        "step2": "Turning point",
+        "step3": "Takeaway",
+        "placeholder": "e.g. how I lost a client and what I learned"
+      }
     }
   },
   "analyzer": {
