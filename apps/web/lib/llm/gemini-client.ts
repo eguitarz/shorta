@@ -5,6 +5,10 @@ import type { Message, LLMResponse, LLMConfig, LLMClient, VideoClassification, C
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 1000;
 
+// Timeout configuration (ms)
+const CLASSIFY_TIMEOUT_MS = 60_000;   // 60s for classification (short clip)
+const ANALYZE_TIMEOUT_MS = 180_000;   // 180s for full video analysis
+
 /**
  * Retry a Gemini API call with exponential backoff.
  * Retries on transient errors: network failures, 429 (rate limit), 500/503.
@@ -36,6 +40,22 @@ async function withRetry<T>(
     await new Promise((resolve) => setTimeout(resolve, waitMs));
     return withRetry(fn, retries - 1, backoffMs * 2);
   }
+}
+
+/**
+ * Race a promise against a timeout. Throws if the timeout fires first.
+ */
+function withTimeout<T>(fn: () => Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(errorMessage));
+    }, timeoutMs);
+
+    fn().then(
+      (result) => { clearTimeout(timer); resolve(result); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
 }
 
 export class GeminiClient implements LLMClient {
@@ -176,15 +196,19 @@ Return JSON:
         },
       ];
 
-      const response = await withRetry(() =>
-        this.ai.models.generateContent({
-          model: modelName,
-          contents,
-          config: {
-            temperature: 0.1,
-            maxOutputTokens: 1500,
-          },
-        })
+      const response = await withTimeout(
+        () => withRetry(() =>
+          this.ai.models.generateContent({
+            model: modelName,
+            contents,
+            config: {
+              temperature: 0.1,
+              maxOutputTokens: 1500,
+            },
+          })
+        ),
+        CLASSIFY_TIMEOUT_MS,
+        `Video classification timed out after ${CLASSIFY_TIMEOUT_MS / 1000}s`
       );
 
       const resultText = response.text;
@@ -238,15 +262,19 @@ Return JSON:
 
       const contents = [{ text: prompt }, videoContent];
 
-      const response = await withRetry(() =>
-        this.ai.models.generateContent({
-          model: modelName,
-          contents,
-          config: {
-            temperature: config?.temperature ?? 0.7,
-            maxOutputTokens: config?.maxTokens ?? 8192,
-          },
-        })
+      const response = await withTimeout(
+        () => withRetry(() =>
+          this.ai.models.generateContent({
+            model: modelName,
+            contents,
+            config: {
+              temperature: config?.temperature ?? 0.7,
+              maxOutputTokens: config?.maxTokens ?? 8192,
+            },
+          })
+        ),
+        ANALYZE_TIMEOUT_MS,
+        `Video analysis timed out after ${ANALYZE_TIMEOUT_MS / 1000}s. Try a shorter video.`
       );
 
       // Handle safety blocks or empty responses
