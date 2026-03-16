@@ -37,7 +37,7 @@ NEXT_PUBLIC_POSTHOG_KEY = "POSTHOG_KEY_REMOVED"
 NEXT_PUBLIC_POSTHOG_HOST = "https://us.i.posthog.com"
 
 # LLM Configuration
-LLM_MODEL = "gemini-2.5-flash"
+LLM_MODEL = "gemini-3-flash-preview"
 
 # Cloudflare Turnstile (CAPTCHA)
 # Get your keys from: https://dash.cloudflare.com/?to=/:account/turnstile

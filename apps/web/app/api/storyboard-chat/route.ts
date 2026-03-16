@@ -217,7 +217,7 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
     const extractionResponse = await client.chat([
       { role: 'user', content: extractionPrompt }
     ], {
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-3.1-flash-lite-preview',
       temperature: 0.1,
       maxTokens: 512,
     });
@@ -563,7 +563,7 @@ Use this as your PRIMARY inspiration for hook style, structure, and tone. Refere
 
     // Generate content with function calling
     let response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents,
       config: {
         systemInstruction: systemPromptWithLanguage,
@@ -641,7 +641,7 @@ Use this as your PRIMARY inspiration for hook style, structure, and tone. Refere
 
       // Continue the conversation with function results
       response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: conversationHistory,
         config: {
           systemInstruction: systemPromptWithLanguage,

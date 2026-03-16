@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { VideoUpload } from "@/components/video-upload";
 import { YouTubeConnectCard } from "@/components/YouTubeConnectCard";
 import { WatchListManager } from "@/components/watch-list-manager";
-import { ScoreInsights } from "@/components/ScoreInsights";
+import dynamic from "next/dynamic";
 import { QuickStartTemplates } from "@/components/QuickStartTemplates";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { useTranslations } from "next-intl";
+
+const ScoreInsights = dynamic(() => import("@/components/ScoreInsights").then(mod => mod.ScoreInsights), { ssr: false });
 
 type AnalyzeMode = "url" | "upload";
 

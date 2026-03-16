@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     const client = createDefaultLLMClient(env);
 
-    // Create linter (uses gemini-2.5-flash for analysis)
+    // Create linter (uses gemini-3.1-flash-lite-preview for analysis)
     const linter = new VideoLinter(client);
 
     // Lint the video based on format

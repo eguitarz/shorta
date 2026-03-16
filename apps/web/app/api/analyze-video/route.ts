@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     let response;
 
     if (isYouTube && client.analyzeVideo) {
-      // Use native Gemini YouTube video analysis (uses gemini-2.5-flash)
+      // Use native Gemini YouTube video analysis (uses gemini-3-flash-preview)
       const prompt = `You are an expert YouTube Shorts director. Analyze the provided YouTube Short and reverse-engineer it into a detailed production storyboard.
 
 First, understand the full video structure, then break it down into natural sections with actual timestamps.

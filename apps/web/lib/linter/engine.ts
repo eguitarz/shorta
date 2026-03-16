@@ -80,7 +80,7 @@ This is essential as the user is analyzing the video in this language.`;
       videoUrl,
       prompt,
       {
-        model: 'gemini-2.5-flash-lite', // Use lite model for faster linting
+        model: 'gemini-3.1-flash-lite-preview', // Use lite model for faster linting
         temperature: 0.0, // Minimum temperature for maximum consistency in scoring
         maxTokens: 16384, // Very high limit to prevent incomplete JSON responses
         videoDuration, // Pass duration for FPS optimization on long videos

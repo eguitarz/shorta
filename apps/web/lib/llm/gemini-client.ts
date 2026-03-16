@@ -7,7 +7,7 @@ const INITIAL_BACKOFF_MS = 1000;
 
 // Timeout configuration (ms)
 const CLASSIFY_TIMEOUT_MS = 60_000;   // 60s for classification (short clip)
-const ANALYZE_TIMEOUT_MS = 180_000;   // 180s for full video analysis
+const ANALYZE_TIMEOUT_MS = 300_000;   // 300s for full video analysis (long videos need more time)
 
 /**
  * Retry a Gemini API call with exponential backoff.
@@ -60,7 +60,7 @@ function withTimeout<T>(fn: () => Promise<T>, timeoutMs: number, errorMessage: s
 
 export class GeminiClient implements LLMClient {
   private readonly ai: GoogleGenAI;
-  private readonly defaultModel = 'gemini-2.5-flash';
+  private readonly defaultModel = 'gemini-3-flash-preview';
 
   constructor(apiKey: string) {
     if (!apiKey) {
@@ -141,7 +141,7 @@ export class GeminiClient implements LLMClient {
   }
 
   async classifyVideo(videoUrl: string, config?: LLMConfig): Promise<VideoClassification> {
-    const modelName = config?.model || 'gemini-2.5-flash';
+    const modelName = config?.model || 'gemini-3-flash-preview';
 
     const systemPrompt = `You are a short-form video FORMAT CLASSIFIER.
 
@@ -234,15 +234,18 @@ Return JSON:
   }
 
   async analyzeVideo(videoUrl: string, prompt: string, config?: LLMConfig): Promise<LLMResponse> {
-    const modelName = config?.model || 'gemini-2.5-flash';
+    const modelName = config?.model || 'gemini-3-flash-preview';
 
     // Calculate optimal FPS based on video duration
     // Default: 1 fps (~300 tokens/sec)
-    // Long videos (>60s): 0.5 fps to reduce tokens
-    // Very long videos (>180s): 0.25 fps
+    // Medium videos (>60s): 0.5 fps
+    // Long videos (>120s): 0.25 fps
+    // Very long videos (>300s): 0.1 fps (1 frame per 10s)
     let fps = config?.fps;
     if (!fps && config?.videoDuration) {
-      if (config.videoDuration > 180) {
+      if (config.videoDuration > 300) {
+        fps = 0.1;
+      } else if (config.videoDuration > 120) {
         fps = 0.25;
       } else if (config.videoDuration > 60) {
         fps = 0.5;

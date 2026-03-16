@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import type { GeneratedImageData, ReferenceImage } from './types';
 
-const IMAGE_MODEL = 'gemini-2.5-flash-image';
+const IMAGE_MODEL = 'gemini-3.1-flash-image-preview';
 
 export class NanaBananaClient {
   private readonly ai: GoogleGenAI;

@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Classify the video format (uses gemini-2.5-flash-lite)
+    // Classify the video format (uses gemini-3-flash-preview)
     let classification;
     try {
       classification = await client.classifyVideo(url);
