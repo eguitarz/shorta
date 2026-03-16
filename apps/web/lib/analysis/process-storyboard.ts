@@ -85,6 +85,8 @@ export async function processStoryboard(jobId: string, locale?: string) {
     });
 
     console.log('[Storyboard] Signal extraction complete, parsing...');
+    console.log('[Storyboard] Signal response content length:', signalResponse.content?.length ?? 'undefined');
+    console.log('[Storyboard] Signal response first 500 chars:', signalResponse.content?.substring(0, 500) ?? 'EMPTY');
     const signalData = parseSignalJSON(signalResponse.content);
 
     // ============================================
@@ -411,13 +413,44 @@ Now analyze the video and generate the complete storyboard JSON.`;
 }
 
 /**
+ * Repair common LLM JSON corruption:
+ * - Stray digits replacing closing braces (e.g. `"value" 0, {` → `"value"}, {`)
+ * - Stray digits before closing braces (e.g. `"LC": true\n    1}` → `"LC": true}`)
+ * - Trailing commas before closing braces/brackets
+ */
+function repairJSON(jsonStr: string): string {
+  let repaired = jsonStr;
+
+  // Pattern 1: Stray digit REPLACING a closing brace before a comma
+  // e.g. `"Hook Within 3 Seconds" 0, {` → `"Hook Within 3 Seconds"}, {`
+  repaired = repaired.replace(
+    /(")\s+(\d+)\s*,\s*\{/g,
+    '$1}, {'
+  );
+
+  // Pattern 2: Stray bare digits between valid JSON values (on same or next line)
+  // e.g. `"LC": true\n    1}` → `"LC": true}`
+  repaired = repaired.replace(
+    /(true|false|null|\d+\.?\d*|"|\]|\})\s*\n?\s+(\d+)\s*(?=[}\]"])/g,
+    '$1'
+  );
+
+  // Remove trailing commas before } or ]
+  repaired = repaired.replace(/,\s*([}\]])/g, '$1');
+
+  return repaired;
+}
+
+/**
  * Robustly extract JSON from an LLM response that may contain:
- * - Preamble text before JSON (e.g. "Here's the breakdown:\n\n```json\n{...")
+ * - Preamble text / thinking blocks before JSON
  * - Markdown code fences (```json ... ```)
  * - Trailing garbage / degenerate repetition (e.g. "111111..." after valid JSON)
+ * - Stray characters inside JSON (e.g. bare digits between values)
  *
  * Strategy: find the first '{' and then walk forward counting braces to find
  * the matching '}'. Everything outside that range is discarded.
+ * If JSON.parse fails, attempt repair of common LLM corruption patterns.
  */
 function extractJSONFromResponse(raw: string, label: string): any {
   console.log(`[${label}] Raw content length:`, raw.length);
@@ -429,6 +462,16 @@ function extractJSONFromResponse(raw: string, label: string): any {
   if (fenceMatch) {
     text = fenceMatch[1];
     console.log(`[${label}] Extracted from code fence, length:`, text.length);
+  }
+
+  // Step 1b: Strip array wrapper if response is [{ ... }]
+  const trimmed = text.trim();
+  if (trimmed.startsWith('[') && !trimmed.startsWith('[{')) {
+    // Not a simple array-wrapped object, skip
+  } else if (trimmed.startsWith('[')) {
+    // Strip leading [ and trailing ] to get the inner object
+    text = trimmed.substring(1, trimmed.lastIndexOf(']') !== -1 ? trimmed.lastIndexOf(']') : trimmed.length);
+    console.log(`[${label}] Stripped array wrapper, length:`, text.length);
   }
 
   // Step 2: Find the first '{' — this is where JSON starts
@@ -488,14 +531,22 @@ function extractJSONFromResponse(raw: string, label: string): any {
   const jsonText = text.substring(firstBrace, lastBrace + 1);
   console.log(`[${label}] Extracted JSON length:`, jsonText.length);
 
-  // Step 4: Parse
+  // Step 4: Parse (with repair fallback)
   try {
     return JSON.parse(jsonText);
   } catch (parseErr) {
-    // Last resort: try trimming any trailing degenerate chars inside the string
-    console.error(`[${label}] JSON.parse failed, attempting cleanup:`, parseErr);
-    console.error(`[${label}] Last 200 chars of extracted JSON:`, jsonText.substring(jsonText.length - 200));
-    throw new Error(`Failed to parse ${label} JSON`);
+    console.warn(`[${label}] JSON.parse failed, attempting repair:`, parseErr);
+    console.warn(`[${label}] Last 200 chars of extracted JSON:`, jsonText.substring(jsonText.length - 200));
+
+    // Try repairing common LLM corruption (stray digits, trailing commas)
+    try {
+      const repaired = repairJSON(jsonText);
+      console.log(`[${label}] Repair succeeded`);
+      return JSON.parse(repaired);
+    } catch (repairErr) {
+      console.error(`[${label}] Repair also failed:`, repairErr);
+      throw new Error(`Failed to parse ${label} JSON after repair attempt`);
+    }
   }
 }
 
@@ -558,9 +609,13 @@ function parseSignalJSON(content: string): SignalExtractionResult {
       beatTimestamps: parsed.beatTimestamps || [],
     };
   } catch (error) {
-    console.error('[parseSignalJSON] Parse error:', error);
-    console.error('[parseSignalJSON] Full content:', content);
-    throw new Error('Failed to parse signal extraction result');
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const contentLen = content?.length ?? 0;
+    const contentPreview = content?.substring(0, 300) ?? 'EMPTY/UNDEFINED';
+    console.error('[parseSignalJSON] Parse error:', errMsg);
+    console.error('[parseSignalJSON] Content length:', contentLen);
+    console.error('[parseSignalJSON] Content preview:', contentPreview);
+    throw new Error(`Failed to parse signal extraction result (${errMsg}). Content length: ${contentLen}, preview: ${contentPreview.substring(0, 100)}`);
   }
 }
 
@@ -635,16 +690,22 @@ function calculateScoreWithDeterministicBase(
   let bonusPoints = 0;
   const bonusDetails: string[] = [];
 
-  // Bonus 1: Perfect beats (no issues) - +2 points each
+  // Bonus 1: Perfect beats (no issues)
+  // Score is based on PERCENTAGE of perfect beats, not absolute count.
+  // This prevents long videos (20+ beats) from getting disproportionate bonuses.
+  // Max bonus: +10 points (when all beats are perfect)
   if (storyboard.beats && Array.isArray(storyboard.beats)) {
+    const totalBeats = storyboard.beats.length;
     const perfectBeats = storyboard.beats.filter(
       (beat: any) => !beat.retention?.issues || beat.retention.issues.length === 0
     ).length;
 
-    if (perfectBeats > 0) {
-      const perfectBeatBonus = perfectBeats * 2;
+    if (perfectBeats > 0 && totalBeats > 0) {
+      const perfectRatio = perfectBeats / totalBeats;
+      // Max +10 for 100% perfect, scales linearly
+      const perfectBeatBonus = Math.round(perfectRatio * 10);
       bonusPoints += perfectBeatBonus;
-      bonusDetails.push(`${perfectBeats} perfect beat${perfectBeats > 1 ? 's' : ''}: +${perfectBeatBonus}`);
+      bonusDetails.push(`${perfectBeats}/${totalBeats} perfect beats (${Math.round(perfectRatio * 100)}%): +${perfectBeatBonus}`);
     }
   }
 
@@ -693,16 +754,18 @@ function calculateScore(uniqueBeatIssues: any[], storyboard: any) {
   let bonusPoints = 0;
   const bonusDetails: string[] = [];
 
-  // Bonus 1: Perfect beats (no issues) - +2 points each
+  // Bonus 1: Perfect beats - percentage-based (max +10)
   if (storyboard.beats && Array.isArray(storyboard.beats)) {
+    const totalBeats = storyboard.beats.length;
     const perfectBeats = storyboard.beats.filter((beat: any) =>
       !beat.retention?.issues || beat.retention.issues.length === 0
     ).length;
 
-    if (perfectBeats > 0) {
-      const perfectBeatBonus = perfectBeats * 2;
+    if (perfectBeats > 0 && totalBeats > 0) {
+      const perfectRatio = perfectBeats / totalBeats;
+      const perfectBeatBonus = Math.round(perfectRatio * 10);
       bonusPoints += perfectBeatBonus;
-      bonusDetails.push(`${perfectBeats} perfect beat${perfectBeats > 1 ? 's' : ''}: +${perfectBeatBonus}`);
+      bonusDetails.push(`${perfectBeats}/${totalBeats} perfect beats (${Math.round(perfectRatio * 100)}%): +${perfectBeatBonus}`);
     }
   }
 

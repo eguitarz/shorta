@@ -10,8 +10,38 @@ const CLASSIFY_TIMEOUT_MS = 60_000;   // 60s for classification (short clip)
 const ANALYZE_TIMEOUT_MS = 300_000;   // 300s for full video analysis (long videos need more time)
 
 /**
+ * Repair common LLM JSON corruption:
+ * - Stray digits replacing closing braces (e.g. `"value" 0, {` → `"value"}, {`)
+ * - Stray digits before closing braces (e.g. `"LC": true\n    1}` → `"LC": true}`)
+ * - Trailing commas before closing braces/brackets
+ */
+function repairJSON(jsonStr: string): string {
+  let repaired = jsonStr;
+
+  // Pattern 1: Stray digit REPLACING a closing brace before a comma
+  // e.g. `"Hook Within 3 Seconds" 0, {` → `"Hook Within 3 Seconds"}, {`
+  // This happens when the model outputs a digit instead of `}`
+  repaired = repaired.replace(
+    /(")\s+(\d+)\s*,\s*\{/g,
+    '$1}, {'
+  );
+
+  // Pattern 2: Stray bare digits between valid JSON values (on same or next line)
+  // e.g. `"LC": true\n    1}` → `"LC": true}`
+  repaired = repaired.replace(
+    /(true|false|null|\d+\.?\d*|"|\]|\})\s*\n?\s+(\d+)\s*(?=[}\]"])/g,
+    '$1'
+  );
+
+  // Remove trailing commas before } or ]
+  repaired = repaired.replace(/,\s*([}\]])/g, '$1');
+
+  return repaired;
+}
+
+/**
  * Robustly extract a JSON object from LLM text that may contain preamble,
- * markdown code fences, or trailing degenerate repetition (e.g. "111...").
+ * markdown code fences, thinking blocks, or trailing degenerate repetition.
  */
 function extractJSONObject<T = any>(raw: string): T {
   let text = raw;
@@ -36,7 +66,16 @@ function extractJSONObject<T = any>(raw: string): T {
     if (ch === '{') depth++;
     else if (ch === '}') {
       depth--;
-      if (depth === 0) return JSON.parse(text.substring(firstBrace, i + 1));
+      if (depth === 0) {
+        const candidate = text.substring(firstBrace, i + 1);
+        try {
+          return JSON.parse(candidate);
+        } catch {
+          // Try repairing stray characters
+          const repaired = repairJSON(candidate);
+          return JSON.parse(repaired);
+        }
+      }
     }
   }
 
@@ -44,7 +83,15 @@ function extractJSONObject<T = any>(raw: string): T {
   const degMatch = text.match(/(.)\1{19,}/);
   const cutoff = degMatch ? degMatch.index! : text.length;
   const lastBrace = text.lastIndexOf('}', cutoff);
-  if (lastBrace > firstBrace) return JSON.parse(text.substring(firstBrace, lastBrace + 1));
+  if (lastBrace > firstBrace) {
+    const candidate = text.substring(firstBrace, lastBrace + 1);
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      const repaired = repairJSON(candidate);
+      return JSON.parse(repaired);
+    }
+  }
 
   throw new Error('Could not extract valid JSON from LLM response');
 }
@@ -100,7 +147,7 @@ function withTimeout<T>(fn: () => Promise<T>, timeoutMs: number, errorMessage: s
 
 export class GeminiClient implements LLMClient {
   private readonly ai: GoogleGenAI;
-  private readonly defaultModel = 'gemini-3-flash-preview';
+  private readonly defaultModel = 'gemini-3.1-flash-lite-preview';
 
   constructor(apiKey: string) {
     if (!apiKey) {
@@ -181,7 +228,7 @@ export class GeminiClient implements LLMClient {
   }
 
   async classifyVideo(videoUrl: string, config?: LLMConfig): Promise<VideoClassification> {
-    const modelName = config?.model || 'gemini-3-flash-preview';
+    const modelName = config?.model || 'gemini-3.1-flash-lite-preview';
 
     const systemPrompt = `You are a short-form video FORMAT CLASSIFIER.
 
@@ -244,6 +291,7 @@ Return JSON:
             config: {
               temperature: 0.1,
               maxOutputTokens: 1500,
+              responseMimeType: 'application/json',
             },
           })
         ),
@@ -267,20 +315,17 @@ Return JSON:
   }
 
   async analyzeVideo(videoUrl: string, prompt: string, config?: LLMConfig): Promise<LLMResponse> {
-    const modelName = config?.model || 'gemini-3-flash-preview';
+    const modelName = config?.model || 'gemini-3.1-flash-lite-preview';
 
     // Calculate optimal FPS based on video duration
-    // Default: 1 fps (~300 tokens/sec)
-    // Medium videos (>60s): 0.5 fps
-    // Long videos (>120s): 0.25 fps
-    // Very long videos (>300s): 0.1 fps (1 frame per 10s)
+    // Default: 1 fps (~258 tokens/frame)
+    // Long videos (>60s): 0.5 fps to save tokens
+    // NOTE: Do NOT use fps < 0.5. Values like 0.1 cause the API to
+    // internally set maxNumberOfFrames=0, meaning the model receives
+    // ZERO video frames and can only work from the text prompt.
     let fps = config?.fps;
     if (!fps && config?.videoDuration) {
-      if (config.videoDuration > 300) {
-        fps = 0.1;
-      } else if (config.videoDuration > 120) {
-        fps = 0.25;
-      } else if (config.videoDuration > 60) {
+      if (config.videoDuration > 60) {
         fps = 0.5;
       }
     }
@@ -298,6 +343,12 @@ Return JSON:
 
       const contents = [{ text: prompt }, videoContent];
 
+      // NOTE: Do NOT use responseMimeType: 'application/json' here.
+      // With gemini-2.5-flash (thinking model), it causes:
+      // 1. Output wrapped in array [...] instead of object {...}
+      // 2. Severely truncated output (4K chars instead of 50K+)
+      // 3. Stray digits replacing braces in JSON
+      // The SDK already handles thinking blocks (skips thought:true parts).
       const response = await withTimeout(
         () => withRetry(() =>
           this.ai.models.generateContent({

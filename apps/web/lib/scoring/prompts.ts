@@ -39,7 +39,7 @@ Return ONLY valid JSON in this exact format:
       "BC": <number - total distinct beat/section count in entire video. A beat is a coherent section with one purpose (HOOK, CONTEXT, BUILDUP, PAYOFF, CTA, or SEGMENT for mid-video sections in long videos). For short videos (≤90s): typically 3-7 beats. For longer videos (>90s): aim for roughly 1 beat per 30-60 seconds so that no single beat exceeds ~60 seconds. A 10-minute video should have 15-25 beats. A 15-minute video should have 20-30 beats>,
       "PM": <number - count of progress markers throughout video. Examples: "first", "second", "next", "then", "finally", "step 1", "here's the plan", "last thing". Count each marker>,
       "PP": <boolean - true if there is a clear payoff, answer, or resolution in the last 15-20% of the video. The promise made in the hook should be fulfilled>,
-      "LC": <boolean - true if the ending references the beginning OR creates a loop that encourages rewatching. Examples: callback to opening line, "remember when I said X?", "if you want part 2...">
+      "LC": <boolean - true if the ending references the beginning OR creates a loop that encourages rewatching. Examples: callback to opening line, "remember when I said X?", "if you want part 2...". NOTE: Loop cues matter most for short-form (auto-looping Shorts). For long-form videos (>90s), a callback/loop is a nice-to-have but NOT expected>
     },
     "clarity": {
       "wordCount": <number - total word count in the entire transcript. For faceless/gameplay without speech, count text overlay words>,
@@ -134,12 +134,17 @@ Return ONLY valid JSON in this exact format:
 - For faceless: count specific numbers/names in text overlays
 
 **Beat Types:**
-- HOOK: Opening 1-5 seconds that grabs attention
+- HOOK: Opening seconds that grabs attention. For short videos (≤90s): first 1-5 seconds. For long videos (>90s): first 5-30 seconds.
 - CONTEXT: Background info, setup, "here's why this matters"
 - BUILDUP: Tension, anticipation, "here's what most people do wrong"
 - PAYOFF: The answer, revelation, main value delivery, climax
 - CTA: Call to action, "follow for more", "try this"
 - SEGMENT: A distinct topic section within a longer video (>90s). Use this for product reviews, multi-topic videos, listicles, etc. Each SEGMENT should cover ONE discrete topic/item/section.
+
+**IMPORTANT for TTClaim in long videos (>90s):**
+- Long-form viewers accept a longer setup before the value proposition
+- A 10-30 second intro with context/personality is NORMAL for long-form
+- TTClaim should still measure the first VALUE SIGNAL, but don't expect it in 1-3 seconds like Shorts
 
 **IMPORTANT for long videos (>90s):**
 - Each beat should cover at most ~60 seconds of content. Split longer sections into multiple beats.
@@ -216,7 +221,12 @@ EXTRACTED SIGNALS:
 - Clarity: ${signals.clarity.wordCount} words / ${signals.clarity.duration}s = ${(signals.clarity.wordCount / signals.clarity.duration).toFixed(1)} WPS, SC=${signals.clarity.SC}/5, TJ=${signals.clarity.TJ}, RD=${signals.clarity.RD}/5
 - Delivery: LS=${signals.delivery.LS}/5, NS=${signals.delivery.NS}/5, pauses=${signals.delivery.pauseCount}, fillers=${signals.delivery.fillerCount}, EC=${signals.delivery.EC}`;
 
-  return `You are an expert YouTube Shorts director. Analyze the provided video and generate a structured JSON storyboard.
+  const isLong = signals.clarity.duration > 90;
+  const directorRole = isLong
+    ? 'You are an expert YouTube video director specializing in long-form content analysis.'
+    : 'You are an expert YouTube Shorts director.';
+
+  return `${directorRole} Analyze the provided video and generate a structured JSON storyboard.
 
 ${locale && locale !== 'en' ? `CRITICAL LANGUAGE REQUIREMENT: ALL output (analysis, explanations, suggestions, director's assessment, visual/audio descriptions, beat titles) MUST be written in ${getLanguageName(locale)}. DO NOT use English for these fields.` : ''}
 
