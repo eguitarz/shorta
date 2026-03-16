@@ -69,10 +69,19 @@ export async function processStoryboard(jobId: string, locale?: string) {
     // STEP 1: Extract signals from video
     // ============================================
     console.log('[Storyboard] Step 1: Extracting signals...');
+
+    // Scale output token budget based on video duration:
+    // - Short videos (≤90s): 8K tokens is plenty
+    // - Medium (90s-300s): 16K — more beats + longer transcript
+    // - Long (>300s): 32K — many beats + full transcript can be very large
+    const videoDuration = job.video_duration || 60;
+    const signalMaxTokens = videoDuration > 300 ? 32768 : videoDuration > 90 ? 16384 : 8192;
+    console.log(`[Storyboard] Video duration: ${videoDuration}s → signal maxTokens: ${signalMaxTokens}`);
+
     const signalResponse = await client.analyzeVideo(videoSource, SIGNAL_EXTRACTION_PROMPT, {
       temperature: 0.0, // Maximum consistency for signal extraction
-      maxTokens: 8192,
-      videoDuration: job.video_duration || undefined, // Use job duration for FPS optimization
+      maxTokens: signalMaxTokens,
+      videoDuration: videoDuration, // Use job duration for FPS optimization
     });
 
     console.log('[Storyboard] Signal extraction complete, parsing...');
@@ -115,10 +124,15 @@ export async function processStoryboard(jobId: string, locale?: string) {
       locale
     );
 
+    // Scale analysis output tokens: more beats → more analysis text needed
+    const analysisDuration = signalData.signals.clarity.duration;
+    const analysisMaxTokens = analysisDuration > 300 ? 65536 : analysisDuration > 90 ? 32768 : 16384;
+    console.log(`[Storyboard] Analysis duration: ${analysisDuration}s → analysis maxTokens: ${analysisMaxTokens}`);
+
     const analysisResponse = await client.analyzeVideo(videoSource, analysisPrompt, {
       temperature: 0.1, // Slight creativity for explanations
-      maxTokens: 16384,
-      videoDuration: signalData.signals.clarity.duration, // Optimize FPS for long videos
+      maxTokens: analysisMaxTokens,
+      videoDuration: analysisDuration, // Optimize FPS for long videos
     });
 
     console.log('[Storyboard] Analysis complete, parsing JSON...');
@@ -396,47 +410,108 @@ VISUAL & AUDIO ANALYSIS - Director's Perspective:
 Now analyze the video and generate the complete storyboard JSON.`;
 }
 
-function parseStoryboardJSON(content: string): any {
-  try {
-    let jsonText = content.trim();
+/**
+ * Robustly extract JSON from an LLM response that may contain:
+ * - Preamble text before JSON (e.g. "Here's the breakdown:\n\n```json\n{...")
+ * - Markdown code fences (```json ... ```)
+ * - Trailing garbage / degenerate repetition (e.g. "111111..." after valid JSON)
+ *
+ * Strategy: find the first '{' and then walk forward counting braces to find
+ * the matching '}'. Everything outside that range is discarded.
+ */
+function extractJSONFromResponse(raw: string, label: string): any {
+  console.log(`[${label}] Raw content length:`, raw.length);
+  console.log(`[${label}] First 300 chars:`, raw.substring(0, 300));
 
-    console.log('[parseStoryboardJSON] Raw content length:', content.length);
-    console.log('[parseStoryboardJSON] First 500 chars:', content.substring(0, 500));
+  // Step 1: Strip markdown code fences if present
+  let text = raw;
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+  if (fenceMatch) {
+    text = fenceMatch[1];
+    console.log(`[${label}] Extracted from code fence, length:`, text.length);
+  }
 
-    // Handle markdown code blocks
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-    } else if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/```\n?/g, '');
+  // Step 2: Find the first '{' — this is where JSON starts
+  const firstBrace = text.indexOf('{');
+  if (firstBrace === -1) {
+    throw new Error(`No JSON object found in response`);
+  }
+
+  // Step 3: Walk forward counting brace depth to find the matching '}'
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+  let lastBrace = -1;
+
+  for (let i = firstBrace; i < text.length; i++) {
+    const ch = text[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
     }
 
-    console.log('[parseStoryboardJSON] After cleanup, first 500 chars:', jsonText.substring(0, 500));
+    if (ch === '\\' && inString) {
+      escapeNext = true;
+      continue;
+    }
 
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        lastBrace = i;
+        break;
+      }
+    }
+  }
+
+  if (lastBrace === -1) {
+    // Brace-matching failed — fall back to finding last '}' before any
+    // degenerate repetition (look for 20+ repeated chars as a signal)
+    const degenerateMatch = text.match(/(.)\1{19,}/);
+    const cutoff = degenerateMatch ? degenerateMatch.index! : text.length;
+    lastBrace = text.lastIndexOf('}', cutoff);
+    if (lastBrace === -1) {
+      throw new Error('Could not find matching closing brace in response');
+    }
+    console.log(`[${label}] Brace-walk incomplete; fell back to last } before degenerate region at ${cutoff}`);
+  }
+
+  const jsonText = text.substring(firstBrace, lastBrace + 1);
+  console.log(`[${label}] Extracted JSON length:`, jsonText.length);
+
+  // Step 4: Parse
+  try {
     return JSON.parse(jsonText);
+  } catch (parseErr) {
+    // Last resort: try trimming any trailing degenerate chars inside the string
+    console.error(`[${label}] JSON.parse failed, attempting cleanup:`, parseErr);
+    console.error(`[${label}] Last 200 chars of extracted JSON:`, jsonText.substring(jsonText.length - 200));
+    throw new Error(`Failed to parse ${label} JSON`);
+  }
+}
+
+function parseStoryboardJSON(content: string): any {
+  try {
+    return extractJSONFromResponse(content, 'parseStoryboardJSON');
   } catch (error) {
     console.error('[parseStoryboardJSON] Parse error:', error);
-    console.error('[parseStoryboardJSON] Full content:', content);
+    console.error('[parseStoryboardJSON] Full content (first 2000):', content.substring(0, 2000));
     throw new Error('Failed to parse storyboard analysis');
   }
 }
 
 function parseSignalJSON(content: string): SignalExtractionResult {
   try {
-    let jsonText = content.trim();
-
-    console.log('[parseSignalJSON] Raw content length:', content.length);
-    console.log('[parseSignalJSON] First 500 chars:', content.substring(0, 500));
-
-    // Handle markdown code blocks
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-    } else if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/```\n?/g, '');
-    }
-
-    console.log('[parseSignalJSON] After cleanup, first 500 chars:', jsonText.substring(0, 500));
-
-    const parsed = JSON.parse(jsonText);
+    const parsed = extractJSONFromResponse(content, 'parseSignalJSON');
     console.log('[parseSignalJSON] Parsed signals:', JSON.stringify(parsed.signals, null, 2));
 
     // Validate required fields

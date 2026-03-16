@@ -10,6 +10,46 @@ const CLASSIFY_TIMEOUT_MS = 60_000;   // 60s for classification (short clip)
 const ANALYZE_TIMEOUT_MS = 300_000;   // 300s for full video analysis (long videos need more time)
 
 /**
+ * Robustly extract a JSON object from LLM text that may contain preamble,
+ * markdown code fences, or trailing degenerate repetition (e.g. "111...").
+ */
+function extractJSONObject<T = any>(raw: string): T {
+  let text = raw;
+
+  // Strip markdown code fences
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+  if (fenceMatch) text = fenceMatch[1];
+
+  const firstBrace = text.indexOf('{');
+  if (firstBrace === -1) throw new Error('No JSON object found in response');
+
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = firstBrace; i < text.length; i++) {
+    const ch = text[i];
+    if (escapeNext) { escapeNext = false; continue; }
+    if (ch === '\\' && inString) { escapeNext = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return JSON.parse(text.substring(firstBrace, i + 1));
+    }
+  }
+
+  // Fallback: find last '}' before any degenerate repetition
+  const degMatch = text.match(/(.)\1{19,}/);
+  const cutoff = degMatch ? degMatch.index! : text.length;
+  const lastBrace = text.lastIndexOf('}', cutoff);
+  if (lastBrace > firstBrace) return JSON.parse(text.substring(firstBrace, lastBrace + 1));
+
+  throw new Error('Could not extract valid JSON from LLM response');
+}
+
+/**
  * Retry a Gemini API call with exponential backoff.
  * Retries on transient errors: network failures, 429 (rate limit), 500/503.
  */
@@ -217,15 +257,8 @@ Return JSON:
         throw new Error('No classification result returned');
       }
 
-      // Extract JSON from response (handle markdown code blocks)
-      let jsonText = resultText.trim();
-      if (jsonText.startsWith('```json')) {
-        jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      } else if (jsonText.startsWith('```')) {
-        jsonText = jsonText.replace(/```\n?/g, '');
-      }
-
-      const classification: VideoClassification = JSON.parse(jsonText);
+      // Robustly extract JSON — handle preamble, code fences, trailing garbage
+      const classification: VideoClassification = extractJSONObject(resultText);
       return classification;
     } catch (error) {
       console.error('Classification error:', error);

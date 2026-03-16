@@ -87,19 +87,10 @@ This is essential as the user is analyzing the video in this language.`;
       }
     );
 
-    // Parse JSON response
+    // Parse JSON response — use robust extraction to handle preamble & trailing garbage
     let parsedResult;
     try {
-      let jsonText = response.content.trim();
-
-      // Handle markdown code blocks
-      if (jsonText.startsWith('```json')) {
-        jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      } else if (jsonText.startsWith('```')) {
-        jsonText = jsonText.replace(/```\n?/g, '');
-      }
-
-      parsedResult = JSON.parse(jsonText);
+      parsedResult = extractLintJSON(response.content);
     } catch (error) {
       const contentLength = response.content.length;
       const preview = response.content.substring(0, 1000);
@@ -184,4 +175,50 @@ This is essential as the user is analyzing the video in this language.`;
   getRules(format: VideoFormat) {
     return this.getRuleSet(format).rules;
   }
+}
+
+/**
+ * Robustly extract JSON from LLM response — handles preamble text,
+ * markdown code fences, and trailing degenerate repetition.
+ */
+function extractLintJSON(raw: string): any {
+  // Strip markdown code fences if present
+  let text = raw;
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+  if (fenceMatch) {
+    text = fenceMatch[1];
+  }
+
+  // Find the first '{' and walk braces to find the matching '}'
+  const firstBrace = text.indexOf('{');
+  if (firstBrace === -1) throw new Error('No JSON object found in lint response');
+
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = firstBrace; i < text.length; i++) {
+    const ch = text[i];
+    if (escapeNext) { escapeNext = false; continue; }
+    if (ch === '\\' && inString) { escapeNext = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        return JSON.parse(text.substring(firstBrace, i + 1));
+      }
+    }
+  }
+
+  // Fallback: try last '}' before any degenerate region
+  const degenerateMatch = text.match(/(.)\1{19,}/);
+  const cutoff = degenerateMatch ? degenerateMatch.index! : text.length;
+  const lastBrace = text.lastIndexOf('}', cutoff);
+  if (lastBrace > firstBrace) {
+    return JSON.parse(text.substring(firstBrace, lastBrace + 1));
+  }
+
+  throw new Error('Could not extract valid JSON from lint response');
 }

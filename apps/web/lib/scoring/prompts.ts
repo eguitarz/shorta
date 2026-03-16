@@ -36,7 +36,7 @@ Return ONLY valid JSON in this exact format:
       "QC": <number - count of questions or contradictions in hook. Questions: "Why does X?", "What if?". Contradictions: "You think X? Wrong.", "Most people do X, but...". Count each occurrence>
     },
     "structure": {
-      "BC": <number - total distinct beat/section count in entire video. A beat is a coherent section with one purpose (HOOK, CONTEXT, BUILDUP, PAYOFF, CTA). Typically 3-7 for shorts>,
+      "BC": <number - total distinct beat/section count in entire video. A beat is a coherent section with one purpose (HOOK, CONTEXT, BUILDUP, PAYOFF, CTA, or SEGMENT for mid-video sections in long videos). For short videos (≤90s): typically 3-7 beats. For longer videos (>90s): aim for roughly 1 beat per 30-60 seconds so that no single beat exceeds ~60 seconds. A 10-minute video should have 15-25 beats. A 15-minute video should have 20-30 beats>,
       "PM": <number - count of progress markers throughout video. Examples: "first", "second", "next", "then", "finally", "step 1", "here's the plan", "last thing". Count each marker>,
       "PP": <boolean - true if there is a clear payoff, answer, or resolution in the last 15-20% of the video. The promise made in the hook should be fulfilled>,
       "LC": <boolean - true if the ending references the beginning OR creates a loop that encourages rewatching. Examples: callback to opening line, "remember when I said X?", "if you want part 2...">
@@ -62,7 +62,7 @@ Return ONLY valid JSON in this exact format:
       "beatNumber": 1,
       "startTime": 0,
       "endTime": <seconds>,
-      "type": "<HOOK|CONTEXT|BUILDUP|PAYOFF|CTA>"
+      "type": "<HOOK|CONTEXT|BUILDUP|PAYOFF|CTA|SEGMENT>"
     }
   ]
 }
@@ -139,6 +139,12 @@ Return ONLY valid JSON in this exact format:
 - BUILDUP: Tension, anticipation, "here's what most people do wrong"
 - PAYOFF: The answer, revelation, main value delivery, climax
 - CTA: Call to action, "follow for more", "try this"
+- SEGMENT: A distinct topic section within a longer video (>90s). Use this for product reviews, multi-topic videos, listicles, etc. Each SEGMENT should cover ONE discrete topic/item/section.
+
+**IMPORTANT for long videos (>90s):**
+- Each beat should cover at most ~60 seconds of content. Split longer sections into multiple beats.
+- Use SEGMENT type for mid-video sections that don't fit the short-form HOOK/CONTEXT/BUILDUP/PAYOFF pattern.
+- The transcript for each beat should contain ONLY the words spoken during that beat's time range — do NOT dump the entire transcript into one beat.
 
 LANGUAGE ALIGNMENT - CRITICAL:
 - Detect the primary language spoken/shown in the video
@@ -255,7 +261,7 @@ Return ONLY valid JSON in this exact format:
       "beatNumber": number,
       "startTime": number,
       "endTime": number,
-      "type": "string - HOOK|CONTEXT|BUILDUP|PAYOFF|CTA",
+      "type": "string - HOOK|CONTEXT|BUILDUP|PAYOFF|CTA|SEGMENT",
       "title": "string - descriptive beat name",
       "transcript": "string - exact words spoken in this beat",
       "visual": "string - what makes this work visually (cuts, zooms, text overlays)",
