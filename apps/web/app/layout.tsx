@@ -42,6 +42,12 @@ export const metadata: Metadata = {
     "fix youtube shorts",
     "short form video planning",
     "video retention analysis",
+    // Long-form video keywords
+    "youtube long form video analyzer",
+    "youtube tutorial analyzer",
+    "long form video analysis",
+    "youtube video retention analysis",
+    "youtube pacing analysis",
   ],
   authors: [{ name: "Dale Ma", url: "https://twitter.com/eguitarz" }],
   creator: "Dale Ma",
@@ -118,13 +124,14 @@ export default async function RootLayout({
         "operatingSystem": "Web",
         "description": "Free AI script generator and YouTube video analyzer for creators. Generate video storyboards, analyze shorts for retention, and grow your YouTube channel with AI-powered insights.",
         "featureList": [
-          "Free AI script generator for YouTube Shorts",
-          "YouTube Shorts storyboard generator",
+          "Free AI script generator for YouTube videos",
+          "YouTube video storyboard generator",
           "Video storyboard AI tool",
-          "YouTube video analyzer",
-          "Shorts analyzer with AI-powered insights",
+          "YouTube video analyzer for Shorts and long-form",
           "Beat-by-beat retention analysis",
           "Hook performance analyzer",
+          "Long-form video pacing and chapter analysis",
+          "Tutorial and educational video analysis",
           "Viral potential scoring",
           "Tools to grow your YouTube channel"
         ],
@@ -160,7 +167,7 @@ export default async function RootLayout({
           "contentUrl": "https://shorta.ai/icon-512x512.png"
         },
         "image": "https://shorta.ai/icon-512x512.png",
-        "description": "YouTube Shorts analysis and storyboard system for content creators",
+        "description": "YouTube video analysis and storyboard system for content creators — Shorts and long-form",
         "founder": {
           "@type": "Person",
           "name": "Dale Ma",
@@ -190,18 +197,26 @@ export default async function RootLayout({
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is a shorts analyzer?",
+            "name": "What is a YouTube video analyzer?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A shorts analyzer is an AI-powered tool that analyzes YouTube Shorts videos to identify retention issues, hook performance, content structure, and viral potential. Shorta's shorts analyzer provides beat-by-beat feedback showing exactly what works and what doesn't in your shorts."
+              "text": "A YouTube video analyzer is an AI-powered tool that analyzes your videos to identify retention issues, hook performance, content structure, and pacing problems. Shorta analyzes both YouTube Shorts and long-form videos, providing beat-by-beat feedback showing exactly what works and what doesn't."
             }
           },
           {
             "@type": "Question",
-            "name": "How does the shorts analyzer work?",
+            "name": "How does the video analyzer work?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The shorts analyzer uses AI to break down your YouTube Shorts into beats (segments), analyzing each section for retention drops, hook effectiveness, content clarity, and delivery performance. It provides specific, actionable feedback on how to improve each part of your short."
+              "text": "Shorta uses AI to break down your video into beats (segments), analyzing each section for retention drops, hook effectiveness, content clarity, and pacing. For long-form videos, it maps retention chapter-by-chapter. It provides specific, actionable feedback on how to improve each part of your video."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Shorta work for long-form YouTube videos?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Shorta analyzes YouTube videos of any length — from 60-second Shorts to hour-long tutorials. Long-form videos get chapter-level pacing analysis, section-by-section retention flags, and beat-by-beat feedback across the full runtime."
             }
           },
           {
@@ -214,10 +229,10 @@ export default async function RootLayout({
           },
           {
             "@type": "Question",
-            "name": "Can I analyze any YouTube Short?",
+            "name": "Can I analyze any YouTube video?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, the shorts analyzer works with any public YouTube Short. Simply paste the URL and get instant AI-powered analysis with retention insights, hook scoring, and optimization suggestions."
+              "text": "Yes. Shorta works with any public YouTube video — Shorts, long-form, tutorials, vlogs, and more. Simply paste the URL and get AI-powered analysis with retention insights, hook scoring, and optimization suggestions."
             }
           },
           {
@@ -225,7 +240,7 @@ export default async function RootLayout({
             "name": "Is there a free AI script generator?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes! Shorta offers a free AI script generator for YouTube Shorts. Our storyboard AI helps you generate video scripts by analyzing viral patterns and creating beat-by-beat storyboards optimized for retention."
+              "text": "Yes! Shorta offers a free AI storyboard generator for YouTube videos. Our storyboard AI helps you generate video scripts by analyzing viral patterns and creating beat-by-beat storyboards optimized for retention."
             }
           },
           {
@@ -233,7 +248,7 @@ export default async function RootLayout({
             "name": "What is a video storyboard generator?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A video storyboard generator is an AI tool that creates structured scripts for short form videos. Shorta's YouTube Shorts storyboard generator analyzes successful videos and generates beat-by-beat plans including hooks, content flow, and calls-to-action to help you grow your YouTube channel."
+              "text": "A video storyboard generator is an AI tool that creates structured scripts for videos. Shorta's YouTube storyboard generator analyzes successful videos and generates beat-by-beat plans including hooks, content flow, and calls-to-action — for both short-form and long-form content."
             }
           }
         ]

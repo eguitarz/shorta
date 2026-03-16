@@ -13,7 +13,8 @@ import {
     FileText,
     Search,
     Target,
-    Users
+    Users,
+    BookOpen
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -44,6 +45,20 @@ const tools = [
         description: 'Chapter-level pacing and retention analysis for tutorials, vlogs, and long YouTube videos.',
         icon: TrendingUp,
         color: 'text-blue-400',
+    },
+    {
+        slug: 'youtube-tutorial-analyzer',
+        title: 'YouTube Tutorial Analyzer',
+        description: 'AI feedback on pacing, clarity, and retention for educational videos and how-to content.',
+        icon: BookOpen,
+        color: 'text-emerald-400',
+    },
+    {
+        slug: 'youtube-video-retention-analysis',
+        title: 'Video Retention Analysis',
+        description: 'Find exactly where viewers drop off in any YouTube video — Shorts or long-form — and why.',
+        icon: TrendingDown,
+        color: 'text-red-400',
     },
     {
         slug: 'youtube-niche-analyzer',

@@ -60,6 +60,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const seoPages = [
     'youtube-video-analyzer',
     'youtube-long-form-video-analyzer',
+    'youtube-tutorial-analyzer',
+    'youtube-video-retention-analysis',
     'youtube-shorts-analyzer',
     'youtube-niche-analyzer',
     'youtube-channel-analyzer',
