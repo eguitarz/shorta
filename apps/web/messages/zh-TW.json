@@ -640,6 +640,21 @@
       "starHint": "在資料庫中收藏影片即可在此查看",
       "tryAgain": "重試"
     },
+    "thumbnail": {
+      "title": "縮圖分析",
+      "subtitle": "AI 驅動的 CTR 優化建議",
+      "analyze": "分析",
+      "overallScore": "整體評分",
+      "ctrScore": "CTR 潛力",
+      "strengths": "優點",
+      "improvements": "改善建議",
+      "scores": {
+        "visualClarity": "視覺清晰度",
+        "textImpact": "文字效果",
+        "emotionalHook": "情感鉤子",
+        "ctrPotential": "CTR 潛力"
+      }
+    },
     "share": {
       "button": "分享",
       "generating": "產生中...",

@@ -51,6 +51,7 @@ import { REHOOK_PRESETS, type RehookPreset } from "@/lib/rehook";
 import type { VideoFormat } from "@/lib/linter/types";
 import { RetentionCurveChart } from "@/components/RetentionCurveChart";
 import type { VideoRetentionCurve } from "@/lib/youtube/types";
+import { ThumbnailAnalysis } from "@/components/ThumbnailAnalysis";
 
 interface Beat {
   beatNumber: number;
@@ -3104,6 +3105,13 @@ export default function AnalyzerResultsPage() {
                     {t('hooks.addStyle')}
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Thumbnail Analysis - YouTube videos only */}
+            {!loading && analysisData && videoId && !isUploadedFile && (
+              <div className="mb-8">
+                <ThumbnailAnalysis videoId={videoId} />
               </div>
             )}
           </div>

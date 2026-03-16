@@ -634,6 +634,21 @@
       "starHint": "Marca videos como favoritos en tu biblioteca para verlos aquí",
       "tryAgain": "Intentar de nuevo"
     },
+    "thumbnail": {
+      "title": "Análisis de Miniatura",
+      "subtitle": "Feedback de optimización de CTR con IA",
+      "analyze": "Analizar",
+      "overallScore": "Puntuación General",
+      "ctrScore": "Potencial CTR",
+      "strengths": "Qué Funciona",
+      "improvements": "Mejoras",
+      "scores": {
+        "visualClarity": "Claridad Visual",
+        "textImpact": "Impacto del Texto",
+        "emotionalHook": "Gancho Emocional",
+        "ctrPotential": "Potencial CTR"
+      }
+    },
     "share": {
       "button": "Compartir",
       "generating": "Generando...",

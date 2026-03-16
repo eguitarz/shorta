@@ -650,6 +650,21 @@
       "starHint": "Star videos in your library to see them here",
       "tryAgain": "Try again"
     },
+    "thumbnail": {
+      "title": "Thumbnail Analysis",
+      "subtitle": "AI-powered CTR optimization feedback",
+      "analyze": "Analyze",
+      "overallScore": "Overall Score",
+      "ctrScore": "CTR Potential",
+      "strengths": "What's Working",
+      "improvements": "Improvements",
+      "scores": {
+        "visualClarity": "Visual Clarity",
+        "textImpact": "Text Impact",
+        "emotionalHook": "Emotional Hook",
+        "ctrPotential": "CTR Potential"
+      }
+    },
     "share": {
       "button": "Share",
       "generating": "Generating...",

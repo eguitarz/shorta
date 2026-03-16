@@ -612,6 +612,21 @@
       "variant": "변형 {label}",
       "generateNew": "새로 생성"
     },
+    "thumbnail": {
+      "title": "썸네일 분석",
+      "subtitle": "AI 기반 CTR 최적화 피드백",
+      "analyze": "분석",
+      "overallScore": "종합 점수",
+      "ctrScore": "CTR 잠재력",
+      "strengths": "잘 된 점",
+      "improvements": "개선 사항",
+      "scores": {
+        "visualClarity": "시각적 명확성",
+        "textImpact": "텍스트 효과",
+        "emotionalHook": "감성적 훅",
+        "ctrPotential": "CTR 잠재력"
+      }
+    },
     "share": {
       "button": "공유",
       "generating": "생성 중...",
