@@ -284,6 +284,14 @@ export default function YouTubeShortsScriptGeneratorPage() {
                     secondaryHref="/try"
                 />
 
+                <div className="mt-10 p-4 bg-[#1a1a1a] rounded-xl border border-gray-800">
+                    <p className="text-sm text-gray-400">
+                        <span className="text-orange-400 font-medium">Also works with long-form videos.</span>{' '}
+                        Shorta analyzes tutorials, vlogs, and full-length YouTube videos too.{' '}
+                        <a href="/tools/youtube-video-analyzer" className="text-orange-400 hover:underline">Try the YouTube Video Analyzer →</a>
+                    </p>
+                </div>
+
                 <SEOInternalLinks
                     links={[
                         { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
@@ -292,6 +300,8 @@ export default function YouTubeShortsScriptGeneratorPage() {
                         { href: '/tools/youtube-shorts-hook-analysis', text: 'Hook Analysis' },
                         { href: '/tools/analyze-youtube-shorts', text: 'Analyze Your Shorts' },
                         { href: '/tools/ai-tool-for-youtube-shorts', text: 'AI Tool for Shorts' },
+                        { href: '/tools/youtube-video-analyzer', text: 'YouTube Video Analyzer (All Lengths)' },
+                        { href: '/tools/youtube-long-form-video-analyzer', text: 'Long-Form Video Analyzer' },
                     ]}
                 />
             </SEOPageLayout>

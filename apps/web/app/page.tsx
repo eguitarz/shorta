@@ -339,7 +339,7 @@ export default function HomePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-background rounded-lg p-4 border border-border/50 text-center">
                   <p className="text-2xl font-bold text-primary">4</p>
-                  <p className="text-xs text-muted-foreground mt-1">Analysis dimensions per Short</p>
+                  <p className="text-xs text-muted-foreground mt-1">Analysis dimensions per video</p>
                 </div>
                 <div className="bg-background rounded-lg p-4 border border-border/50 text-center">
                   <p className="text-2xl font-bold text-primary">60s</p>
