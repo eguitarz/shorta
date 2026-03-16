@@ -10,6 +10,28 @@ import type { Metadata } from "next";
 const shortaLogo = "/shorta-logo.png";
 
 export const metadata: Metadata = {
+  title: "Shorta AI — YouTube Video Analyzer & Storyboard Generator",
+  description:
+    "AI-powered analyzer for YouTube Shorts and long-form videos. Get beat-by-beat feedback on hooks, pacing, and retention — then generate a better version with a filmable storyboard.",
+  keywords: [
+    "YouTube video analyzer",
+    "YouTube Shorts analyzer",
+    "long-form video analysis",
+    "video retention analysis",
+    "YouTube hook analysis",
+    "storyboard generator",
+    "YouTube pacing",
+    "AI video feedback",
+    "improve YouTube videos",
+  ],
+  openGraph: {
+    title: "Shorta AI — YouTube Video Analyzer & Storyboard Generator",
+    description:
+      "Beat-by-beat AI feedback on hooks, pacing, and retention for any YouTube video — Shorts or long-form. Try free, no login required.",
+    url: "https://shorta.ai",
+    siteName: "Shorta AI",
+    type: "website",
+  },
   alternates: {
     canonical: "https://shorta.ai",
     languages: {
@@ -67,7 +89,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">Paste URL or Upload</h3>
             <p className="text-muted-foreground text-sm">
-              Drop a YouTube Shorts link or upload your video file. Drafts and rough cuts work too.
+              Drop any YouTube URL — Shorts, long-form, tutorials, vlogs — or upload your video file directly. Drafts and rough cuts work too.
             </p>
           </div>
           <div className="text-center">
@@ -100,10 +122,10 @@ export default function HomePage() {
           <div className="mb-4">
             <span className="text-xs font-mono text-violet-400 mb-2 block">ANALYZE</span>
             <h3 className="text-xl md:text-2xl font-semibold text-foreground mb-3">
-              Upload before you publish
+              Know where you lose viewers — before you publish
             </h3>
             <p className="text-muted-foreground mb-4 max-w-2xl">
-              The analyzer watches your Short like a viewer would — then tells you exactly where they'd lose interest and why.
+              Works for Shorts and long-form videos. The analyzer watches your video like a viewer would — then tells you exactly where they'd drop off and why. Every issue comes with a timestamped fix.
             </p>
             <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
@@ -117,6 +139,10 @@ export default function HomePage() {
               <li className="flex items-center gap-2">
                 <span className="text-primary">→</span>
                 Timestamped fixes
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-primary">→</span>
+                Chapter pacing for long videos
               </li>
             </ul>
           </div>
@@ -190,7 +216,7 @@ export default function HomePage() {
             <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
                 <span className="text-emerald-400">→</span>
-                Retention curves across all Shorts
+                Retention curves across all videos
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-emerald-400">→</span>
@@ -254,19 +280,31 @@ export default function HomePage() {
           <div className="bg-surface/50 rounded-xl p-5 border border-border/50">
             <p className="font-semibold text-foreground mb-2">New YouTubers</p>
             <p className="text-sm text-muted-foreground">
-              Don't know why your Shorts get 50 views? The analyzer shows you exactly what to fix — hooks, pacing, structure.
+              Don't know why your videos get 50 views? The analyzer shows you exactly what to fix — hooks, pacing, structure.
+            </p>
+          </div>
+          <div className="bg-surface/50 rounded-xl p-5 border border-border/50">
+            <p className="font-semibold text-foreground mb-2">Educators & tutorial creators</p>
+            <p className="text-sm text-muted-foreground">
+              Long-form videos lose viewers fast if the pacing drags. Shorta finds the exact chapters where attention drops — and tells you how to tighten them.
             </p>
           </div>
           <div className="bg-surface/50 rounded-xl p-5 border border-border/50">
             <p className="font-semibold text-foreground mb-2">Creators stuck at low views</p>
             <p className="text-sm text-muted-foreground">
-              You're posting consistently but nothing breaks through. Shorta finds the patterns holding you back.
+              You're posting consistently but nothing breaks through. Shorta finds the patterns holding you back — whether you make Shorts or 20-minute videos.
             </p>
           </div>
           <div className="bg-surface/50 rounded-xl p-5 border border-border/50">
             <p className="font-semibold text-foreground mb-2">Solo creators without a team</p>
             <p className="text-sm text-muted-foreground">
               No editor, no producer, no feedback loop. Shorta is the second pair of eyes you don't have.
+            </p>
+          </div>
+          <div className="bg-surface/50 rounded-xl p-5 border border-border/50">
+            <p className="font-semibold text-foreground mb-2">Vloggers & lifestyle creators</p>
+            <p className="text-sm text-muted-foreground">
+              Story-driven content lives or dies on pacing. Shorta maps your retention curve beat-by-beat so you know exactly where the story loses momentum.
             </p>
           </div>
           <div className="bg-surface/50 rounded-xl p-5 border border-border/50">
@@ -424,19 +462,33 @@ export default function HomePage() {
 
       {/* 7. FAQ */}
       <Section id="faq" maxWidth="narrow">
-        <SectionTitle>YouTube Shorts FAQ</SectionTitle>
+        <SectionTitle>YouTube Video FAQ</SectionTitle>
         <div className="space-y-6 md:space-y-8">
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Why are my YouTube Shorts not getting views?</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Does Shorta work with long-form YouTube videos, not just Shorts?</h3>
             <p className="text-base text-muted-foreground">
-              Most Shorts fail in the first 2 seconds — weak hooks, slow pacing, or unclear value. YouTube's algorithm measures retention, and if viewers swipe away early, your Short won't get pushed to more people. Shorta's analyzer shows you exactly where viewers drop off and why, so you can fix issues before publishing.
+              Yes — Shorta analyzes any YouTube video, regardless of length. Long-form videos get chapter-level pacing analysis, section-by-section retention flags, and beat-by-beat feedback across the full runtime. Paste any YouTube URL or upload your file directly.
             </p>
           </div>
 
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">How do I improve YouTube Shorts retention?</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Why are my YouTube videos not getting views?</h3>
             <p className="text-base text-muted-foreground">
-              Focus on your hook (first 1-2 seconds), maintain fast pacing, and deliver value quickly. Shorta analyzes your video beat-by-beat and flags retention killers like slow intros, weak transitions, or unclear messaging — then suggests specific fixes.
+              Most videos fail in the first 30 seconds — weak hooks, slow pacing, or unclear value. YouTube's algorithm measures retention, and if viewers leave early, your video won't get distributed. Shorta's analyzer shows you exactly where viewers drop off and why, so you can fix issues before publishing.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">How do I improve YouTube video retention?</h3>
+            <p className="text-base text-muted-foreground">
+              Focus on your hook, maintain momentum, and cut anything that doesn't earn its runtime. Shorta analyzes your video beat-by-beat and flags retention killers like slow intros, weak transitions, or unclear messaging — then suggests specific fixes.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">How long can the videos I analyze be?</h3>
+            <p className="text-base text-muted-foreground">
+              Shorta handles videos of any length — from 15-second Shorts to hour-long tutorials. Longer videos use adaptive analysis that samples key moments across the full runtime, so you get comprehensive feedback without waiting forever.
             </p>
           </div>
 
@@ -448,7 +500,7 @@ export default function HomePage() {
           </div>
 
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Can I analyze my YouTube Shorts for free?</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Can I analyze my YouTube video for free?</h3>
             <p className="text-base text-muted-foreground">
               Yes. Shorta offers a free analysis — no credit card, no login required. Upload your video and get AI-powered feedback on hooks, pacing, and retention instantly.
             </p>
@@ -457,14 +509,14 @@ export default function HomePage() {
           <div>
             <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">Is this better than using ChatGPT for video scripts?</h3>
             <p className="text-base text-muted-foreground">
-              ChatGPT gives generic scripts from old training data. Shorta creates production-ready storyboards with timed beats, hook options, and director notes — optimized for YouTube Shorts retention. It's the difference between a wall of text and a filming blueprint.
+              ChatGPT gives generic scripts from old training data. Shorta creates production-ready storyboards with timed beats, hook options, and director notes — optimized for YouTube retention. It's the difference between a wall of text and a filming blueprint.
             </p>
           </div>
 
           <div>
             <h3 className="text-lg md:text-xl font-semibold text-foreground mb-3">What does the YouTube video analyzer check?</h3>
             <p className="text-base text-muted-foreground">
-              The analyzer checks four dimensions: hook strength (first 1-2 seconds), content structure, pacing and delivery, and overall clarity. Every issue found comes with a timestamped fix so you know exactly what to change.
+              The analyzer checks four dimensions: hook strength, content structure, pacing and delivery, and overall clarity. Every issue found comes with a timestamped fix so you know exactly what to change.
             </p>
           </div>
         </div>

@@ -17,17 +17,17 @@ export function HeroSection() {
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight font-heading">
             See Exactly Why Viewers
             <br />
-            <span className="text-primary">Swipe Away</span>
+            <span className="text-primary">Stop Watching</span>
           </h1>
           <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mt-4 md:mt-6 max-w-2xl">
-            AI-powered YouTube Shorts analyzer and storyboard generator. Get beat-by-beat feedback on hooks, pacing, and retention — then generate a better version.
+            AI-powered YouTube video analyzer and storyboard generator. Get beat-by-beat feedback on hooks, pacing, and retention — for Shorts and long-form videos.
           </p>
 
           {/* Single CTA */}
           <div className="mt-6 md:mt-8 flex flex-col sm:flex-row items-start gap-3">
             <a href="/try">
               <Button variant="hero" size="lg" className="text-base md:text-lg px-6 md:px-8 py-3 md:py-4">
-                Try Free — Analyze Your Short
+                Try Free — Analyze Your Video
               </Button>
             </a>
             <p className="text-sm text-muted-foreground sm:self-center">

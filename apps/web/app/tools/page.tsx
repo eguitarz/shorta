@@ -17,11 +17,11 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'YouTube Shorts Tools & Resources',
-    description: 'Free tools and guides to improve your YouTube Shorts. Analyze hooks, fix retention issues, and get AI-powered feedback before you publish.',
+    title: 'YouTube Video Tools & Resources',
+    description: 'Free tools and guides to improve your YouTube videos — Shorts and long-form. Analyze hooks, fix retention issues, and get AI-powered feedback before you publish.',
     openGraph: {
-        title: 'YouTube Shorts Tools & Resources',
-        description: 'Free tools and guides to improve your YouTube Shorts.',
+        title: 'YouTube Video Tools & Resources',
+        description: 'Free tools and guides to improve your YouTube videos — Shorts and long-form.',
         url: 'https://shorta.ai/tools',
         type: 'website',
     },
@@ -31,6 +31,20 @@ export const metadata: Metadata = {
 };
 
 const tools = [
+    {
+        slug: 'youtube-video-analyzer',
+        title: 'YouTube Video Analyzer',
+        description: 'AI-powered analysis for any YouTube video — Shorts and long-form. Beat-by-beat feedback on hooks, pacing, and retention.',
+        icon: BarChart3,
+        color: 'text-orange-500',
+    },
+    {
+        slug: 'youtube-long-form-video-analyzer',
+        title: 'Long-Form Video Analyzer',
+        description: 'Chapter-level pacing and retention analysis for tutorials, vlogs, and long YouTube videos.',
+        icon: TrendingUp,
+        color: 'text-blue-400',
+    },
     {
         slug: 'youtube-niche-analyzer',
         title: 'YouTube Niche Analyzer',
@@ -134,10 +148,10 @@ export default function ToolsIndexPage() {
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                        YouTube Shorts Tools & Resources
+                        YouTube Video Tools & Resources
                     </h1>
                     <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                        Free guides and tools to help you understand why your Shorts perform the way they do—and how to fix them.
+                        Free guides and tools to help you understand why your videos perform the way they do — Shorts or long-form — and how to fix them.
                     </p>
                 </div>
 
@@ -168,10 +182,10 @@ export default function ToolsIndexPage() {
                 {/* CTA Section */}
                 <div className="mt-16 text-center bg-gradient-to-r from-orange-500/10 to-transparent border border-orange-500/20 rounded-2xl p-12">
                     <h2 className="text-2xl font-bold mb-4">
-                        Ready to Analyze Your Shorts?
+                        Ready to Analyze Your Video?
                     </h2>
                     <p className="text-gray-400 mb-8 max-w-xl mx-auto">
-                        Upload your YouTube Short and get AI-powered feedback on hooks, pacing, retention, and clarity—before you publish.
+                        Paste a YouTube URL or upload your video file — Shorts or long-form — and get AI-powered feedback on hooks, pacing, retention, and clarity before you publish.
                     </p>
                     <Link
                         href="/try"

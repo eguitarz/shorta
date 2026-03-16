@@ -58,6 +58,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // SEO landing pages under /tools
   const seoPages = [
+    'youtube-video-analyzer',
+    'youtube-long-form-video-analyzer',
     'youtube-shorts-analyzer',
     'youtube-niche-analyzer',
     'youtube-channel-analyzer',
