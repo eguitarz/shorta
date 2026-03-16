@@ -137,12 +137,21 @@ export default function RetentionAnalysisPage() {
                     secondaryHref="/try"
                 />
 
+                <div className="mt-10 p-4 bg-[#1a1a1a] rounded-xl border border-gray-800">
+                    <p className="text-sm text-gray-400">
+                        <span className="text-orange-400 font-medium">Making long-form content?</span>{' '}
+                        Shorta also analyzes retention for full-length videos, tutorials, and vlogs—chapter by chapter.{' '}
+                        <a href="/tools/youtube-video-retention-analysis" className="text-orange-400 hover:underline">See the Video Retention Analysis tool →</a>
+                    </p>
+                </div>
+
                 <SEOInternalLinks
                     links={[
                         { href: '/tools/youtube-shorts-analyzer', text: 'YouTube Shorts Analyzer' },
                         { href: '/tools/youtube-storyboard-generator', text: 'Storyboard Generator' },
                         { href: '/tools/youtube-shorts-hook-analysis', text: 'Hook Analysis' },
                         { href: '/tools/youtube-shorts-script-generator', text: 'Shorts Script Generator' },
+                        { href: '/tools/youtube-video-retention-analysis', text: 'Video Retention Analysis (All Lengths)' },
                     ]}
                 />
             </SEOPageLayout>

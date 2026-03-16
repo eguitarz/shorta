@@ -266,6 +266,14 @@ export default function YouTubeShortsAnalyzerPage() {
                     secondaryHref="/try"
                 />
 
+                <div className="mt-10 p-4 bg-[#1a1a1a] rounded-xl border border-gray-800">
+                    <p className="text-sm text-gray-400">
+                        <span className="text-orange-400 font-medium">Also works with long-form videos.</span>{' '}
+                        Shorta analyzes tutorials, vlogs, and full-length YouTube videos too.{' '}
+                        <a href="/tools/youtube-video-analyzer" className="text-orange-400 hover:underline">Try the YouTube Video Analyzer →</a>
+                    </p>
+                </div>
+
                 <SEOInternalLinks
                     links={[
                         { href: '/tools/analyze-youtube-shorts', text: 'Analyze YouTube Shorts' },
@@ -274,6 +282,8 @@ export default function YouTubeShortsAnalyzerPage() {
                         { href: '/tools/youtube-shorts-analytics-tool', text: 'Shorts Analytics Tool' },
                         { href: '/tools/youtube-shorts-feedback-tool', text: 'Shorts Feedback Tool' },
                         { href: '/tools/youtube-shorts-script-optimization', text: 'Script Optimization' },
+                        { href: '/tools/youtube-video-analyzer', text: 'YouTube Video Analyzer (All Lengths)' },
+                        { href: '/tools/youtube-long-form-video-analyzer', text: 'Long-Form Video Analyzer' },
                     ]}
                 />
             </SEOPageLayout>
