@@ -4,7 +4,6 @@ const STORYBOARD_COST = 100; // Define the cost of a storyboard in credits
 const IMAGE_GENERATION_COST_PER_IMAGE = 10; // Define the cost per image in credits
 const THUMBNAIL_ANALYSIS_COST = 20; // AI thumbnail analysis with Gemini vision
 const STORYBOARD_GENERATION_COST = 50; // Generate director storyboard from approved changes
-const CHAT_MESSAGE_COST = 5; // Per-message cost for storyboard chat with Gemini
 
 /**
  * Checks if a user has enough credits to create a storyboard.
@@ -158,5 +157,4 @@ export {
   IMAGE_GENERATION_COST_PER_IMAGE,
   THUMBNAIL_ANALYSIS_COST,
   STORYBOARD_GENERATION_COST,
-  CHAT_MESSAGE_COST,
 };

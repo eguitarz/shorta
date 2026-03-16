@@ -7,7 +7,6 @@ import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { validateTopicRelevance, SHORTA_AI_REFUSAL_MESSAGE } from '@/lib/prompt-injection';
-import { hasSufficientCredits, chargeCredits, CHAT_MESSAGE_COST } from '@/lib/storyboard-usage';
 
 export const dynamic = 'force-dynamic';
 
@@ -522,42 +521,6 @@ Use this as your PRIMARY inspiration for hook style, structure, and tone. Refere
       }
     }
 
-    // Create Supabase client for credit operations
-    const cookieStore = await cookies();
-    const supabaseCreditClient = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
-            } catch {
-              // API route - ignore cookie setting errors
-            }
-          },
-        },
-      }
-    );
-
-    // Check credits before AI call
-    const hasCredits = await hasSufficientCredits(supabaseCreditClient, user.id, CHAT_MESSAGE_COST);
-    if (!hasCredits) {
-      return NextResponse.json(
-        {
-          error: 'Insufficient credits',
-          message: `Each chat message costs ${CHAT_MESSAGE_COST} credits. Please upgrade your plan.`,
-          cost: CHAT_MESSAGE_COST,
-        },
-        { status: 402 }
-      );
-    }
-
     // Create LLM client for extraction
     const env: LLMEnv = {
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
@@ -722,13 +685,6 @@ Use this as your PRIMARY inspiration for hook style, structure, and tone. Refere
     };
 
     console.log('Is ready:', hasRequiredData);
-
-    // Charge credits after successful chat response
-    const { error: chargeError } = await chargeCredits(supabaseCreditClient, user.id, CHAT_MESSAGE_COST);
-    if (chargeError) {
-      console.error('[storyboard-chat] Failed to charge credits:', chargeError);
-      // Still return the result — the AI work was already done
-    }
 
     return NextResponse.json(chatResponse);
   } catch (error) {
