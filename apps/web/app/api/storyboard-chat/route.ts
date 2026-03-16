@@ -1,12 +1,13 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
-import { requireAuth, getAuthenticatedUser } from '@/lib/auth-helpers';
+import { getAuthenticatedUser, validateCsrf } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
 import { appendLanguageInstruction } from '@/lib/i18n-helpers';
 import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { validateTopicRelevance, SHORTA_AI_REFUSAL_MESSAGE } from '@/lib/prompt-injection';
+import { hasSufficientCredits, chargeCredits, CHAT_MESSAGE_COST } from '@/lib/storyboard-usage';
 
 export const dynamic = 'force-dynamic';
 
@@ -453,18 +454,22 @@ async function executeGetAnalysisDetails(
 }
 
 export async function POST(request: NextRequest) {
-  // Require authentication for this API route
-  const authError = await requireAuth(request);
-  if (authError) {
-    return authError;
+  // CSRF validation
+  const csrfResult = validateCsrf(request);
+  if (!csrfResult.isValid) {
+    return NextResponse.json(
+      { error: csrfResult.error || 'CSRF validation failed' },
+      { status: 403 }
+    );
+  }
+
+  // Require authentication
+  const user = await getAuthenticatedUser(request);
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const user = await getAuthenticatedUser(request);
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { messages, locale, referenceVideoId } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
@@ -515,6 +520,42 @@ Use this as your PRIMARY inspiration for hook style, structure, and tone. Refere
         };
         return NextResponse.json(chatResponse);
       }
+    }
+
+    // Create Supabase client for credit operations
+    const cookieStore = await cookies();
+    const supabaseCreditClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // API route - ignore cookie setting errors
+            }
+          },
+        },
+      }
+    );
+
+    // Check credits before AI call
+    const hasCredits = await hasSufficientCredits(supabaseCreditClient, user.id, CHAT_MESSAGE_COST);
+    if (!hasCredits) {
+      return NextResponse.json(
+        {
+          error: 'Insufficient credits',
+          message: `Each chat message costs ${CHAT_MESSAGE_COST} credits. Please upgrade your plan.`,
+          cost: CHAT_MESSAGE_COST,
+        },
+        { status: 402 }
+      );
     }
 
     // Create LLM client for extraction
@@ -681,6 +722,13 @@ Use this as your PRIMARY inspiration for hook style, structure, and tone. Refere
     };
 
     console.log('Is ready:', hasRequiredData);
+
+    // Charge credits after successful chat response
+    const { error: chargeError } = await chargeCredits(supabaseCreditClient, user.id, CHAT_MESSAGE_COST);
+    if (chargeError) {
+      console.error('[storyboard-chat] Failed to charge credits:', chargeError);
+      // Still return the result — the AI work was already done
+    }
 
     return NextResponse.json(chatResponse);
   } catch (error) {

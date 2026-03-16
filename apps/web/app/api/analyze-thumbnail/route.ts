@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth-helpers';
+import { getAuthenticatedUser, validateCsrf } from '@/lib/auth-helpers';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { GoogleGenAI } from '@google/genai';
+import { hasSufficientCredits, chargeCredits, THUMBNAIL_ANALYSIS_COST } from '@/lib/storyboard-usage';
 
 export interface ThumbnailScore {
   overall: number;
@@ -95,10 +98,26 @@ IMPORTANT: Return ONLY the JSON. No markdown, no commentary.`;
  * POST /api/analyze-thumbnail
  * Body: { videoId: string }
  * Returns: ThumbnailAnalysis
+ * Cost: 20 credits
  */
 export async function POST(request: NextRequest) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
+  // CSRF validation
+  const csrfResult = validateCsrf(request);
+  if (!csrfResult.isValid) {
+    return NextResponse.json(
+      { error: csrfResult.error || 'CSRF validation failed' },
+      { status: 403 }
+    );
+  }
+
+  // Authentication
+  const user = await getAuthenticatedUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Authentication required' },
+      { status: 401 }
+    );
+  }
 
   try {
     const body = await request.json();
@@ -106,6 +125,42 @@ export async function POST(request: NextRequest) {
 
     if (!videoId || typeof videoId !== 'string' || !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
       return NextResponse.json({ error: 'Valid YouTube video ID is required' }, { status: 400 });
+    }
+
+    // Create Supabase client for credit operations
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // API route - ignore cookie setting errors
+            }
+          },
+        },
+      }
+    );
+
+    // Check credits before expensive AI call
+    const hasCredits = await hasSufficientCredits(supabase, user.id, THUMBNAIL_ANALYSIS_COST);
+    if (!hasCredits) {
+      return NextResponse.json(
+        {
+          error: 'Insufficient credits',
+          message: `Thumbnail analysis costs ${THUMBNAIL_ANALYSIS_COST} credits. Please upgrade your plan.`,
+          cost: THUMBNAIL_ANALYSIS_COST,
+        },
+        { status: 402 }
+      );
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
@@ -148,6 +203,13 @@ export async function POST(request: NextRequest) {
     }
 
     const analysis: ThumbnailAnalysis = JSON.parse(jsonText);
+
+    // Charge credits after successful analysis
+    const { error: chargeError } = await chargeCredits(supabase, user.id, THUMBNAIL_ANALYSIS_COST);
+    if (chargeError) {
+      console.error('[analyze-thumbnail] Failed to charge credits:', chargeError);
+      // Still return the result — the AI work was already done
+    }
 
     return NextResponse.json(analysis);
   } catch (error) {

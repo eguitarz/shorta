@@ -117,7 +117,12 @@ export function ThumbnailAnalysis({ videoId }: ThumbnailAnalysisProps) {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Analysis failed');
+      if (!res.ok) {
+        if (res.status === 402) {
+          throw new Error(data.message || 'Insufficient credits for thumbnail analysis');
+        }
+        throw new Error(data.error || 'Analysis failed');
+      }
       setAnalysis(data);
       setExpanded(true);
     } catch (err) {

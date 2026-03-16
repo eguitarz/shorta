@@ -481,6 +481,9 @@ export default function AnalyzerResultsPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 402) {
+          throw new Error(data.message || 'Insufficient credits to generate storyboard');
+        }
         const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
         throw new Error(errorMsg || 'Failed to generate storyboard');
       }

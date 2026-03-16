@@ -201,7 +201,13 @@ export default function CreateStoryboardPage() {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to get response");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        if (response.status === 402) {
+          throw new Error(errData.message || "Insufficient credits for chat. Please upgrade your plan.");
+        }
+        throw new Error(errData.error || "Failed to get response");
+      }
 
       const data: ChatResponse = await response.json();
 
