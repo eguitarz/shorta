@@ -69,7 +69,7 @@ export const metadata: Metadata = {
         url: "https://shorta.ai/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "Shorts Analyzer - YouTube Shorts Analysis Tool",
+        alt: "Shorta AI - YouTube Video Analyzer for Shorts and Long-Form",
       },
     ],
   },
@@ -119,10 +119,10 @@ export default async function RootLayout({
     "@graph": [
       {
         "@type": "SoftwareApplication",
-        "name": "Shorta - Shorts Analyzer",
+        "name": "Shorta - YouTube Video Analyzer",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
-        "description": "Free AI script generator and YouTube video analyzer for creators. Generate video storyboards, analyze shorts for retention, and grow your YouTube channel with AI-powered insights.",
+        "description": "Free AI script generator and YouTube video analyzer for creators. Generate video storyboards, analyze any YouTube video for retention, and grow your channel with AI-powered insights.",
         "featureList": [
           "Free AI script generator for YouTube videos",
           "YouTube video storyboard generator",
@@ -139,7 +139,7 @@ export default async function RootLayout({
           "@type": "Offer",
           "price": "199",
           "priceCurrency": "USD",
-          "priceValidUntil": "2026-02-28",
+          "priceValidUntil": "2027-02-28",
           "availability": "https://schema.org/InStock",
           "description": "Founding Member - Annual Subscription (Grandfathered)",
         },
@@ -180,9 +180,9 @@ export default async function RootLayout({
       {
         "@type": "WebSite",
         "@id": "https://shorta.ai/#website",
-        "name": "Shorta - Shorts Analyzer",
+        "name": "Shorta - YouTube Video Analyzer",
         "url": "https://shorta.ai",
-        "description": "AI-powered shorts analyzer tool for YouTube creators",
+        "description": "AI-powered YouTube video analyzer for creators — Shorts and long-form",
         "publisher": {
           "@id": "https://shorta.ai/#organization"
         },

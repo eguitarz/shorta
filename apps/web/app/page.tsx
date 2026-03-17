@@ -323,10 +323,10 @@ export default function HomePage() {
             <div className="md:flex-1 mb-6 md:mb-0">
               <h3 className="text-lg font-semibold text-foreground mb-3">Why Shorta Exists</h3>
               <p className="text-muted-foreground text-sm mb-4">
-                I spent years at Meta improving developer productivity with AI. When I started creating YouTube Shorts, I realized the same problem existed — creators waste hours guessing what works instead of using data.
+                I spent years at Meta improving developer productivity with AI. When I started creating YouTube videos, I realized the same problem existed — creators waste hours guessing what works instead of using data.
               </p>
               <p className="text-muted-foreground text-sm mb-4">
-                Shorta is the tool I wished I had. It analyzes your Short like a producer would, then generates a better version with the issues fixed.
+                Shorta is the tool I wished I had. It analyzes your video like a producer would, then generates a better version with the issues fixed.
               </p>
               <p className="text-sm text-foreground font-medium">
                 — Dale Ma, Founder
