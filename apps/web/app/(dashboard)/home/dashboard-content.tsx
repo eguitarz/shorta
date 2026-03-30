@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import { QuickStartTemplates } from "@/components/QuickStartTemplates";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { useTranslations } from "next-intl";
+import { trackEvent } from "@/lib/posthog";
 
 const ScoreInsights = dynamic(() => import("@/components/ScoreInsights").then(mod => mod.ScoreInsights), { ssr: false });
 
@@ -158,6 +159,8 @@ export default function DashboardContent() {
       status: "pending"
     }));
 
+    trackEvent('analyzer_started', { source: 'url', entry_point: 'dashboard' });
+
     // Navigate directly to analysis page
     router.push(`/analyzer/${analysisId}`);
   };
@@ -173,6 +176,7 @@ export default function DashboardContent() {
         url: urlParam,
         status: "pending"
       }));
+      trackEvent('analyzer_started', { source: 'url', entry_point: 'dashboard_auto' });
       router.replace(`/analyzer/${analysisId}`);
     }
   }, [searchParams, router]);
@@ -188,11 +192,14 @@ export default function DashboardContent() {
       status: "pending"
     }));
 
+    trackEvent('analyzer_started', { source: 'upload', entry_point: 'dashboard' });
+
     // Navigate directly to analysis page
     router.push(`/analyzer/${analysisId}`);
   };
 
   const handleCreateStoryboard = () => {
+    trackEvent('storyboard_started', { entry_point: 'dashboard', has_topic: !!topicInput.trim() });
     if (topicInput.trim()) {
       // Pass topic as query parameter
       router.push(`/storyboard/create?topic=${encodeURIComponent(topicInput.trim())}`);

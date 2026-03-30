@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Sparkles, Link as LinkIcon, Upload } from "lucide-react";
 import { VideoUpload } from "@/components/video-upload";
 import { useTranslations } from "next-intl";
+import { trackEvent } from "@/lib/posthog";
 
 type InputMode = "url" | "upload";
 
@@ -48,6 +49,8 @@ export default function CreateAnalysisPage() {
       status: "pending"
     }));
 
+    trackEvent('analyzer_started', { source: 'url', entry_point: 'create_page' });
+
     // Navigate to results page where analysis will happen
     router.push(`/analyzer/${analysisId}`);
   };
@@ -62,6 +65,8 @@ export default function CreateAnalysisPage() {
       fileName,
       status: "pending"
     }));
+
+    trackEvent('analyzer_started', { source: 'upload', entry_point: 'create_page' });
 
     // Navigate to results page where analysis will happen
     router.push(`/analyzer/${analysisId}`);

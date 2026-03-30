@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ReferenceVideoPickerModal, ReferenceVideo } from "@/components/ReferenceVideoPickerModal";
+import { trackEvent } from "@/lib/posthog";
 
 interface FileAttachment {
   mimeType: string;
@@ -84,12 +85,14 @@ export default function CreateStoryboardPage() {
   // Initialize with welcome message
   useEffect(() => {
     if (messages.length === 0) {
+      const topic = searchParams.get('topic');
+      trackEvent('storyboard_started', { entry_point: 'create_page', has_topic: !!topic });
       setMessages([{
         role: "assistant",
         content: t('welcomeMessage'),
       }]);
     }
-  }, [t, messages.length]);
+  }, [t, messages.length, searchParams]);
 
   useEffect(() => {
     scrollToBottom();
@@ -361,6 +364,12 @@ Incorporating these into your storyboard...`;
 
       // Store in sessionStorage for faster access
       sessionStorage.setItem(`created_${id}`, JSON.stringify(data));
+
+      trackEvent('storyboard_generated', {
+        format: extractedData?.format,
+        target_length: extractedData?.targetLength,
+        content_type: extractedData?.contentType,
+      });
 
       // Navigate to results
       router.push(`/storyboard/generate/${id}`);
