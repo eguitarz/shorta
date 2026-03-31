@@ -174,8 +174,9 @@ export async function POST(request: NextRequest) {
     // Analyze with Gemini
     const ai = new GoogleGenAI({ apiKey });
 
+    const model = process.env.LLM_MODEL || 'gemini-2.5-flash';
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model,
       contents: [
         {
           role: 'user',
@@ -193,6 +194,7 @@ export async function POST(request: NextRequest) {
 
     const text = response.text;
     if (!text) {
+      console.error('[analyze-thumbnail] Empty response from Gemini model:', model);
       return NextResponse.json({ error: 'No analysis returned from Gemini' }, { status: 500 });
     }
 
@@ -202,7 +204,16 @@ export async function POST(request: NextRequest) {
       jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
     }
 
-    const analysis: ThumbnailAnalysis = JSON.parse(jsonText);
+    let analysis: ThumbnailAnalysis;
+    try {
+      analysis = JSON.parse(jsonText);
+    } catch (parseError) {
+      console.error('[analyze-thumbnail] JSON parse failed. Raw text:', jsonText.substring(0, 500));
+      return NextResponse.json(
+        { error: 'Thumbnail analysis failed: Invalid response from AI model' },
+        { status: 500 }
+      );
+    }
 
     // Charge credits after successful analysis
     const { error: chargeError } = await chargeCredits(supabase, user.id, THUMBNAIL_ANALYSIS_COST);
