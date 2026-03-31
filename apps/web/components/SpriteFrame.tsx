@@ -1,43 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getFrameAtTimestamp, parseTimestamp, type FrameLocation } from "@/lib/youtube/storyboard";
-
-interface StoryboardData {
-  baseUrl: string;
-  sizes: Array<{
-    width: number;
-    height: number;
-    cols: number;
-    rows: number;
-    intervalMs: number;
-    name: string;
-    sigh: string;
-  }>;
-}
+import { parseStoryboardSpec, parseTimestamp, type StoryboardSpec } from "@/lib/youtube/storyboard";
 
 interface SpriteFrameProps {
   videoId: string;
-  timestamp: string; // e.g. "0:03" or "2:30"
+  timestamp: string;
   className?: string;
 }
 
-// Module-level cache so multiple SpriteFrame instances on the same page
-// don't re-fetch the storyboard spec for the same video.
-const specCache = new Map<string, StoryboardData | null>();
-const specPromises = new Map<string, Promise<StoryboardData | null>>();
+// Module-level cache
+const specCache = new Map<string, StoryboardSpec | null>();
+const specPromises = new Map<string, Promise<StoryboardSpec | null>>();
 
-async function fetchSpec(videoId: string): Promise<StoryboardData | null> {
+/**
+ * Fetch storyboard spec via our API proxy. Falls back gracefully
+ * if YouTube blocks the request (common from cloud IPs).
+ */
+async function fetchSpec(videoId: string): Promise<StoryboardSpec | null> {
   if (specCache.has(videoId)) return specCache.get(videoId)!;
 
   if (!specPromises.has(videoId)) {
     specPromises.set(videoId, (async () => {
       try {
         const res = await fetch(`/api/youtube-storyboard?videoId=${videoId}`);
-        if (!res.ok) { specCache.set(videoId, null); return null; }
+        if (!res.ok) {
+          specCache.set(videoId, null);
+          return null;
+        }
         const data = await res.json();
-        specCache.set(videoId, data);
-        return data;
+        if (!data.baseUrl || !data.sizes?.length) {
+          specCache.set(videoId, null);
+          return null;
+        }
+        // Reconstruct spec string from API response
+        const specStr = data.baseUrl + '|' + data.sizes.map((s: any) =>
+          `${s.width}#${s.height}#0#${s.cols}#${s.rows}#${s.intervalMs}#${s.name}#${s.sigh}`
+        ).join('|');
+        const spec = parseStoryboardSpec(specStr);
+        specCache.set(videoId, spec);
+        return spec;
       } catch {
         specCache.set(videoId, null);
         return null;
@@ -50,49 +52,45 @@ async function fetchSpec(videoId: string): Promise<StoryboardData | null> {
   return specPromises.get(videoId)!;
 }
 
-/**
- * Renders a single frame from YouTube's storyboard sprite sheets.
- *
- * Uses CSS background-position to crop the correct tile from the
- * sprite sheet grid. YouTube hosts the images. Zero storage cost.
- */
 export function SpriteFrame({ videoId, timestamp, className = "" }: SpriteFrameProps) {
-  const [frame, setFrame] = useState<(FrameLocation & { cols: number; rows: number }) | null>(null);
+  const [frameData, setFrameData] = useState<{
+    url: string; x: number; y: number; width: number; height: number;
+    cols: number; rows: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      const data = await fetchSpec(videoId);
-      if (cancelled || !data || !data.sizes.length) { setLoading(false); return; }
+      const spec = await fetchSpec(videoId);
+      if (cancelled || !spec || !spec.sizes.length) { setLoading(false); return; }
 
-      const size = data.sizes[0]; // Best quality
+      const size = spec.sizes[0];
       const seconds = parseTimestamp(timestamp);
       const intervalSec = size.intervalMs / 1000;
-      const framesPerSheet = size.cols * size.rows;
+      if (intervalSec <= 0) { setLoading(false); return; }
 
+      const framesPerSheet = size.cols * size.rows;
       const frameIndex = Math.floor(seconds / intervalSec);
       const sheetNumber = Math.floor(frameIndex / framesPerSheet);
       const indexInSheet = frameIndex % framesPerSheet;
       const row = Math.floor(indexInSheet / size.cols);
       const col = indexInSheet % size.cols;
 
-      const url = data.baseUrl
+      const url = spec.baseUrl
         .replace('$L', '0')
         .replace('$N', size.name)
         .replace('$M', String(sheetNumber));
 
-      setFrame({
-        url,
-        x: col * size.width,
-        y: row * size.height,
-        width: size.width,
-        height: size.height,
-        cols: size.cols,
-        rows: size.rows,
-      });
-      setLoading(false);
+      if (!cancelled) {
+        setFrameData({
+          url, x: col * size.width, y: row * size.height,
+          width: size.width, height: size.height,
+          cols: size.cols, rows: size.rows,
+        });
+        setLoading(false);
+      }
     })();
 
     return () => { cancelled = true; };
@@ -106,19 +104,18 @@ export function SpriteFrame({ videoId, timestamp, className = "" }: SpriteFrameP
     );
   }
 
-  if (!frame) return null; // Graceful degradation
+  if (!frameData) return null;
 
   return (
     <div
       className={`rounded overflow-hidden flex-shrink-0 border border-gray-700 ${className}`}
       style={{
-        width: frame.width,
-        height: frame.height,
-        backgroundImage: `url(${frame.url})`,
-        backgroundPosition: `-${frame.x}px -${frame.y}px`,
+        width: frameData.width,
+        height: frameData.height,
+        backgroundImage: `url(${frameData.url})`,
+        backgroundPosition: `-${frameData.x}px -${frameData.y}px`,
         backgroundRepeat: 'no-repeat',
-        // The sprite sheet is cols*width wide and rows*height tall
-        backgroundSize: `${frame.cols * frame.width}px ${frame.rows * frame.height}px`,
+        backgroundSize: `${frameData.cols * frameData.width}px ${frameData.rows * frameData.height}px`,
       }}
       title={`Frame at ${timestamp}`}
     />

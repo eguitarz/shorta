@@ -162,45 +162,40 @@ export function parseTimestamp(ts: string): number {
  * Fetch the storyboard spec from YouTube by scraping the watch page.
  * Returns the raw spec string, or null if not found.
  */
+/**
+ * Fetch storyboard spec using YouTube's InnerTube API.
+ * This works from cloud IPs (unlike scraping the watch page)
+ * because InnerTube is YouTube's official internal API.
+ */
 export async function fetchStoryboardSpec(videoId: string): Promise<string | null> {
   try {
-    const url = `https://www.youtube.com/watch?v=${videoId}`;
-    const res = await fetch(url, {
+    // Use InnerTube player endpoint — works from server-side without cookies
+    const res = await fetch('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
+      method: 'POST',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept': 'text/html,application/xhtml+xml',
+        'Content-Type': 'application/json',
+        'User-Agent': 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
       },
+      body: JSON.stringify({
+        context: {
+          client: {
+            clientName: 'ANDROID',
+            clientVersion: '19.09.37',
+            hl: 'en',
+          },
+        },
+        videoId,
+      }),
     });
 
     if (!res.ok) return null;
 
-    const html = await res.text();
+    const data = await res.json();
+    const spec = data?.storyboards?.playerStoryboardSpecRenderer?.spec;
 
-    // Extract storyboard spec directly with a targeted regex.
-    // This is more reliable than parsing the full playerResponse JSON
-    // because the non-greedy regex can fail on deeply nested JSON.
-    const specMatch = html.match(/"playerStoryboardSpecRenderer":\{"spec":"(https:[^"]+)"/);
-    if (specMatch) {
-      // The spec URL is JSON-escaped (e.g., \u0026 for &)
-      return JSON.parse(`"${specMatch[1]}"`);
-    }
-
-    // Fallback: try the full playerResponse approach
-    const prMatch = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\})\s*;\s*(?:var\s|<\/script)/s);
-    if (prMatch) {
-      try {
-        const playerResponse = JSON.parse(prMatch[1]);
-        const spec = playerResponse?.storyboards?.playerStoryboardSpecRenderer?.spec;
-        if (spec) return spec;
-      } catch {
-        // JSON parse failed on the large object, fall through
-      }
-    }
-
-    return null;
+    return spec || null;
   } catch (e) {
-    console.error('[storyboard] Failed to fetch spec:', e);
+    console.error('[storyboard] Failed to fetch spec via InnerTube:', e);
     return null;
   }
 }
