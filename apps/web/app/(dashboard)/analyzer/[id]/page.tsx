@@ -54,6 +54,7 @@ import type { VideoRetentionCurve } from "@/lib/youtube/types";
 import { ThumbnailAnalysis } from "@/components/ThumbnailAnalysis";
 import { FixList, type TopChange } from "@/components/FixList";
 import { ScoreAccordion } from "@/components/ScoreAccordion";
+import { useAnalysisJob } from "@/hooks/useAnalysisJob";
 
 interface Beat {
   beatNumber: number;
@@ -261,25 +262,14 @@ export default function AnalyzerResultsPage() {
   const locale = useLocale();
   const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isTrialMode = searchParams.get('trial') === 'true';
 
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [fileUri, setFileUri] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [hookExpanded, setHookExpanded] = useState(false);
-  const [structureExpanded, setStructureExpanded] = useState(false);
-  const [clarityExpanded, setClarityExpanded] = useState(false);
-  const [deliveryExpanded, setDeliveryExpanded] = useState(false);
-
-  // Async job state
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [jobStatus, setJobStatus] = useState<'pending' | 'classifying' | 'linting' | 'storyboarding' | 'completed' | 'failed'>('pending');
-  const [currentStep, setCurrentStep] = useState(0);
-  const [progressPercent, setProgressPercent] = useState(0);
+  // Core data fetching + polling — extracted to useAnalysisJob hook
+  const {
+    videoUrl, fileUri, fileName, analysisData: rawAnalysisData, loading, error,
+    jobId, jobStatus, currentStep, progressPercent,
+    userTier, analysesRemaining, isTrialMode,
+  } = useAnalysisJob();
+  const analysisData = rawAnalysisData as AnalysisData | null;
 
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -288,6 +278,7 @@ export default function AnalyzerResultsPage() {
   const [videoStats, setVideoStats] = useState<{ views: number; likes: number; comments: number; publishedAt: string; duration: number | null } | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const [beatBreakdownCollapsed, setBeatBreakdownCollapsed] = useState(true);
   const beatRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
@@ -299,12 +290,7 @@ export default function AnalyzerResultsPage() {
   } | null>(null);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
 
-  // Tier and upgrade state
-  // If trial mode, force anonymous tier
-  const [userTier, setUserTier] = useState<'anonymous' | 'free' | 'founder' | 'lifetime'>(
-    isTrialMode ? 'anonymous' : 'free'
-  );
-  const [analysesRemaining, setAnalysesRemaining] = useState<number>(3);
+  // Tier and upgrade state (userTier + analysesRemaining from useAnalysisJob)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<string>('');
 
@@ -521,7 +507,7 @@ export default function AnalyzerResultsPage() {
       console.error('Generation error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate storyboard';
       alert(`Generation failed: ${errorMessage}\n\nCheck browser console for details.`);
-      setError(errorMessage);
+      setGenerateError(errorMessage);
       setGenerating(false);
     }
   };
@@ -566,247 +552,6 @@ export default function AnalyzerResultsPage() {
     }
   };
 
-  // Load URL or fileUri immediately and show video player
-  useEffect(() => {
-    const id = params.id as string;
-    const stored = sessionStorage.getItem(`analysis_${id}`);
-
-    // If trial mode, skip sessionStorage check - we'll fetch from API
-    if (isTrialMode) {
-      console.log('[Trial Mode] Skipping sessionStorage, will poll job API');
-      // The job polling effect will handle fetching the video URL
-      return;
-    }
-
-    // If sessionStorage exists, use it (old flow)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-
-        // Extract URL or fileUri - either one is valid
-        const url = parsed.url;
-        const storedFileUri = parsed.fileUri;
-        const storedFileName = parsed.fileName;
-
-        if (!url && !storedFileUri) {
-          router.push("/analyzer/create");
-          return;
-        }
-
-        if (url) {
-          setVideoUrl(url);
-        }
-        if (storedFileUri) {
-          setFileUri(storedFileUri);
-          setFileName(storedFileName || 'Uploaded video');
-        }
-
-        // If analysis is already complete, just display it
-        if (parsed.status === "complete" && parsed.storyboard) {
-          setAnalysisData(parsed);
-          setLoading(false);
-        }
-
-        // If job_id is stored, use it
-        if (parsed.job_id) {
-          setJobId(parsed.job_id);
-        }
-      } catch (err) {
-        console.error("Error loading from sessionStorage:", err);
-        router.push("/analyzer/create");
-      }
-      return;
-    }
-
-    // No sessionStorage - check if ID is a job ID from database
-    // UUID format: 8-4-4-4-12 hex characters
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (uuidRegex.test(id)) {
-      console.log('[Analyzer] ID looks like a job ID, fetching from API:', id);
-      // Set jobId - the polling effect will handle fetching the job
-      setJobId(id);
-
-      // Try to fetch job immediately to get video URL
-      const fetchJob = async () => {
-        try {
-          const response = await fetch(`/api/jobs/analysis/${id}?locale=${locale}`);
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to fetch job');
-          }
-
-          // Set job status and video URL
-          setJobStatus(data.status);
-          setCurrentStep(data.current_step);
-          setProgressPercent(data.progress_percent);
-
-          if (data.video_url) {
-            setVideoUrl(data.video_url);
-          }
-
-          // Handle uploaded videos with file_uri
-          if (data.file_uri) {
-            setFileUri(data.file_uri);
-          }
-
-          // If job is completed, load the analysis data
-          if (data.status === 'completed' && data.storyboard) {
-            const completeData = {
-              url: data.url,
-              classification: data.classification,
-              lintSummary: data.lintSummary,
-              storyboard: data.storyboard,
-              analyzedAt: data.completed_at,
-              status: 'complete',
-            };
-            setAnalysisData(completeData);
-            setLoading(false);
-          } else {
-            // Job is still in progress, polling will handle updates
-            setLoading(false);
-          }
-        } catch (err) {
-          console.error('Failed to fetch job:', err);
-          setError(err instanceof Error ? err.message : 'Failed to load analysis');
-          setLoading(false);
-        }
-      };
-
-      fetchJob();
-      return;
-    }
-
-    // Not a UUID and no sessionStorage - redirect to create
-    router.push("/analyzer/create");
-  }, [params.id, router, isTrialMode]);
-
-  // For trial mode, set job_id from URL params immediately
-  useEffect(() => {
-    if (isTrialMode && !jobId) {
-      const id = params.id as string;
-      console.log('[Trial Mode] Using job_id from URL:', id);
-      setJobId(id);
-    }
-  }, [isTrialMode, jobId, params.id]);
-
-  // Create analysis job if not already complete
-  useEffect(() => {
-    // Skip if trial mode (job already created by API)
-    if (isTrialMode) return;
-
-    // Need either videoUrl or fileUri, but not if already have job or analysis
-    if ((!videoUrl && !fileUri) || analysisData || jobId) return;
-
-    const createJob = async () => {
-      try {
-        const response = await fetch('/api/jobs/analysis/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(fileUri ? { fileUri } : { url: videoUrl }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to create analysis job');
-        }
-
-        setJobId(data.job_id);
-        setJobStatus(data.status);
-        window.dispatchEvent(new Event('credits-changed'));
-
-        // Store job info for persistence if user navigates away
-        const id = params.id as string;
-        sessionStorage.setItem(`analysis_${id}`, JSON.stringify({
-          job_id: data.job_id,
-          ...(videoUrl ? { url: videoUrl } : { fileUri, fileName }),
-          status: 'pending',
-        }));
-
-        console.log('[Frontend] Job created:', data.job_id, fileUri ? '(uploaded file)' : '(YouTube URL)');
-      } catch (err) {
-        console.error('Job creation error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to create job');
-        setLoading(false);
-      }
-    };
-
-    createJob();
-  }, [videoUrl, fileUri, fileName, analysisData, jobId, params.id, isTrialMode]);
-
-  // Poll job status every 3 seconds
-  useEffect(() => {
-    if (!jobId || jobStatus === 'completed' || jobStatus === 'failed') return;
-
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch(`/api/jobs/analysis/${jobId}?locale=${locale}`);
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to fetch job status');
-        }
-
-        setJobStatus(data.status);
-        setCurrentStep(data.current_step);
-        setProgressPercent(data.progress_percent);
-
-        // Extract tier info from response
-        if (data.tier) {
-          setUserTier(data.tier);
-        }
-        if (data.analyses_remaining !== undefined) {
-          setAnalysesRemaining(data.analyses_remaining);
-        }
-
-        // Extract video URL or file_uri from job response for trial mode
-        if (isTrialMode && data.video_url && !videoUrl) {
-          console.log('[Trial Mode] Setting video URL from job:', data.video_url);
-          setVideoUrl(data.video_url);
-        }
-        if (isTrialMode && data.file_uri && !fileUri) {
-          console.log('[Trial Mode] Setting file URI from job:', data.file_uri);
-          setFileUri(data.file_uri);
-        }
-
-        console.log('[Frontend] Poll:', data.status, `step ${data.current_step}/${data.total_steps}`);
-
-        if (data.status === 'completed') {
-          // Store complete results
-          const completeData = {
-            url: data.url,
-            classification: data.classification,
-            lintSummary: data.lintSummary,
-            storyboard: data.storyboard,
-            analyzedAt: data.completed_at,
-            status: 'complete',
-          };
-
-          const id = params.id as string;
-          sessionStorage.setItem(`analysis_${id}`, JSON.stringify(completeData));
-          setAnalysisData(completeData);
-          setLoading(false);
-
-          clearInterval(interval);
-          console.log('[Frontend] Analysis completed!');
-        }
-
-        if (data.status === 'failed') {
-          setError(data.error_message || 'Analysis failed');
-          setLoading(false);
-          clearInterval(interval);
-          console.error('[Frontend] Analysis failed:', data.error_message);
-        }
-      } catch (err) {
-        console.error('Polling error:', err);
-        setError(err instanceof Error ? err.message : 'Polling failed');
-        clearInterval(interval);
-      }
-    }, 5000); // Poll every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [jobId, jobStatus, params.id]);
 
   // Fetch fresh YouTube stats on every render
   useEffect(() => {
@@ -1003,8 +748,8 @@ export default function AnalyzerResultsPage() {
   };
 
   // Calculate issue counts by severity (only if analysis is complete)
-  const allIssues = analysisData ? analysisData.storyboard.beats.flatMap(beat =>
-    (beat.retention?.issues || []).map(issue => ({
+  const allIssues = analysisData ? analysisData.storyboard.beats.flatMap((beat: any) =>
+    (beat.retention?.issues || []).map((issue: any) => ({
       ...issue,
       beatNumber: beat.beatNumber,
       beatTitle: beat.title,
@@ -1019,13 +764,13 @@ export default function AnalyzerResultsPage() {
       severity: issue.severity,
     });
   };
-  const criticalCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'critical').length;
-  const moderateCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'moderate').length;
-  const minorCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'minor').length;
-  const ignoredCount = allIssues.filter(i => getIssueEffectiveSeverity(i) === 'ignored').length;
+  const criticalCount = allIssues.filter((i: any) => getIssueEffectiveSeverity(i) === 'critical').length;
+  const moderateCount = allIssues.filter((i: any) => getIssueEffectiveSeverity(i) === 'moderate').length;
+  const minorCount = allIssues.filter((i: any) => getIssueEffectiveSeverity(i) === 'minor').length;
+  const ignoredCount = allIssues.filter((i: any) => getIssueEffectiveSeverity(i) === 'ignored').length;
 
   // Group issues by message to deduplicate same rules across beats
-  const groupedIssues = allIssues.reduce((acc, issue) => {
+  const groupedIssues = allIssues.reduce((acc: any, issue: any) => {
     const key = issue.message?.toLowerCase().trim() || '';
     if (!acc[key]) {
       acc[key] = {
@@ -1039,7 +784,7 @@ export default function AnalyzerResultsPage() {
     return acc;
   }, {} as Record<string, any>);
 
-  const groupedIssuesList = Object.values(groupedIssues);
+  const groupedIssuesList: any[] = Object.values(groupedIssues);
 
   const getSeverityIcon = (severity: string, className: string = "w-4 h-4") => {
     switch (severity) {
