@@ -8,11 +8,6 @@
 **Why:** The page is still ~2800 lines. Extracting state management makes it render-only and the hook reusable if other pages need analysis data.
 **Depends on:** Results redesign (shipped in PR #16)
 
-### Frame extraction pipeline
-**Priority:** P1
-**What:** Extract video frames at beat timestamps, persist to Supabase Storage, serve with signed URLs. Show frames inline in Fix List cards and future VisualInsights component.
-**Why:** Visual frame analysis is Shorta's moat over ChatGPT, but users can't see it. Frame images make the Fix List dramatically more compelling ("here's the exact frame where your hook fails").
-**Depends on:** Results redesign (shipped in PR #16)
 
 ### Shareable Fix List card
 **Priority:** P2
@@ -38,4 +33,6 @@
 
 ## Completed
 
-(none yet)
+### Frame previews in Fix List
+**Completed:** PR #17 (2026-04-01)
+**What:** YouTube storyboard sprite sheet frame previews in Fix List cards. Zero storage cost — YouTube hosts the images, client-side CSS crops the right tile.
