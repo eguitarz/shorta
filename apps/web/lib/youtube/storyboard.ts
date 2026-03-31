@@ -167,8 +167,9 @@ export async function fetchStoryboardSpec(videoId: string): Promise<string | nul
     const url = `https://www.youtube.com/watch?v=${videoId}`;
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml',
       },
     });
 
@@ -176,14 +177,28 @@ export async function fetchStoryboardSpec(videoId: string): Promise<string | nul
 
     const html = await res.text();
 
-    // Extract ytInitialPlayerResponse from the page
-    const match = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\});\s*(?:var\s|<\/script)/s);
-    if (!match) return null;
+    // Extract storyboard spec directly with a targeted regex.
+    // This is more reliable than parsing the full playerResponse JSON
+    // because the non-greedy regex can fail on deeply nested JSON.
+    const specMatch = html.match(/"playerStoryboardSpecRenderer":\{"spec":"(https:[^"]+)"/);
+    if (specMatch) {
+      // The spec URL is JSON-escaped (e.g., \u0026 for &)
+      return JSON.parse(`"${specMatch[1]}"`);
+    }
 
-    const playerResponse = JSON.parse(match[1]);
-    const spec = playerResponse?.storyboards?.playerStoryboardSpecRenderer?.spec;
+    // Fallback: try the full playerResponse approach
+    const prMatch = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\})\s*;\s*(?:var\s|<\/script)/s);
+    if (prMatch) {
+      try {
+        const playerResponse = JSON.parse(prMatch[1]);
+        const spec = playerResponse?.storyboards?.playerStoryboardSpecRenderer?.spec;
+        if (spec) return spec;
+      } catch {
+        // JSON parse failed on the large object, fall through
+      }
+    }
 
-    return spec || null;
+    return null;
   } catch (e) {
     console.error('[storyboard] Failed to fetch spec:', e);
     return null;
