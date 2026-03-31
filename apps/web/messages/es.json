@@ -649,6 +649,24 @@
         "ctrPotential": "Potencial CTR"
       }
     },
+    "fixList": {
+      "title": "Tus Cambios Principales",
+      "positiveTitle": "¡Se Ve Genial!",
+      "subtitle": "Clasificados por impacto esperado en tu próximo video",
+      "positiveSubtitle": "Tu video obtuvo buenas puntuaciones en todas las categorías. Aquí tienes algunas ideas de ajuste fino:",
+      "impactHigh": "Alto impacto",
+      "impactMedium": "Impacto medio",
+      "fallbackNote": "Basado en tus puntuaciones. Analiza un nuevo video para obtener recomendaciones con IA.",
+      "compare": "Comparar",
+      "share": "Compartir",
+      "analyzeAnother": "Analiza tu próximo video para seguir tu mejora",
+      "category": {
+        "hook": "Gancho",
+        "structure": "Estructura",
+        "clarity": "Claridad",
+        "delivery": "Entrega"
+      }
+    },
     "share": {
       "button": "Compartir",
       "generating": "Generando...",

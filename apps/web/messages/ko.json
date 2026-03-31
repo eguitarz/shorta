@@ -627,6 +627,24 @@
         "ctrPotential": "CTR 잠재력"
       }
     },
+    "fixList": {
+      "title": "주요 개선 사항",
+      "positiveTitle": "잘 하고 있어요!",
+      "subtitle": "다음 영상에 미칠 영향력 순으로 정렬",
+      "positiveSubtitle": "모든 카테고리에서 높은 점수를 받았습니다. 미세 조정 아이디어입니다:",
+      "impactHigh": "높은 영향",
+      "impactMedium": "중간 영향",
+      "fallbackNote": "점수 기반 추천입니다. 새 영상을 분석하면 AI 추천을 받을 수 있습니다.",
+      "compare": "비교",
+      "share": "공유",
+      "analyzeAnother": "다음 영상을 분석하여 개선 추적하기",
+      "category": {
+        "hook": "후크",
+        "structure": "구성",
+        "clarity": "명확성",
+        "delivery": "전달력"
+      }
+    },
     "share": {
       "button": "공유",
       "generating": "생성 중...",

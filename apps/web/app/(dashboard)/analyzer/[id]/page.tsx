@@ -52,6 +52,8 @@ import type { VideoFormat } from "@/lib/linter/types";
 import { RetentionCurveChart } from "@/components/RetentionCurveChart";
 import type { VideoRetentionCurve } from "@/lib/youtube/types";
 import { ThumbnailAnalysis } from "@/components/ThumbnailAnalysis";
+import { FixList, type TopChange } from "@/components/FixList";
+import { ScoreAccordion } from "@/components/ScoreAccordion";
 
 interface Beat {
   beatNumber: number;
@@ -155,6 +157,13 @@ interface AnalysisData {
         presence: number;
         analysis: string;
       };
+      top_changes?: Array<{
+        change: string;
+        category: string;
+        timestamp?: string;
+        impact: string;
+        reason: string;
+      }>;
     };
     replicationBlueprint: {
       elementsToKeep: string[];
@@ -319,6 +328,16 @@ export default function AnalyzerResultsPage() {
   // Blur and disable buttons only for anonymous trial users (not logged-in users)
   const shouldBlur = userTier === 'anonymous';
   const shouldDisableButtons = userTier === 'anonymous';
+
+  // PostHog: track fix_list_viewed when analysis data loads
+  useEffect(() => {
+    if (analysisData && typeof window !== 'undefined' && (window as any).posthog) {
+      (window as any).posthog.capture('fix_list_viewed', {
+        has_top_changes: !!analysisData.storyboard.performance?.top_changes?.length,
+        score: analysisData.storyboard.performance?.score,
+      });
+    }
+  }, [analysisData]);
 
   // Issue severity preferences (for logged-in users)
   const isLoggedIn = userTier !== 'anonymous';
@@ -1490,538 +1509,173 @@ export default function AnalyzerResultsPage() {
                   </>
                 )}
 
-                {/* Analysis Cards Grid */}
+                {/* Fix List Hero */}
                 {loading ? (
-                  <div className="grid grid-cols-4 gap-3 items-start">
-                    {/* Loading skeletons for 4 cards */}
+                  <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 animate-pulse">
+                    <div className="h-4 bg-gray-800/50 rounded w-32 mb-2"></div>
+                    <div className="h-3 bg-gray-800/30 rounded w-48 mb-4"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="bg-gray-900/50 border border-gray-800 rounded-lg p-3">
+                          <div className="flex items-start gap-2.5">
+                            <div className="w-6 h-6 bg-gray-800/50 rounded-full flex-shrink-0"></div>
+                            <div className="flex-1 space-y-2">
+                              <div className="h-3 bg-gray-800/50 rounded w-16"></div>
+                              <div className="h-3 bg-gray-800/30 rounded w-full"></div>
+                              <div className="h-3 bg-gray-800/30 rounded w-3/4"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : analysisData && (
+                  <FixList
+                    topChanges={analysisData.storyboard.performance?.top_changes as TopChange[] | undefined}
+                    performance={analysisData.storyboard.performance}
+                    videoFormat={analysisData.storyboard._format || analysisData.classification?.format}
+                    onCardClick={(timestamp) => {
+                      if (!timestamp) return;
+                      setBeatBreakdownCollapsed(false);
+                      // Find the beat that contains this timestamp
+                      const timeSeconds = parseFloat(timestamp.split(':').reduce((acc: number, t: string, i: number) => acc + parseFloat(t) * Math.pow(60, 1 - i), 0).toString());
+                      const beat = analysisData.storyboard.beats.find((b: any) => timeSeconds >= b.startTime && timeSeconds <= b.endTime);
+                      if (beat && beatRefs.current[beat.beatNumber]) {
+                        setTimeout(() => {
+                          beatRefs.current[beat.beatNumber]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                      }
+                    }}
+                    onCompareClick={() => setShowVideoPickerModal(true)}
+                  />
+                )}
+
+                {/* Score Summary Bar */}
+                {!loading && analysisData && (() => {
+                  const scores = [
+                    { key: 'hook' as const, score: analysisData.storyboard.performance.hookStrength },
+                    { key: 'structure' as const, score: analysisData.storyboard.performance.structurePacing },
+                    { key: 'clarity' as const, score: analysisData.storyboard.performance.content?.valueClarity ?? 0 },
+                    { key: 'delivery' as const, score: analysisData.storyboard.performance.deliveryPerformance },
+                  ];
+                  const getGrade = (s: number) => {
+                    if (s >= 100) return { label: 'S', color: 'text-purple-500' };
+                    if (s >= 80) return { label: 'A', color: 'text-green-500' };
+                    if (s >= 70) return { label: 'B', color: 'text-blue-500' };
+                    if (s >= 60) return { label: 'C', color: 'text-yellow-500' };
+                    if (s >= 50) return { label: 'D', color: 'text-orange-500' };
+                    return { label: 'F', color: 'text-red-500' };
+                  };
+                  return (
+                    <div className="flex gap-2 flex-wrap">
+                      {scores.map(({ key, score }) => {
+                        const grade = getGrade(Math.min(Math.round(score), 100));
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => {
+                              document.getElementById(`score-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }}
+                            className="bg-[#1a1a1a] border border-gray-800 rounded-lg px-3 py-2 flex items-center gap-2 cursor-pointer hover:border-gray-700 transition-colors"
+                          >
+                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">{t(`metrics.${key}.title`)}</span>
+                            <span className={`text-sm font-bold ${grade.color}`}>{grade.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* Score Accordions */}
+                {loading ? (
+                  <div className="space-y-2">
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3 animate-pulse">
-                        <div className="h-4 bg-gray-800/50 rounded mb-3 w-16"></div>
-                        <div className="h-8 bg-gray-800/50 rounded mb-2"></div>
-                        <div className="h-1 bg-gray-800/50 rounded mb-3"></div>
-                        <div className="space-y-2">
-                          <div className="h-4 bg-gray-800/30 rounded"></div>
-                          <div className="h-4 bg-gray-800/30 rounded"></div>
-                          <div className="h-4 bg-gray-800/30 rounded"></div>
-                        </div>
+                        <div className="h-5 bg-gray-800/50 rounded w-40"></div>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="grid grid-cols-4 gap-3 items-start">
-                    {/* Hook Card */}
-                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t('metrics.hook.title')}</span>
-                        <button
-                          onClick={() => setHookExpanded(!hookExpanded)}
-                          className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
-                        >
-                          {hookExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
-                        </button>
-                      </div>
-                      {(() => {
-                        if (!analysisData) return null;
-                        const hookScore = Math.min(Math.round(analysisData.storyboard.performance.hookStrength), 100);
-                        const grade = getLetterGrade(hookScore);
-                        return (
-                          <>
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</span>
-                            </div>
-
-                            {/* Always show metrics */}
-                            <div
-                              className={`space-y-2 text-xs mb-3 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                }`}
-                              onClick={() => {
-                                if (shouldBlur) {
-                                  setUpgradeFeature('performance-cards');
-                                  setShowUpgradeModal(true);
-                                }
-                              }}
-                              style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                            >
-                              {analysisData.storyboard._signals?.hook ? (
-                                <>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.hook.timeToClaim')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.hook.tooltips.timeToClaim')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.hook.TTClaim <= 1.5 ? 'text-green-400' : analysisData.storyboard._signals.hook.TTClaim <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.hook.TTClaim}s
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.hook.patternBreak')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.hook.tooltips.patternBreak')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.hook.PB >= 4 ? 'text-green-400' : analysisData.storyboard._signals.hook.PB >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.hook.PB}/5
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.hook.specifics')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.hook.tooltips.specifics')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.hook.Spec >= 2 ? 'text-green-400' : analysisData.storyboard._signals.hook.Spec >= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {t('found', { count: analysisData.storyboard._signals.hook.Spec })}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.hook.hookQuestion')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.hook.tooltips.hookQuestion')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.hook.QC > 0 ? 'text-green-400' : 'text-gray-400'}`}>
-                                      {analysisData.storyboard._signals.hook.QC > 0 ? tCommon('yes') : tCommon('no')}
-                                    </span>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">{t('metrics.hook.duration')}</span>
-                                    <span className="text-white font-semibold">{analysisData.storyboard.performance.hook.duration}s</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">{t('metrics.hook.viralPattern')}</span>
-                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.viralPattern).label}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">{t('metrics.hook.loopStrength')}</span>
-                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.hook.loopStrength).label}</span>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-
-                            {/* Hook Category Badge + Pattern */}
-                            {analysisData.storyboard.overview.hookCategory && (
-                              <div className="space-y-1.5 mb-3">
-                                <span className="inline-block px-2 py-1 bg-orange-500/10 text-orange-400 rounded text-[10px] font-semibold uppercase tracking-wide">
-                                  {(() => {
-                                    const cat = analysisData.storyboard.overview.hookCategory;
-                                    // Use raw labels from next-intl if available
-                                    try {
-                                      return t(`hooks.types.${cat}.label`);
-                                    } catch (e) {
-                                      return cat;
-                                    }
-                                  })()}
-                                </span>
-                                {analysisData.storyboard.overview.hookPattern && (
-                                  <p className="text-[10px] text-gray-500">
-                                    {analysisData.storyboard.overview.hookPattern}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Only analysis is collapsible */}
-                            {hookExpanded && (
-                              <div
-                                className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                  }`}
-                                onClick={() => {
-                                  if (shouldBlur) {
-                                    setUpgradeFeature('performance-cards');
-                                    setShowUpgradeModal(true);
-                                  }
-                                }}
-                                style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                              >
-                                {renderAnalysis(analysisData.storyboard.performance.hook.analysis)}
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
+                ) : analysisData && (() => {
+                  const lowestCategory = ['hook', 'structure', 'clarity', 'delivery'].reduce((lowest, cat) => {
+                    const getScore = (c: string) => {
+                      if (c === 'hook') return analysisData.storyboard.performance.hookStrength;
+                      if (c === 'structure') return analysisData.storyboard.performance.structurePacing;
+                      if (c === 'clarity') return analysisData.storyboard.performance.content?.valueClarity ?? 0;
+                      return analysisData.storyboard.performance.deliveryPerformance;
+                    };
+                    return getScore(cat) < getScore(lowest) ? cat : lowest;
+                  });
+                  return (
+                    <div className="space-y-2">
+                      <ScoreAccordion
+                        category="hook"
+                        score={analysisData.storyboard.performance.hookStrength}
+                        analysis={analysisData.storyboard.performance.hook.analysis}
+                        signals={analysisData.storyboard._signals?.hook}
+                        fallbackMetrics={analysisData.storyboard.performance.hook}
+                        hookCategory={analysisData.storyboard.overview.hookCategory}
+                        hookPattern={analysisData.storyboard.overview.hookPattern}
+                        shouldBlur={shouldBlur}
+                        onUpgradeClick={(f) => { setUpgradeFeature(f); setShowUpgradeModal(true); }}
+                        defaultExpanded={lowestCategory === 'hook'}
+                        renderAnalysis={renderAnalysis}
+                      />
+                      <ScoreAccordion
+                        category="structure"
+                        score={analysisData.storyboard.performance.structurePacing}
+                        analysis={analysisData.storyboard.performance.structure.analysis}
+                        signals={analysisData.storyboard._signals?.structure}
+                        fallbackMetrics={analysisData.storyboard.performance.structure}
+                        shouldBlur={shouldBlur}
+                        onUpgradeClick={(f) => { setUpgradeFeature(f); setShowUpgradeModal(true); }}
+                        defaultExpanded={lowestCategory === 'structure'}
+                        renderAnalysis={renderAnalysis}
+                      />
+                      <ScoreAccordion
+                        category="clarity"
+                        score={analysisData.storyboard.performance.content?.valueClarity ?? 0}
+                        analysis={analysisData.storyboard.performance.content.analysis}
+                        signals={analysisData.storyboard._signals?.clarity}
+                        fallbackMetrics={analysisData.storyboard.performance.content}
+                        shouldBlur={shouldBlur}
+                        onUpgradeClick={(f) => { setUpgradeFeature(f); setShowUpgradeModal(true); }}
+                        defaultExpanded={lowestCategory === 'clarity'}
+                        renderAnalysis={renderAnalysis}
+                      />
+                      <ScoreAccordion
+                        category="delivery"
+                        score={analysisData.storyboard.performance.deliveryPerformance}
+                        analysis={analysisData.storyboard.performance.delivery.analysis}
+                        signals={analysisData.storyboard._signals?.delivery}
+                        fallbackMetrics={analysisData.storyboard.performance.delivery}
+                        shouldBlur={shouldBlur}
+                        onUpgradeClick={(f) => { setUpgradeFeature(f); setShowUpgradeModal(true); }}
+                        defaultExpanded={lowestCategory === 'delivery'}
+                        renderAnalysis={renderAnalysis}
+                      />
                     </div>
+                  );
+                })()}
 
-                    {/* Structure Card */}
-                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t('metrics.structure.title')}</span>
-                        <button
-                          onClick={() => setStructureExpanded(!structureExpanded)}
-                          className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
-                        >
-                          {structureExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
-                        </button>
-                      </div>
-                      {(() => {
-                        if (!analysisData) return null;
-                        const structureScore = Math.min(Math.round(analysisData.storyboard.performance.structurePacing), 100);
-                        const grade = getLetterGrade(structureScore);
-                        return (
-                          <>
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</span>
-                            </div>
 
-                            {/* Always show metrics */}
-                            <div
-                              className={`space-y-2 text-xs mb-3 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                }`}
-                              onClick={() => {
-                                if (shouldBlur) {
-                                  setUpgradeFeature('performance-cards');
-                                  setShowUpgradeModal(true);
-                                }
-                              }}
-                              style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                            >
-                              {analysisData.storyboard._signals?.structure ? (
-                                <>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.structure.beatCount')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.structure.tooltips.beatCount')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.structure.BC >= 3 && analysisData.storyboard._signals.structure.BC <= 6 ? 'text-green-400' : 'text-yellow-400'}`}>
-                                      {t('metrics.structure.beats', { count: analysisData.storyboard._signals.structure.BC })}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.structure.progressMarkers')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.structure.tooltips.progressMarkers')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.structure.PM >= 2 ? 'text-green-400' : analysisData.storyboard._signals.structure.PM >= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {t('found', { count: analysisData.storyboard._signals.structure.PM })}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.structure.hasPayoff')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.structure.tooltips.hasPayoff')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.structure.PP ? 'text-green-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.structure.PP ? tCommon('yes') : tCommon('no')}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.structure.loopCue')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.structure.tooltips.loopCue')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.structure.LC ? 'text-green-400' : 'text-gray-400'}`}>
-                                      {analysisData.storyboard._signals.structure.LC ? tCommon('yes') : tCommon('no')}
-                                    </span>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">{t('metrics.structure.videoLength')}</span>
-                                    <span className="text-white font-semibold">{analysisData.storyboard.performance.structure.videoLength}s</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">{t('metrics.structure.pacingConsistency')}</span>
-                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.pacingConsistency).label}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">{t('metrics.structure.payoffTiming')}</span>
-                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.structure.payoffTiming).label}</span>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-
-                            {/* Only analysis is collapsible */}
-                            {structureExpanded && (
-                              <div
-                                className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                  }`}
-                                onClick={() => {
-                                  if (shouldBlur) {
-                                    setUpgradeFeature('performance-cards');
-                                    setShowUpgradeModal(true);
-                                  }
-                                }}
-                                style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                              >
-                                {renderAnalysis(analysisData.storyboard.performance.structure.analysis)}
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Clarity Card */}
-                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t('metrics.clarity.title')}</span>
-                        <button
-                          onClick={() => setClarityExpanded(!clarityExpanded)}
-                          className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
-                        >
-                          {clarityExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
-                        </button>
-                      </div>
-                      {(() => {
-                        if (!analysisData) return null;
-                        // Use valueClarity for the clarity grade
-                        const clarityScore = analysisData.storyboard.performance.content.valueClarity;
-                        const grade = getClarityGrade(clarityScore);
-                        return (
-                          <>
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className={`text-xl font-bold text-${grade.color}-500`}>{grade.label}</span>
-                            </div>
-
-                            {/* Always show metrics */}
-                            <div
-                              className={`space-y-2 text-xs mb-3 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                }`}
-                              onClick={() => {
-                                if (shouldBlur) {
-                                  setUpgradeFeature('performance-cards');
-                                  setShowUpgradeModal(true);
-                                }
-                              }}
-                              style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                            >
-                              {analysisData.storyboard._signals?.clarity ? (
-                                <>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.clarity.speakingPace')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.clarity.tooltips.speakingPace')}
-                                      </span>
-                                    </span>
-                                    {(() => {
-                                      const wps = analysisData.storyboard._signals!.clarity.wordCount / analysisData.storyboard._signals!.clarity.duration;
-                                      const isGood = wps >= 3 && wps <= 4;
-                                      const isOk = wps >= 2.5 && wps <= 4.5;
-                                      return (
-                                        <span className={`font-semibold ${isGood ? 'text-green-400' : isOk ? 'text-yellow-400' : 'text-red-400'}`}>
-                                          {wps.toFixed(1)} w/s
-                                        </span>
-                                      );
-                                    })()}
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.clarity.complexity')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.clarity.tooltips.complexity')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.clarity.SC <= 2 ? 'text-green-400' : analysisData.storyboard._signals.clarity.SC <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.clarity.SC}/5
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.clarity.topicJumps')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.clarity.tooltips.topicJumps')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.clarity.TJ === 0 ? 'text-green-400' : analysisData.storyboard._signals.clarity.TJ <= 1 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.clarity.TJ}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.clarity.redundancy')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.clarity.tooltips.redundancy')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.clarity.RD <= 2 ? 'text-green-400' : analysisData.storyboard._signals.clarity.RD <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.clarity.RD}/5
-                                    </span>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">Clarity Score</span>
-                                    <span className={`font-semibold ${clarityScore >= 80 ? 'text-green-400' : clarityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {clarityScore}%
-                                    </span>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-
-                            {/* Only analysis is collapsible */}
-                            {clarityExpanded && (
-                              <div
-                                className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                  }`}
-                                onClick={() => {
-                                  if (shouldBlur) {
-                                    setUpgradeFeature('performance-cards');
-                                    setShowUpgradeModal(true);
-                                  }
-                                }}
-                                style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                              >
-                                {renderAnalysis(analysisData.storyboard.performance.content.analysis)}
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Delivery Card */}
-                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                        </svg>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t('metrics.delivery.title')}</span>
-                        <button
-                          onClick={() => setDeliveryExpanded(!deliveryExpanded)}
-                          className="ml-auto p-0.5 hover:bg-gray-800 rounded transition-colors"
-                        >
-                          {deliveryExpanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
-                        </button>
-                      </div>
-                      {(() => {
-                        if (!analysisData) return null;
-                        const deliveryScore = Math.min(Math.round(analysisData.storyboard.performance.deliveryPerformance), 100);
-                        const grade = getLetterGrade(deliveryScore);
-                        return (
-                          <>
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className={`text-2xl font-bold text-${grade.color}-500`}>{grade.label}</span>
-                            </div>
-
-                            {/* Always show metrics */}
-                            <div
-                              className={`space-y-2 text-xs mb-3 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                }`}
-                              onClick={() => {
-                                if (shouldBlur) {
-                                  setUpgradeFeature('performance-cards');
-                                  setShowUpgradeModal(true);
-                                }
-                              }}
-                              style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                            >
-                              {analysisData.storyboard._signals?.delivery ? (
-                                <>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.delivery.volumeConsistency')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.delivery.tooltips.volumeConsistency')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.delivery.LS >= 4 ? 'text-green-400' : analysisData.storyboard._signals.delivery.LS >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.delivery.LS}/5
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.delivery.audioQuality')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.delivery.tooltips.audioQuality')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.delivery.NS >= 4 ? 'text-green-400' : analysisData.storyboard._signals.delivery.NS >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.delivery.NS}/5
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.delivery.fillerWords')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.delivery.tooltips.fillerWords')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.delivery.fillerCount === 0 ? 'text-green-400' : analysisData.storyboard._signals.delivery.fillerCount <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.delivery.fillerCount}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 cursor-help group relative">
-                                      {t('metrics.delivery.energyVariation')}
-                                      <span className="absolute bottom-full left-0 mb-1 w-48 p-2 bg-gray-900 border border-gray-700 rounded text-[10px] text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-                                        {t('metrics.delivery.tooltips.energyVariation')}
-                                      </span>
-                                    </span>
-                                    <span className={`font-semibold ${analysisData.storyboard._signals.delivery.EC ? 'text-green-400' : 'text-red-400'}`}>
-                                      {analysisData.storyboard._signals.delivery.EC ? tCommon('yes') : tCommon('no')}
-                                    </span>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">Energy Level</span>
-                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.energyLevel).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.energyLevel).label}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">Vocal Clarity</span>
-                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.vocalClarity).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.vocalClarity).label}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500">Presence</span>
-                                    <span className={`text-${getMetricLabel(analysisData.storyboard.performance.delivery.presence).color}-400 font-semibold`}>{getMetricLabel(analysisData.storyboard.performance.delivery.presence).label}</span>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-
-                            {/* Only analysis is collapsible */}
-                            {deliveryExpanded && (
-                              <div
-                                className={`pt-3 border-t border-gray-800 ${shouldBlur ? 'blur-sm cursor-pointer select-none' : ''
-                                  }`}
-                                onClick={() => {
-                                  if (shouldBlur) {
-                                    setUpgradeFeature('performance-cards');
-                                    setShowUpgradeModal(true);
-                                  }
-                                }}
-                                style={shouldBlur ? { pointerEvents: 'auto', userSelect: 'none' } : {}}
-                              >
-                                {renderAnalysis(analysisData.storyboard.performance.delivery.analysis)}
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
+                {/* "Analyze another video" CTA */}
+                {!loading && analysisData && (
+                  <div className="text-center py-3">
+                    <a
+                      href="/analyzer"
+                      className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                      onClick={() => {
+                        if (typeof window !== 'undefined' && (window as any).posthog) {
+                          (window as any).posthog.capture('analyze_another_clicked');
+                        }
+                      }}
+                    >
+                      {t('fixList.analyzeAnother')} →
+                    </a>
                   </div>
                 )}
+
               </div>
             </div>
 

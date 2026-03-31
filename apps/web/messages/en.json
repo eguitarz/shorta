@@ -665,6 +665,24 @@
         "ctrPotential": "CTR Potential"
       }
     },
+    "fixList": {
+      "title": "Your Top Changes",
+      "positiveTitle": "Looking Great!",
+      "subtitle": "Ranked by expected impact on your next video",
+      "positiveSubtitle": "Your video scored well across all categories. Here are some fine-tuning ideas:",
+      "impactHigh": "High impact",
+      "impactMedium": "Medium impact",
+      "fallbackNote": "Based on your scores. Analyze a new video for AI-powered recommendations.",
+      "compare": "Compare",
+      "share": "Share",
+      "analyzeAnother": "Analyze your next video to track improvement",
+      "category": {
+        "hook": "Hook",
+        "structure": "Structure",
+        "clarity": "Clarity",
+        "delivery": "Delivery"
+      }
+    },
     "share": {
       "button": "Share",
       "generating": "Generating...",
