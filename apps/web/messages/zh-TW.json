@@ -655,6 +655,24 @@
         "ctrPotential": "CTR 潛力"
       }
     },
+    "fixList": {
+      "title": "重點改進建議",
+      "positiveTitle": "表現出色！",
+      "subtitle": "按對下一部影片的預期影響排序",
+      "positiveSubtitle": "您的影片在所有類別中都獲得了高分。以下是一些微調建議：",
+      "impactHigh": "高影響",
+      "impactMedium": "中影響",
+      "fallbackNote": "基於您的分數。分析新影片以獲取 AI 推薦。",
+      "compare": "比較",
+      "share": "分享",
+      "analyzeAnother": "分析您的下一部影片以追蹤改進",
+      "category": {
+        "hook": "開場",
+        "structure": "結構",
+        "clarity": "清晰度",
+        "delivery": "表達"
+      }
+    },
     "share": {
       "button": "分享",
       "generating": "產生中...",
