@@ -323,7 +323,16 @@ Return ONLY valid JSON in this exact format:
       "vocalClarity": number 0-100,
       "presence": number 0-100,
       "analysis": "string - EXPLAIN why delivery scored ${scores.subScores.delivery}/100. Reference audio quality (${signals.delivery.NS}/5), fillers (${signals.delivery.fillerCount}), energy variation."
-    }
+    },
+    "top_changes": [
+      {
+        "change": "string - what to change in the next video, in plain language. Be specific and reference concrete moments.",
+        "category": "string - one of: hook, structure, clarity, delivery",
+        "timestamp": "string - OPTIONAL timestamp reference e.g. '0:03' or '0:00-0:08'",
+        "impact": "string - 'high' or 'medium'",
+        "reason": "string - why this matters, one sentence"
+      }
+    ]
   },
   "replicationBlueprint": {
     "elementsToKeep": ["string - technique to replicate"],
@@ -341,6 +350,7 @@ CRITICAL INSTRUCTIONS:
 5. Map lint violations to appropriate beats based on timestamp
 6. For AI-discovered issues, OMIT ruleId and ruleName fields
 7. NEVER include technical rule IDs (like th_hook_energy, gen_hook_clear_promise, etc.) in analysis text - use only human-readable descriptions
+8. Include 1-3 top_changes ranked by expected impact. Focus on lowest-scoring categories. Each change must be specific, actionable, and reference concrete moments in the video. Do NOT output generic advice like "improve pacing"
 
 LANGUAGE ALIGNMENT - CRITICAL:
 ${locale && locale !== 'en'
