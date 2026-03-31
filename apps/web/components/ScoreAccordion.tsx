@@ -243,11 +243,11 @@ export function ScoreAccordion({
 
   const blurProps = shouldBlur
     ? {
-        className: `space-y-2 text-xs mb-3 blur-sm cursor-pointer select-none`,
+        className: `space-y-2 text-xs mb-3 max-w-sm blur-sm cursor-pointer select-none`,
         onClick: () => onUpgradeClick?.("performance-cards"),
         style: { pointerEvents: "auto" as const, userSelect: "none" as const },
       }
-    : { className: "space-y-2 text-xs mb-3" };
+    : { className: "space-y-2 text-xs mb-3 max-w-sm" };
 
   const SignalsComponent =
     category === "hook" ? HookSignalsMetrics :
