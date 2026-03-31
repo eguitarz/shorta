@@ -1,28 +1,5 @@
 # TODOS
 
-## Analyzer
-
-### Extract `useAnalysisJob` hook
-**Priority:** P2
-**What:** Pull polling + data fetching (~200 lines, 22 useState hooks) from `apps/web/app/(dashboard)/analyzer/[id]/page.tsx` into a reusable custom hook.
-**Why:** The page is still ~2800 lines. Extracting state management makes it render-only and the hook reusable if other pages need analysis data.
-**Depends on:** Results redesign (shipped in PR #16)
-
-
-### Shareable Fix List card
-**Priority:** P2
-**What:** Client-side canvas rendering of the Fix List section as a downloadable/copyable PNG. Video title, 3 fix cards, overall score in a clean dark-theme card format.
-**Why:** Creators sharing "here's what Shorta told me to fix" is free marketing. No competitor has this format.
-**Depends on:** Results redesign (shipped in PR #16)
-
-## Testing
-
-### Vitest setup + FixList tests
-**Priority:** P2
-**What:** Set up Vitest (vitest.config.ts, tsconfig), write unit tests for FixList weighted fallback logic and ScoreAccordion rendering.
-**Why:** Zero test coverage across the entire codebase. The fallback logic (weighted category selection using NICHE_WEIGHTS) is the riskiest new code path.
-**Depends on:** Nothing
-
 ## Design
 
 ### Create DESIGN.md
@@ -32,6 +9,18 @@
 **Depends on:** Nothing
 
 ## Completed
+
+### useAnalysisJob hook extraction
+**Completed:** PR #18 (2026-04-01)
+**What:** Extracted ~240 lines of state management + 4 useEffects into `hooks/useAnalysisJob.ts`. Analyzer page now focuses on rendering.
+
+### Shareable Fix List card
+**Completed:** PR #18 (2026-04-01)
+**What:** Client-side canvas rendering of Fix List as downloadable PNG. Dark theme card with video title, score, and top 3 changes. Lazy-loaded.
+
+### Vitest setup + 22 tests
+**Completed:** PR #18 (2026-04-01)
+**What:** Bootstrapped Vitest with jsdom. 22 tests: FixList weighted fallback (8), storyboard parsing (9), timestamp parsing (5). `npm test` runs them.
 
 ### Frame previews in Fix List
 **Completed:** PR #17 (2026-04-01)
