@@ -498,8 +498,10 @@
           "beatCount": "Número de secciones de contenido. Ideal: 3-6 para Shorts.",
           "progressMarkers": "Palabras como \"primero\", \"siguiente\", \"finalmente\" que guían a los espectadores.",
           "hasPayoff": "¿El video cumple la promesa hecha en el gancho?",
-          "loopCue": "¿El final hace referencia al inicio o fomenta volver a verlo?"
-        }
+          "loopCue": "¿El final hace referencia al inicio o fomenta volver a verlo?",
+          "payoffPresence": "¿El video cumple la promesa hecha en el gancho?"
+        },
+        "payoffPresence": "Tiene Recompensa"
       },
       "clarity": {
         "title": "Claridad",
@@ -514,8 +516,12 @@
           "speakingPace": "Palabras por segundo. Ideal: 3-4 PPS para comprensión.",
           "complexity": "Complejidad de la oración. Menor es más fácil de seguir.",
           "topicJumps": "Cambios repentinos de contexto. Menos = más fácil de seguir.",
-          "redundancy": "Repetición sin información nueva. Menor = más conciso."
-        }
+          "redundancy": "Repetición sin información nueva. Menor = más conciso.",
+          "wordsPerSecond": "Palabras por segundo. Ideal: 3-4 PPS para comprensión.",
+          "sentenceComplexity": "Complejidad de la oración. Menor es más fácil de seguir."
+        },
+        "wordsPerSecond": "Ritmo al Hablar",
+        "sentenceComplexity": "Complejidad"
       },
       "delivery": {
         "title": "Entrega",
@@ -530,8 +536,14 @@
           "volumeConsistency": "Estabilidad del volumen. Mayor indica niveles más consistentes.",
           "audioQuality": "Niveles de ruido y nitidez. Mayor = audio más limpio.",
           "fillerWords": "Número de muletillas como \"eh\", \"ah\". Menor = entrega más limpia.",
-          "energyVariation": "Cambios en el tono para mantener interés audial. Monótono es menos atractivo."
-        }
+          "energyVariation": "Cambios en el tono para mantener interés audial. Monótono es menos atractivo.",
+          "loudnessStability": "Estabilidad del volumen. Mayor indica niveles más consistentes.",
+          "pauses": "Número de muletillas como \"eh\", \"ah\". Menor = entrega más limpia.",
+          "energyCurve": "Cambios en el tono para mantener interés audial. Monótono es menos atractivo."
+        },
+        "loudnessStability": "Consistencia de Volumen",
+        "pauses": "Muletillas",
+        "energyCurve": "Variación de Energía"
       }
     },
     "beatsbybeat": {

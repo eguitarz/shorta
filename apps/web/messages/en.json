@@ -516,6 +516,7 @@
         "beats": "{count} beats",
         "progressMarkers": "Progress Markers",
         "hasPayoff": "Has Payoff",
+        "payoffPresence": "Payoff Presence",
         "loopCue": "Loop Cue",
         "videoLength": "Video Length",
         "pacingConsistency": "Pacing Consistency",
@@ -524,6 +525,7 @@
           "beatCount": "Number of content sections. Ideal: 3-6 for Shorts.",
           "progressMarkers": "Words like \"first\", \"next\", \"finally\" that guide viewers.",
           "hasPayoff": "Does the video deliver on its hook promise?",
+          "payoffPresence": "Does the video deliver on its hook promise?",
           "loopCue": "Does ending reference the start or encourage rewatch?"
         }
       },
@@ -534,11 +536,15 @@
         "speakingPace": "Speaking Pace",
         "wps": "{count} w/s",
         "complexity": "Complexity",
+        "wordsPerSecond": "Words Per Second",
+        "sentenceComplexity": "Sentence Complexity",
         "topicJumps": "Topic Jumps",
         "redundancy": "Redundancy",
         "tooltips": {
           "speakingPace": "Words per second. Ideal: 3-4 WPS for comprehension.",
+          "wordsPerSecond": "Words per second. Ideal: 3-4 WPS for comprehension.",
           "complexity": "Sentence complexity. Lower is easier to follow.",
+          "sentenceComplexity": "Sentence complexity. Lower = easier to follow.",
           "topicJumps": "Sudden context switches. Fewer = easier to follow.",
           "redundancy": "Repetition without new info. Lower is more concise."
         }
@@ -549,14 +555,20 @@
         "vocalClarity": "Vocal Clarity",
         "presence": "Presence",
         "volumeConsistency": "Volume Consistency",
+        "loudnessStability": "Loudness Stability",
         "audioQuality": "Audio Quality",
         "fillerWords": "Filler Words",
+        "pauses": "Pauses",
         "energyVariation": "Energy Variation",
+        "energyCurve": "Energy Curve",
         "tooltips": {
           "volumeConsistency": "Loudness stability. Higher = more consistent audio levels.",
+          "loudnessStability": "Loudness stability. Higher = more consistent audio levels.",
           "audioQuality": "Noise level and clarity. Higher = cleaner audio.",
           "fillerWords": "Count of \"um\", \"uh\", \"like\", etc. Lower = cleaner delivery.",
-          "energyVariation": "Vocal energy changes to maintain interest. Monotone = less engaging."
+          "pauses": "Strategic pauses for emphasis. More = better pacing.",
+          "energyVariation": "Vocal energy changes to maintain interest. Monotone = less engaging.",
+          "energyCurve": "Does energy vary throughout? Flat energy = less engaging."
         }
       }
     },

@@ -269,17 +269,16 @@ export function ScoreAccordion({
         aria-expanded={expanded}
         aria-controls={`score-${category}-content`}
       >
-        <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={ICONS[category]} />
         </svg>
         <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">
           {t(`metrics.${category}.title`)}
         </span>
-        <span className={`ml-2 text-lg font-bold text-${grade.color}-500`}>{grade.label}</span>
-        <span className="text-[10px] text-gray-600 ml-1">{clampedScore}/100</span>
-        <div className="ml-auto">
-          {expanded ? <ChevronUp className="w-3.5 h-3.5 text-gray-500" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-500" />}
-        </div>
+        <span className={`text-lg font-bold text-${grade.color}-500`}>{grade.label}</span>
+        <span className="text-[10px] text-gray-600">{clampedScore}/100</span>
+        <div className="flex-1" />
+        {expanded ? <ChevronUp className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />}
       </button>
 
       {expanded && (

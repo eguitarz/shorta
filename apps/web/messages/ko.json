@@ -498,8 +498,10 @@
           "beatCount": "콘텐츠 섹션 수. 쇼츠의 경우 3-6개가 이상적입니다.",
           "progressMarkers": "\"첫째\", \"다음\", \"마지막으로\"와 같이 시청자를 안내하는 단어.",
           "hasPayoff": "비디오가 훅에서 한 약속을 지키는지 여부.",
-          "loopCue": "엔딩이 시작 부분을 참조하거나 재시청을 유도하는지 여부."
-        }
+          "loopCue": "엔딩이 시작 부분을 참조하거나 재시청을 유도하는지 여부.",
+          "payoffPresence": "비디오가 훅에서 한 약속을 지키는지 여부."
+        },
+        "payoffPresence": "보상(결과) 유무"
       },
       "clarity": {
         "title": "명확성",
@@ -514,8 +516,12 @@
           "speakingPace": "초당 단어 수. 이상적: 이해를 위해 초당 3-4단어.",
           "complexity": "문장 복잡도. 낮을수록 이해하기 쉽습니다.",
           "topicJumps": "갑작스러운 맥락 전환. 적을수록 따라가기 쉽습니다.",
-          "redundancy": "새로운 정보 없는 반복. 낮을수록 간결합니다."
-        }
+          "redundancy": "새로운 정보 없는 반복. 낮을수록 간결합니다.",
+          "wordsPerSecond": "초당 단어 수. 이상적: 이해를 위해 초당 3-4단어.",
+          "sentenceComplexity": "문장 복잡도. 낮을수록 이해하기 쉽습니다."
+        },
+        "wordsPerSecond": "말하기 속도",
+        "sentenceComplexity": "복잡도"
       },
       "delivery": {
         "title": "전달력",
@@ -530,8 +536,14 @@
           "volumeConsistency": "볼륨 안정성. 높을수록 일정한 볼륨 레벨을 의미합니다.",
           "audioQuality": "노이즈 레벨 및 선명도. 높을수록 깨끗한 오디오를 의미합니다.",
           "fillerWords": "\"음\", \"아\"와 같은 추임새 수. 적을수록 깔끔한 전달이 가능합니다.",
-          "energyVariation": "청각적 흥미를 유지하기 위한 톤 변화. 단조로운 톤은 덜 매력적입니다."
-        }
+          "energyVariation": "청각적 흥미를 유지하기 위한 톤 변화. 단조로운 톤은 덜 매력적입니다.",
+          "loudnessStability": "볼륨 안정성. 높을수록 일정한 볼륨 레벨을 의미합니다.",
+          "pauses": "\"음\", \"아\"와 같은 추임새 수. 적을수록 깔끔한 전달이 가능합니다.",
+          "energyCurve": "청각적 흥미를 유지하기 위한 톤 변화. 단조로운 톤은 덜 매력적입니다."
+        },
+        "loudnessStability": "볼륨 일관성",
+        "pauses": "추임새",
+        "energyCurve": "에너지 변화"
       }
     },
     "comparison": {

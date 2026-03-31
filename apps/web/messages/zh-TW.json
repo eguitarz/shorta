@@ -516,8 +516,10 @@
           "beatCount": "內容章節的數量。理想：Shorts 為 3-6 個。",
           "progressMarkers": "引導觀眾的文字，如「第一」、「接下來」、「最後」。",
           "hasPayoff": "影片是否兌現了開場的承諾？",
-          "loopCue": "結尾是否呼應開頭 or 鼓勵重複觀看？"
-        }
+          "loopCue": "結尾是否呼應開頭 or 鼓勵重複觀看？",
+          "payoffPresence": "影片是否兌現了開場的承諾？"
+        },
+        "payoffPresence": "是否有結果"
       },
       "clarity": {
         "title": "清晰度",
@@ -532,8 +534,12 @@
           "speakingPace": "每秒單詞數。理想：每秒 3-4 個單詞以利理解。",
           "complexity": "句子複雜度。越低越容易理解。",
           "topicJumps": "突然的語境切換。越少越容易理解。",
-          "redundancy": "無新資訊的重複。越低越簡潔。"
-        }
+          "redundancy": "無新資訊的重複。越低越簡潔。",
+          "wordsPerSecond": "每秒單詞數。理想：每秒 3-4 個單詞以利理解。",
+          "sentenceComplexity": "句子複雜度。越低越容易理解。"
+        },
+        "wordsPerSecond": "語速",
+        "sentenceComplexity": "複雜度"
       },
       "delivery": {
         "title": "表達",
@@ -548,8 +554,14 @@
           "volumeConsistency": "大聲穩定性。越高表示音量水平越一致。",
           "audioQuality": "噪音水平和清晰度。越高表示音訊越乾淨。",
           "fillerWords": "「嗯」、「啊」、「那個」等贅詞數量。越低表示表達越乾淨。",
-          "energyVariation": "維持聽覺興趣的語氣能量變化。單調則較枯燥。"
-        }
+          "energyVariation": "維持聽覺興趣的語氣能量變化。單調則較枯燥。",
+          "loudnessStability": "大聲穩定性。越高表示音量水平越一致。",
+          "pauses": "「嗯」、「啊」、「那個」等贅詞數量。越低表示表達越乾淨。",
+          "energyCurve": "維持聽覺興趣的語氣能量變化。單調則較枯燥。"
+        },
+        "loudnessStability": "音量穩定性",
+        "pauses": "贅詞",
+        "energyCurve": "能量變化"
       }
     },
     "beatsbybeat": {
