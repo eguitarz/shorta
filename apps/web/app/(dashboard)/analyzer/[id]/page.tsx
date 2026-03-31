@@ -1534,6 +1534,7 @@ export default function AnalyzerResultsPage() {
                     topChanges={analysisData.storyboard.performance?.top_changes as TopChange[] | undefined}
                     performance={analysisData.storyboard.performance}
                     videoFormat={analysisData.storyboard._format || analysisData.classification?.format}
+                    videoId={videoUrl ? (extractYouTubeId(videoUrl) || undefined) : undefined}
                     onCardClick={(timestamp) => {
                       if (!timestamp) return;
                       setBeatBreakdownCollapsed(false);
