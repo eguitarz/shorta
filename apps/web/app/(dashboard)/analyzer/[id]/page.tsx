@@ -1293,6 +1293,23 @@ export default function AnalyzerResultsPage() {
                       }
                     }}
                     onCompareClick={() => setShowVideoPickerModal(true)}
+                    onShareClick={async () => {
+                      const { generateFixListImage, downloadFixListImage } = await import('@/lib/share-fix-list');
+                      const changes = (analysisData?.storyboard.performance?.top_changes || []) as any[];
+                      const validCards = changes.filter((c: any) => c?.change && c?.category).map((c: any, i: number) => ({
+                        change: c.change, category: c.category, impact: c.impact || 'medium', reason: c.reason || '', index: i,
+                      }));
+                      if (validCards.length === 0) return;
+                      const blob = await generateFixListImage(
+                        analysisData?.storyboard.overview.title || 'Video Analysis',
+                        analysisData?.storyboard.performance?.score || 0,
+                        validCards,
+                      );
+                      await downloadFixListImage(blob);
+                      if (typeof window !== 'undefined' && (window as any).posthog) {
+                        (window as any).posthog.capture('fix_list_shared');
+                      }
+                    }}
                   />
                 )}
 
