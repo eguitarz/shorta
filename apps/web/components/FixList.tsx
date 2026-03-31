@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
 import { NICHE_WEIGHTS } from "@/lib/scoring/constants";
 import type { VideoFormat } from "@/lib/linter/types";
+import { SpriteFrame } from "@/components/SpriteFrame";
 
 export interface TopChange {
   change: string;
@@ -25,6 +26,7 @@ interface FixListProps {
     delivery: { analysis: string };
   };
   videoFormat?: string;
+  videoId?: string; // YouTube video ID for storyboard frame previews
   onCardClick?: (timestamp?: string) => void;
   onCompareClick?: () => void;
   onShareClick?: () => void;
@@ -80,6 +82,7 @@ export function FixList({
   topChanges,
   performance,
   videoFormat,
+  videoId,
   onCardClick,
   onCompareClick,
   onShareClick,
@@ -179,6 +182,13 @@ export function FixList({
                     </span>
                   </div>
                 </div>
+                {videoId && change.timestamp && (
+                  <SpriteFrame
+                    videoId={videoId}
+                    timestamp={change.timestamp}
+                    className="hidden md:block"
+                  />
+                )}
                 {clickable && (
                   <ChevronRight className="w-3.5 h-3.5 text-gray-600 flex-shrink-0 mt-1" />
                 )}
