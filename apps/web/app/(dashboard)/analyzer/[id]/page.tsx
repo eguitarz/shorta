@@ -55,6 +55,7 @@ import { ThumbnailAnalysis } from "@/components/ThumbnailAnalysis";
 import { FixList, type TopChange } from "@/components/FixList";
 import { ScoreAccordion } from "@/components/ScoreAccordion";
 import { useAnalysisJob } from "@/hooks/useAnalysisJob";
+import { trackEvent } from "@/lib/posthog";
 
 interface Beat {
   beatNumber: number;
@@ -317,8 +318,8 @@ export default function AnalyzerResultsPage() {
 
   // PostHog: track fix_list_viewed when analysis data loads
   useEffect(() => {
-    if (analysisData && typeof window !== 'undefined' && (window as any).posthog) {
-      (window as any).posthog.capture('fix_list_viewed', {
+    if (analysisData) {
+      trackEvent('fix_list_viewed', {
         has_top_changes: !!analysisData.storyboard.performance?.top_changes?.length,
         score: analysisData.storyboard.performance?.score,
       });
@@ -1306,9 +1307,7 @@ export default function AnalyzerResultsPage() {
                         validCards,
                       );
                       await downloadFixListImage(blob);
-                      if (typeof window !== 'undefined' && (window as any).posthog) {
-                        (window as any).posthog.capture('fix_list_shared');
-                      }
+                      trackEvent('fix_list_shared');
                     }}
                   />
                 )}
@@ -1429,9 +1428,7 @@ export default function AnalyzerResultsPage() {
                       href="/analyzer"
                       className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
                       onClick={() => {
-                        if (typeof window !== 'undefined' && (window as any).posthog) {
-                          (window as any).posthog.capture('analyze_another_clicked');
-                        }
+                        trackEvent('analyze_another_clicked');
                       }}
                     >
                       {t('fixList.analyzeAnother')} →
