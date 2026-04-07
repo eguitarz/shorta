@@ -262,11 +262,15 @@ function isAlreadyPublished(videoId) {
 async function runAnalysis(videoUrl) {
   const supabase = createSupabase();
 
-  // Create job as anonymous so the polling endpoint allows access without auth
+  // Create job under the admin user, marked anonymous so the polling
+  // endpoint skips ownership checks (script has no browser session).
+  // user_id is set so the job shows up in the admin's dashboard.
+  const ADMIN_USER_ID = '697ced55-4462-44e7-baf2-94ce15a9ebd6';
   const { data: job, error } = await supabase
     .from('analysis_jobs')
     .insert({
       video_url: videoUrl,
+      user_id: ADMIN_USER_ID,
       status: 'pending',
       current_step: 0,
       total_steps: 3,
