@@ -136,23 +136,35 @@ async function discoverTrendingVideo() {
     return details;
   }
 
-  // Shuffle creators and try each until we find a recent video not yet analyzed
+  // Get list of creators already featured in published posts
+  const publishedCreators = getPublishedCreators();
+  if (publishedCreators.size > 0) {
+    console.log(`[Discover] Already published creators: ${[...publishedCreators].join(', ')}`);
+  }
+
+  // Shuffle creators and try each until we find a recent Short not yet analyzed
   const shuffled = [...CURATED_CREATORS].sort(() => Math.random() - 0.5);
 
   for (const creator of shuffled) {
+    // Skip creators we've already featured
+    if (publishedCreators.has(creator.name.toLowerCase())) {
+      console.log(`[Discover] Skipping ${creator.name} — already featured in a post.`);
+      continue;
+    }
+
     console.log(`[Discover] Checking ${creator.name} (${creator.niche})...`);
 
     try {
-      const video = await getLatestVideo(creator);
+      const video = await getLatestShort(creator);
       if (!video) continue;
 
-      // Skip if already published
+      // Skip if this specific video already published
       if (isAlreadyPublished(video.videoId)) {
-        console.log(`  Already published, skipping.`);
+        console.log(`  Video already published, skipping.`);
         continue;
       }
 
-      console.log(`  Found: "${video.title}" (${video.viewCount.toLocaleString()} views)`);
+      console.log(`  Found Short: "${video.title}" (${video.durationSeconds}s, ${video.viewCount.toLocaleString()} views)`);
       return { ...video, niche: creator.niche };
     } catch (err) {
       console.log(`  Error: ${err.message}, trying next creator...`);
@@ -160,10 +172,13 @@ async function discoverTrendingVideo() {
     }
   }
 
-  throw new Error('No suitable videos found from any curated creator');
+  throw new Error('No suitable Shorts found from any curated creator. All creators may have been featured already — consider adding more to CURATED_CREATORS.');
 }
 
-async function getLatestVideo(creator) {
+const MAX_SHORT_DURATION = 120; // seconds — only Shorts (<=2 min)
+const MIN_VIEWS = 50_000;
+
+async function getLatestShort(creator) {
   // Step 1: Get the channel's uploads playlist
   const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${creator.channelId}&key=${YOUTUBE_API_KEY}`;
   const channelRes = await fetch(channelUrl);
@@ -172,8 +187,8 @@ async function getLatestVideo(creator) {
   const uploadsPlaylist = channelData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
   if (!uploadsPlaylist) return null;
 
-  // Step 2: Get recent uploads (last 5)
-  const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylist}&maxResults=5&key=${YOUTUBE_API_KEY}`;
+  // Step 2: Get recent uploads (last 15 to have enough candidates after filtering)
+  const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylist}&maxResults=15&key=${YOUTUBE_API_KEY}`;
   const playlistRes = await fetch(playlistUrl);
   if (!playlistRes.ok) return null;
   const playlistData = await playlistRes.json();
@@ -181,37 +196,52 @@ async function getLatestVideo(creator) {
 
   if (!recentVideos.length) return null;
 
-  // Step 3: Get stats for the most recent video
-  const latestVideoId = recentVideos[0].snippet.resourceId.videoId;
-  const details = await getVideoDetails(latestVideoId);
+  // Step 3: Check each video — find a Short with enough views
+  for (const item of recentVideos) {
+    const videoId = item.snippet.resourceId.videoId;
+    const details = await getVideoDetails(videoId);
 
-  // Require minimum 50K views (established creator, not a dud)
-  if (details.viewCount < 50_000) {
-    // Try the second most recent if the latest is too fresh
-    if (recentVideos.length > 1) {
-      const secondId = recentVideos[1].snippet.resourceId.videoId;
-      const secondDetails = await getVideoDetails(secondId);
-      if (secondDetails.viewCount >= 50_000) return secondDetails;
+    // Must be a Short (<=2 min)
+    if (details.durationSeconds > MAX_SHORT_DURATION) {
+      continue;
     }
-    return null;
+
+    // Must have enough views
+    if (details.viewCount < MIN_VIEWS) {
+      continue;
+    }
+
+    return details;
   }
 
-  return details;
+  // No Shorts found for this creator
+  console.log(`  No recent Shorts with ${MIN_VIEWS.toLocaleString()}+ views found.`);
+  return null;
+}
+
+// Parse ISO 8601 duration (PT1M30S) to seconds
+function parseDuration(iso) {
+  if (!iso) return 0;
+  const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return 0;
+  return (parseInt(match[1] || '0') * 3600) + (parseInt(match[2] || '0') * 60) + parseInt(match[3] || '0');
 }
 
 async function getVideoDetails(videoId) {
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${YOUTUBE_API_KEY}`;
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoId}&key=${YOUTUBE_API_KEY}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`YouTube API error: ${res.status}`);
   const data = await res.json();
   if (!data.items?.length) throw new Error(`Video not found: ${videoId}`);
   const v = data.items[0];
+  const durationSeconds = parseDuration(v.contentDetails?.duration);
   return {
     videoId: v.id,
     title: v.snippet.title,
     channelTitle: v.snippet.channelTitle,
     channelId: v.snippet.channelId,
     viewCount: parseInt(v.statistics.viewCount || '0'),
+    durationSeconds,
     url: `https://www.youtube.com/watch?v=${v.id}`,
     thumbnailUrl: v.snippet.thumbnails?.high?.url,
     categoryId: v.snippet.categoryId,
@@ -255,6 +285,26 @@ function isAlreadyPublished(videoId) {
     const content = readFileSync(join(POSTS_DIR, f), 'utf-8');
     return content.includes(videoId);
   });
+}
+
+// Extract creator names from published posts to avoid repeating YouTubers
+function getPublishedCreators() {
+  const creators = new Set();
+  if (!existsSync(POSTS_DIR)) return creators;
+  const files = readdirSync(POSTS_DIR);
+  for (const f of files) {
+    const content = readFileSync(join(POSTS_DIR, f), 'utf-8');
+    // Match creator="" in shorta-report placeholders
+    const creatorMatch = content.match(/creator="([^"]+)"/);
+    if (creatorMatch) creators.add(creatorMatch[1].toLowerCase());
+    // Also check tags in frontmatter for creator names
+    for (const c of CURATED_CREATORS) {
+      if (content.toLowerCase().includes(c.name.toLowerCase())) {
+        creators.add(c.name.toLowerCase());
+      }
+    }
+  }
+  return creators;
 }
 
 // ─── 3. Run Analysis ─────────────────────────────────────────────────────
