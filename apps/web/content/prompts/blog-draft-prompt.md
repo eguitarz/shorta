@@ -64,7 +64,7 @@ faqs:
 
 Want to see how your videos score? Shorta's AI analyzes your video frame-by-frame, just like we did with [CREATOR_NAME]'s content above.
 
-[Analyze Your Video →](https://shorta.ai)
+[Analyze Your Video →](https://shorta.ai/try)
 ```
 
 ## Data to include in the prompt

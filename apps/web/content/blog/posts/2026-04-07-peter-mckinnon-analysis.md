@@ -55,4 +55,4 @@ While the restoration payoff itself (installation of the new glass) was "visuall
 
 Want to see how your videos score? Shorta's AI analyzes your video frame-by-frame, just like we did with Peter McKinnon's content above.
 
-[Analyze Your Video →](https://shorta.ai)
+[Analyze Your Video →](https://shorta.ai/try)
