@@ -104,7 +104,6 @@ const CURATED_CREATORS = [
   { channelId: 'UCvKRFNawVcuz4b9ihUTFzmQ', name: 'Pat Flynn', niche: 'business' },
   { channelId: 'UCJ24N4O0bP7LGLBDvye7oC8', name: 'Matt D\'Avella', niche: 'self-improvement' },
   { channelId: 'UC7SeFWZYFmsm1tqWxfuT_1Q', name: 'Thomas Frank', niche: 'productivity' },
-  { channelId: 'UC-lHJZR3Gqxm24_Vd_AJ5Yw', name: 'PewDiePie', niche: 'commentary' },
   // Tech & Education
   { channelId: 'UCsBjURrPoezykLs9EqgamOA', name: 'Fireship', niche: 'tech' },
   { channelId: 'UCXv1JCOwgl2SCbEI6ft7R9g', name: 'Marques Brownlee', niche: 'tech-review' },
@@ -126,7 +125,53 @@ const CURATED_CREATORS = [
   // AI & Future
   { channelId: 'UCbfYPyITQ-7l4upoX8nvctg', name: 'Two Minute Papers', niche: 'ai-research' },
   { channelId: 'UCXUPKJO5MZQN11PqgIvyuvQ', name: 'Matt Wolfe', niche: 'ai-tools' },
+  // Writing & Storytelling
+  { channelId: 'UCJ-GIWeElBruZPbJBUFBcFg', name: 'Zach Star', niche: 'education' },
+  { channelId: 'UC4a-Gbdw7vOaccHmFo40b9g', name: 'Khan Academy', niche: 'education' },
+  // Fitness & Wellness
+  { channelId: 'UCERm5yFZ1SptUcqRRvWiu1w', name: 'Jeff Nippard', niche: 'fitness' },
+  { channelId: 'UCVQJZE_on7It_pEv6tn-jdA', name: 'Jeremy Ethier', niche: 'fitness' },
+  // Career & Money
+  { channelId: 'UCFhqdthbUD1hXkTvbcCFnCA', name: 'Mark Tilbury', niche: 'finance' },
+  { channelId: 'UCGwu0nbY2wSkW8N-cghnLpA', name: 'Nate O\'Brien', niche: 'finance' },
+  // Coding & Dev
+  { channelId: 'UC8butISFwT-Wl7EV0hUK0BQ', name: 'freeCodeCamp', niche: 'coding' },
+  { channelId: 'UCFbNIlppjAuEX4znoulh0Cw', name: 'Web Dev Simplified', niche: 'coding' },
+  // Mindset & Personal Growth
+  { channelId: 'UCpvg0uZH-oxmCagOWJo9p9g', name: 'Better Ideas', niche: 'self-improvement' },
+  { channelId: 'UCIvzgLtSg1HtJFDHVSc340Q', name: 'Mark Manson', niche: 'self-improvement' },
+  // Science & Curiosity
+  { channelId: 'UCZYTClx2T1of7BRZ86-8fow', name: 'SciShow', niche: 'science' },
+  { channelId: 'UC6107grRI4m0o2-emgoDnAA', name: 'Wendover Productions', niche: 'education' },
+  // Creator Economy & YouTube Strategy
+  { channelId: 'UC4Dqke-JvFumAqWmkEFNlQA', name: 'Roberto Blake', niche: 'creator-economy' },
+  { channelId: 'UCEOHmSn17B9coGnpLmYFMOg', name: 'Nick Nimmin', niche: 'youtube-growth' },
+  // Design & UX
+  { channelId: 'UCddiUEpeqJcYeBxX1IVBKvQ', name: 'The Design Dad', niche: 'design' },
+  { channelId: 'UCVhGmQMclFOjEGKXORXlGKA', name: 'Mike Locke', niche: 'design' },
+  // Real Estate & Investing
+  { channelId: 'UCTn-bKihnl7N78K4dMnZIVg', name: 'Meet Kevin', niche: 'finance' },
+  { channelId: 'UCRQiAB2wu0CvT9cJkNgjetA', name: 'Ryan Pineda', niche: 'business' },
 ];
+
+// Keywords that indicate news/politics/current-events content — Gemini refuses these with 403.
+// Titles containing ANY of these (case-insensitive) will be skipped during discovery.
+const BLOCKED_TITLE_KEYWORDS = [
+  // Politics & government
+  'trump', 'biden', 'harris', 'obama', 'congress', 'senate', 'republican', 'democrat',
+  'election', 'vote', 'ballot', 'political', 'president', 'white house', 'supreme court',
+  'rubio', 'pelosi', 'musk', 'elon',
+  // News events
+  'breaking', 'shooting', 'killed', 'arrested', 'indicted', 'lawsuit', 'banned', 'revokes',
+  'war', 'invasion', 'protest', 'riot', 'crisis', 'scandal',
+  // Immigration & policy
+  'green card', 'deportation', 'immigration', 'border', 'visa',
+];
+
+function isTitleBlocked(title) {
+  const lower = title.toLowerCase();
+  return BLOCKED_TITLE_KEYWORDS.some(kw => lower.includes(kw));
+}
 
 async function discoverTrendingVideo() {
   if (SPECIFIC_URL) {
@@ -208,6 +253,12 @@ async function getLatestShort(creator) {
 
     // Must have enough views
     if (details.viewCount < MIN_VIEWS) {
+      continue;
+    }
+
+    // Skip news/politics titles — Gemini refuses them with 403
+    if (isTitleBlocked(details.title)) {
+      console.log(`  Skipping "${details.title}" — blocked title keyword.`);
       continue;
     }
 
@@ -562,6 +613,11 @@ async function main() {
   const video = await discoverTrendingVideo();
   console.log(`  Found: "${video.title}" by ${video.channelTitle} (${video.viewCount.toLocaleString()} views)\n`);
 
+  // Step 1b: Content filter check (also runs inside getLatestShort, but double-check here)
+  if (isTitleBlocked(video.title)) {
+    throw new Error(`Discovery returned a blocked-keyword title despite filtering: "${video.title}". Check BLOCKED_TITLE_KEYWORDS.`);
+  }
+
   // Step 2: Dedup
   console.log('Step 2: Checking for duplicates...');
   if (isAlreadyPublished(video.videoId)) {
@@ -575,10 +631,52 @@ async function main() {
   }
   console.log('  No duplicates found.\n');
 
-  // Step 3: Analyze
+  // Step 3: Analyze — retry with next candidate if Gemini rejects the video
   console.log('Step 3: Running Shorta analysis...');
-  const { jobId, analysis } = await runAnalysis(video.url);
+  let jobId, analysis;
+  const MAX_ANALYSIS_RETRIES = 3;
+  let candidateVideo = video;
+  const triedVideoIds = new Set([video.videoId]);
+
+  for (let attempt = 1; attempt <= MAX_ANALYSIS_RETRIES; attempt++) {
+    try {
+      ({ jobId, analysis } = await runAnalysis(candidateVideo.url));
+      break; // success
+    } catch (err) {
+      const isGeminiRefusal = err.message?.includes('PERMISSION_DENIED') ||
+        err.message?.includes('403') ||
+        err.message?.includes('permission');
+      if (!isGeminiRefusal || attempt === MAX_ANALYSIS_RETRIES) throw err;
+
+      console.log(`  Gemini refused video (attempt ${attempt}/${MAX_ANALYSIS_RETRIES}). Trying next candidate...`);
+
+      // Find next candidate from the discovery pool, skipping already-tried videos
+      const shuffled = [...CURATED_CREATORS].sort(() => Math.random() - 0.5);
+      const publishedCreators = getPublishedCreators();
+      let nextVideo = null;
+
+      for (const creator of shuffled) {
+        if (publishedCreators.has(creator.name.toLowerCase())) continue;
+        try {
+          const v = await getLatestShort(creator);
+          if (!v || triedVideoIds.has(v.videoId) || isAlreadyPublished(v.videoId)) continue;
+          nextVideo = { ...v, niche: creator.niche };
+          break;
+        } catch (_) {
+          continue;
+        }
+      }
+
+      if (!nextVideo) throw new Error('No fallback video found after Gemini refusal.');
+      triedVideoIds.add(nextVideo.videoId);
+      candidateVideo = nextVideo;
+      console.log(`  Retrying with: "${candidateVideo.title}" by ${candidateVideo.channelTitle}\n`);
+    }
+  }
   console.log(`  Analysis complete. Score: ${analysis.lintSummary?.score || 'N/A'}\n`);
+
+  // Use whichever video succeeded (may differ from original if we retried)
+  const finalVideo = candidateVideo;
 
   // Step 4: Share
   console.log('Step 4: Creating share link...');
@@ -587,13 +685,13 @@ async function main() {
 
   // Step 5: Draft
   console.log('Step 5: Drafting blog post...');
-  const slug = generateSlug(video);
-  const markdown = await draftBlogPost(video, analysis, shareUrl, jobId);
+  const slug = generateSlug(finalVideo);
+  const markdown = await draftBlogPost(finalVideo, analysis, shareUrl, jobId);
   console.log(`  Draft generated (${markdown.length} chars)\n`);
 
   // Step 6: OG Image
   console.log('Step 6: Generating OG image...');
-  generateOG(video, analysis, slug);
+  generateOG(finalVideo, analysis, slug);
   console.log();
 
   // Step 7: Write
