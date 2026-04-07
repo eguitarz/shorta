@@ -93,7 +93,17 @@ async function generateOG(args) {
     thumbnailDataUri = await fetchImageAsBase64(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`);
   }
 
-  // Build the OG image as JSX
+  // Build the OG image as Satori element tree.
+  // Satori rule: every div with 2+ children MUST have display:'flex'.
+  // Avoid unsupported CSS (lineClamp, textOverflow on non-flex, etc).
+
+  const categoryItems = [
+    hookScore && `Hook ${hookScore}`,
+    structureScore && `Structure ${structureScore}`,
+    clarityScore && `Clarity ${clarityScore}`,
+    deliveryScore && `Delivery ${deliveryScore}`,
+  ].filter(Boolean).join('  |  ');
+
   const element = {
     type: 'div',
     props: {
@@ -105,183 +115,60 @@ async function generateOG(args) {
         flexDirection: 'column',
         padding: '60px',
         fontFamily: 'SpaceGrotesk',
-        position: 'relative',
       },
       children: [
-        // Header label
+        // Header
+        { type: 'div', props: { style: { fontSize: '14px', color: '#6b7280', letterSpacing: '2px', marginBottom: '24px' }, children: 'SHORTA AI ANALYSIS' } },
+        // Main row
         {
           type: 'div',
           props: {
-            style: {
-              fontSize: '14px',
-              color: '#6b7280',
-              textTransform: 'uppercase',
-              letterSpacing: '2px',
-              marginBottom: '24px',
-            },
-            children: 'SHORTA AI ANALYSIS',
-          },
-        },
-        // Main row: score + thumbnail
-        {
-          type: 'div',
-          props: {
-            style: {
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '40px',
-              flex: '1',
-            },
+            style: { display: 'flex', alignItems: 'flex-start', gap: '40px', flex: '1' },
             children: [
-              // Score + info column
+              // Left: score + info
               {
                 type: 'div',
                 props: {
-                  style: {
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: '1',
-                  },
+                  style: { display: 'flex', flexDirection: 'column', flex: '1' },
                   children: [
-                    // Score
+                    // Score row
                     {
                       type: 'div',
                       props: {
-                        style: {
-                          display: 'flex',
-                          alignItems: 'baseline',
-                          gap: '8px',
-                          marginBottom: '16px',
-                        },
+                        style: { display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' },
                         children: [
-                          {
-                            type: 'span',
-                            props: {
-                              style: {
-                                fontSize: '120px',
-                                fontWeight: '700',
-                                color: getScoreColor(score),
-                                lineHeight: '1',
-                              },
-                              children: String(score),
-                            },
-                          },
-                          {
-                            type: 'span',
-                            props: {
-                              style: { fontSize: '28px', color: '#6b7280' },
-                              children: '/100',
-                            },
-                          },
+                          { type: 'span', props: { style: { fontSize: '120px', fontWeight: '700', color: getScoreColor(score), lineHeight: '1' }, children: String(score) } },
+                          { type: 'span', props: { style: { fontSize: '28px', color: '#6b7280' }, children: '/100' } },
                         ],
                       },
                     },
-                    // Score bar
-                    {
-                      type: 'div',
-                      props: {
-                        style: {
-                          width: '200px',
-                          height: '6px',
-                          backgroundColor: '#1f2937',
-                          borderRadius: '3px',
-                          marginBottom: '24px',
-                          overflow: 'hidden',
-                        },
-                        children: {
-                          type: 'div',
-                          props: {
-                            style: {
-                              width: `${score}%`,
-                              height: '100%',
-                              backgroundColor: getScoreBarColor(score),
-                              borderRadius: '3px',
-                            },
-                          },
-                        },
-                      },
-                    },
                     // Title
-                    title ? {
-                      type: 'div',
-                      props: {
-                        style: {
-                          fontSize: '28px',
-                          color: '#e5e7eb',
-                          marginBottom: '8px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          lineClamp: 2,
-                          maxWidth: '600px',
-                        },
-                        children: title,
-                      },
-                    } : null,
+                    { type: 'div', props: { style: { fontSize: '28px', color: '#e5e7eb', marginBottom: '8px', maxWidth: '600px' }, children: (title || '').slice(0, 60) } },
                     // Creator
-                    creator ? {
-                      type: 'div',
-                      props: {
-                        style: {
-                          fontSize: '20px',
-                          color: '#9ca3af',
-                        },
-                        children: creator,
-                      },
-                    } : null,
-                  ].filter(Boolean),
+                    { type: 'div', props: { style: { fontSize: '20px', color: '#9ca3af' }, children: creator || '' } },
+                  ],
                 },
               },
-              // Thumbnail
-              thumbnailDataUri ? {
+              // Right: thumbnail
+              ...(thumbnailDataUri ? [{
                 type: 'img',
-                props: {
-                  src: thumbnailDataUri,
-                  width: 280,
-                  height: 158,
-                  style: {
-                    borderRadius: '8px',
-                    objectFit: 'cover',
-                    marginTop: '20px',
-                  },
-                },
-              } : null,
-            ].filter(Boolean),
+                props: { src: thumbnailDataUri, width: 280, height: 158, style: { borderRadius: '8px', marginTop: '20px' } },
+              }] : []),
+            ],
           },
         },
-        // Category scores row
-        (hookScore || structureScore || clarityScore || deliveryScore) ? {
-          type: 'div',
-          props: {
-            style: {
-              display: 'flex',
-              gap: '32px',
-              marginTop: '16px',
-              paddingTop: '16px',
-              borderTop: '1px solid #1f2937',
-            },
-            children: [
-              hookScore && { type: 'span', props: { style: { fontSize: '16px', color: '#fb923c' }, children: `Hook ${hookScore}` } },
-              structureScore && { type: 'span', props: { style: { fontSize: '16px', color: '#60a5fa' }, children: `Structure ${structureScore}` } },
-              clarityScore && { type: 'span', props: { style: { fontSize: '16px', color: '#4ade80' }, children: `Clarity ${clarityScore}` } },
-              deliveryScore && { type: 'span', props: { style: { fontSize: '16px', color: '#c084fc' }, children: `Delivery ${deliveryScore}` } },
-            ].filter(Boolean),
-          },
-        } : null,
-        // Branding
+        // Category scores + branding row
         {
           type: 'div',
           props: {
-            style: {
-              position: 'absolute',
-              bottom: '30px',
-              right: '60px',
-              fontSize: '14px',
-              color: '#6b7280',
-            },
-            children: 'shorta.ai',
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #1f2937' },
+            children: [
+              { type: 'div', props: { style: { fontSize: '16px', color: '#9ca3af' }, children: categoryItems || '' } },
+              { type: 'div', props: { style: { fontSize: '14px', color: '#6b7280' }, children: 'shorta.ai' } },
+            ],
           },
         },
-      ].filter(Boolean),
+      ],
     },
   };
 
