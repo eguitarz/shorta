@@ -39,14 +39,16 @@ const SPECIFIC_URL = process.argv.find(a => a.startsWith('--url='))?.split('=')[
 
 // Load env from wrangler.toml and .dev.vars
 function loadEnv() {
-  // Try .dev.vars first (local secrets)
-  const devVarsPath = join(ROOT, '.dev.vars');
-  if (existsSync(devVarsPath)) {
-    const lines = readFileSync(devVarsPath, 'utf-8').split('\n');
-    for (const line of lines) {
-      const match = line.match(/^(\w+)\s*=\s*(.+)$/);
-      if (match && !process.env[match[1]]) {
-        process.env[match[1]] = match[2].trim().replace(/^["']|["']$/g, '');
+  // Try .env.local and .dev.vars (local secrets)
+  for (const envFile of ['.env.local', '.dev.vars']) {
+    const envPath = join(ROOT, envFile);
+    if (existsSync(envPath)) {
+      const lines = readFileSync(envPath, 'utf-8').split('\n');
+      for (const line of lines) {
+        const match = line.match(/^(\w+)\s*=\s*(.+)$/);
+        if (match && !process.env[match[1]]) {
+          process.env[match[1]] = match[2].trim().replace(/^["']|["']$/g, '');
+        }
       }
     }
   }
