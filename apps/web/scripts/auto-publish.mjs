@@ -430,7 +430,8 @@ ${promptTemplate}
 6. Today's date is ${new Date().toISOString().split('T')[0]}
 7. Set the slug-appropriate coverImage path as: /blog/${generateSlug(video)}/og-report.png
 8. Do NOT include any image references (![...](...)). No frame screenshots. Use text-only beat analysis.
-9. Use the "Beat-by-Beat Breakdown" section heading, not "Frame-by-Frame Breakdown"`;
+9. Use the "Beat-by-Beat Breakdown" section heading, not "Frame-by-Frame Breakdown"
+10. Do NOT put timestamps in headings (e.g., use "### The Hook" not "### The Hook (0:00-0:03)"). Mention timestamps in body text instead.`;
 
   console.log('[Draft] Generating blog post with Gemini...');
 
@@ -443,6 +444,9 @@ ${promptTemplate}
 
   // Clean up: remove code fences if Gemini wraps it
   markdown = markdown.replace(/^```(?:markdown|md)?\n?/m, '').replace(/\n?```$/m, '');
+
+  // Strip timestamps from headings (e.g., "### The Hook (0:00-0:12)" → "### The Hook")
+  markdown = markdown.replace(/^(#{2,4}\s+.+?)\s*\(\d+:\d{2}[^)]*\)\s*$/gm, '$1');
 
   // Ensure frontmatter exists
   if (!markdown.startsWith('---')) {

@@ -42,17 +42,17 @@ faqs:
 
 ## Beat-by-Beat Breakdown
 
-### [Key Moment 1: e.g., "The Hook (0:00-0:03)"]
+### [Key Moment 1: e.g., "The Hook"]
 
-[What Shorta's AI found at this moment. What the creator did with framing, pacing, delivery, or structure that matters for retention. Reference the beat number, timestamp, and retention level from the analysis data. 1-2 paragraphs. NO image references.]
+[What Shorta's AI found at this moment. What the creator did with framing, pacing, delivery, or structure that matters for retention. Reference the beat number and retention level from the analysis data. Mention timestamps in the body text, NOT in the heading. 1-2 paragraphs. NO image references.]
 
-### [Key Moment 2]
+### [Key Moment 2: e.g., "The Visual Demo"]
 
-[Analysis of second key moment. Connect to the overall pattern. NO image references.]
+[Analysis of second key moment. Connect to the overall pattern. NO image references. NO timestamps in heading.]
 
 ### [Key Moment 3 (optional)]
 
-[If there's a third significant moment worth highlighting. NO image references.]
+[If there's a third significant moment worth highlighting. NO image references. NO timestamps in heading.]
 
 ## How This Applies to Your Videos
 

@@ -31,15 +31,15 @@ However, Shorta's AI identified a critical pattern in this video: while the core
 
 ## Beat-by-Beat Breakdown
 
-### The Critical Hook Miss (0:00-0:12)
+### The Critical Hook Miss
 
 Shorta's analysis of the opening beat highlights a "moderate_drop" in retention due to a slow start. The video begins with a conversational, almost generic introduction: "Okay, I recently bought this Rolleiflex camera." While Peter's natural charm shines through, this opening lacks the immediate punch required to capture attention within the critical first 3 seconds. The director's assessment specifically noted the "hook lacks pattern interrupt - opens with generic greeting." Shorta recommended cutting the first 5 seconds entirely and starting directly with a high-impact claim, such as: "This 60-year-old camera takes better photos than your phone." This immediate value proposition is crucial for retaining viewers in a crowded feed.
 
-### Engaging Visual Storytelling (0:12-0:50)
+### Engaging Visual Storytelling
 
 Once past the initial hook, Peter McKinnon's strengths truly take over. This segment, covering the camera's mechanics, saw only a "minimal_drop" in retention. Shorta noted "strong visual demonstration of the camera's unique features keeps the viewer engaged." Peter uses close-up B-roll of the Rolleiflex's unique top-down viewfinder, bellows system, and light meter, combined with his enthusiastic, clear explanations. This visually rich, informative approach is a hallmark of his content and a key driver for viewer engagement when the topic allows for detailed demonstrations.
 
-### The Abrupt Payoff (1:31-1:44)
+### The Abrupt Payoff
 
 While the restoration payoff itself (installation of the new glass) was "visually satisfying" with "minimal_drop" in retention, Shorta flagged the final beat (1:31-1:44) with a "high_drop." The video ends rather abruptly after showcasing the brighter viewfinder, without a clear call-to-action. Shorta's assessment: "The video ends abruptly without a clear call-to-action for the viewer." This leaves viewers without a clear next step, missing an opportunity to convert engaged viewers into subscribers, followers, or watchers of related content.
 
