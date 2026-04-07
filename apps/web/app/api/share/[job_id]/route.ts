@@ -80,9 +80,10 @@ export async function GET(
 
     // Strip replicationBlueprint from public responses — contains
     // creator-copying instructions that could cause PR issues
-    const storyboard = job.storyboard_result.storyboard
-      ? { ...job.storyboard_result.storyboard, replicationBlueprint: undefined }
-      : job.storyboard_result.storyboard;
+    const rawStoryboard = job.storyboard_result.storyboard;
+    const storyboard = rawStoryboard
+      ? (() => { const { replicationBlueprint, ...rest } = rawStoryboard; return rest; })()
+      : rawStoryboard;
 
     // Return analysis data (NO USER PII)
     const response = NextResponse.json({

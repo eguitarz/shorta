@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { trackEvent } from '@/lib/posthog';
-import posthog from '@/lib/posthog';
+import posthog, { trackEvent } from '@/lib/posthog';
 import {
   Loader2,
   AlertCircle,
