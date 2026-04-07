@@ -75,14 +75,14 @@ async function generateOG(args) {
     join(ROOT, 'node_modules/@fontsource/space-grotesk/files'),
     join(ROOT, '../../node_modules/@fontsource/space-grotesk/files'),
   ];
-  let fontDir = fontPaths.find(p => existsSync(join(p, 'space-grotesk-latin-700-normal.woff2')));
+  let fontDir = fontPaths.find(p => existsSync(join(p, 'space-grotesk-latin-700-normal.woff')));
   if (!fontDir) throw new Error(`Space Grotesk font not found in: ${fontPaths.join(', ')}`);
 
-  const spaceGroteskBold = readFileSync(join(fontDir, 'space-grotesk-latin-700-normal.woff2'));
+  const spaceGroteskBold = readFileSync(join(fontDir, 'space-grotesk-latin-700-normal.woff'));
 
   let systemFont;
   try {
-    systemFont = readFileSync(join(fontDir, 'space-grotesk-latin-400-normal.woff2'));
+    systemFont = readFileSync(join(fontDir, 'space-grotesk-latin-400-normal.woff'));
   } catch {
     systemFont = spaceGroteskBold;
   }
