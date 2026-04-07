@@ -90,14 +90,42 @@ function checkEnv() {
   }
 }
 
-// ─── 1. Discover Trending Video ───────────────────────────────────────────
+// ─── 1. Discover Video from Curated Creators ─────────────────────────────
+//
+// Curated list of well-known, value-driven, talking-head YouTubers.
+// These are established creators (500K+ subs) who teach, explain, or share
+// expertise. No entertainment, music, gaming, or one-off viral channels.
+//
+// To add creators: append { channelId, name, niche } to this list.
 
-const YOUTUBE_CATEGORIES = [
-  '24', // Entertainment
-  '22', // People & Blogs
-  '28', // Science & Technology
-  '26', // Howto & Style
-  '20', // Gaming
+const CURATED_CREATORS = [
+  // Business & Entrepreneurship
+  { channelId: 'UCGy2GclhUlHJBGnp7OzLEaQ', name: 'Ali Abdaal', niche: 'productivity' },
+  { channelId: 'UCvKRFNawVcuz4b9ihUTFzmQ', name: 'Pat Flynn', niche: 'business' },
+  { channelId: 'UCJ24N4O0bP7LGLBDvye7oC8', name: 'Matt D\'Avella', niche: 'self-improvement' },
+  { channelId: 'UC7SeFWZYFmsm1tqWxfuT_1Q', name: 'Thomas Frank', niche: 'productivity' },
+  { channelId: 'UC-lHJZR3Gqxm24_Vd_AJ5Yw', name: 'PewDiePie', niche: 'commentary' },
+  // Tech & Education
+  { channelId: 'UCsBjURrPoezykLs9EqgamOA', name: 'Fireship', niche: 'tech' },
+  { channelId: 'UCXv1JCOwgl2SCbEI6ft7R9g', name: 'Marques Brownlee', niche: 'tech-review' },
+  { channelId: 'UCHnyfMqiRRG1u-2MsSQLbXA', name: 'Veritasium', niche: 'science' },
+  { channelId: 'UCsooa4yRKGN_zEE8iknghZA', name: 'TED-Ed', niche: 'education' },
+  { channelId: 'UCWX3yGbODkeMNsEhR2BZTFA', name: 'Linus Tech Tips', niche: 'tech' },
+  // Finance & Investing
+  { channelId: 'UCL8w_A8p8P1HWI3k6PR5Z6w', name: 'Graham Stephan', niche: 'finance' },
+  { channelId: 'UCnMn36GP_NoBKkGNODadfbg', name: 'Andrei Jikh', niche: 'finance' },
+  // Health & Self-improvement
+  { channelId: 'UCIHdDJ0tjn_3j-FS7s_X1kQ', name: 'Andrew Huberman', niche: 'health-science' },
+  { channelId: 'UCfQgsKhHjSyRLOp9mnffqVg', name: 'Jay Shetty', niche: 'self-improvement' },
+  // Design & Creative
+  { channelId: 'UCabq1UT_327kUnpJElzR0dQ', name: 'The Futur', niche: 'design-business' },
+  // Marketing & Growth
+  { channelId: 'UCl-Zrl0QhF66lu1aGXaTbfw', name: 'Think Media', niche: 'youtube-growth' },
+  { channelId: 'UC3DkFux8Iv-aYnTRWzwaiBA', name: 'Peter McKinnon', niche: 'filmmaking' },
+  { channelId: 'UCJ0-OtVpF0wOKEqT2Z1HEtA', name: 'Colin and Samir', niche: 'creator-economy' },
+  // AI & Future
+  { channelId: 'UCbfYPyITQ-7l4upoX8nvctg', name: 'Two Minute Papers', niche: 'ai-research' },
+  { channelId: 'UCXUPKJO5MZQN11PqgIvyuvQ', name: 'Matt Wolfe', niche: 'ai-tools' },
 ];
 
 async function discoverTrendingVideo() {
@@ -108,41 +136,67 @@ async function discoverTrendingVideo() {
     return details;
   }
 
-  // Pick a random category to rotate weekly
-  const weekOfYear = Math.floor((Date.now() - new Date(2026, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
-  const categoryId = YOUTUBE_CATEGORIES[weekOfYear % YOUTUBE_CATEGORIES.length];
+  // Shuffle creators and try each until we find a recent video not yet analyzed
+  const shuffled = [...CURATED_CREATORS].sort(() => Math.random() - 0.5);
 
-  console.log(`[Discover] Fetching trending videos in category ${categoryId}...`);
+  for (const creator of shuffled) {
+    console.log(`[Discover] Checking ${creator.name} (${creator.niche})...`);
 
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=US&videoCategoryId=${categoryId}&maxResults=10&key=${YOUTUBE_API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`YouTube API error: ${res.status} ${await res.text()}`);
-  const data = await res.json();
+    try {
+      const video = await getLatestVideo(creator);
+      if (!video) continue;
 
-  if (!data.items?.length) throw new Error('No trending videos found');
+      // Skip if already published
+      if (isAlreadyPublished(video.videoId)) {
+        console.log(`  Already published, skipping.`);
+        continue;
+      }
 
-  // Filter: >100K views, not a live stream, has good metadata
-  const candidates = data.items.filter(v => {
-    const views = parseInt(v.statistics.viewCount || '0', 10);
-    return views > 100_000 && v.snippet.liveBroadcastContent === 'none';
-  });
+      console.log(`  Found: "${video.title}" (${video.viewCount.toLocaleString()} views)`);
+      return { ...video, niche: creator.niche };
+    } catch (err) {
+      console.log(`  Error: ${err.message}, trying next creator...`);
+      continue;
+    }
+  }
 
-  if (!candidates.length) throw new Error('No suitable trending videos after filtering');
+  throw new Error('No suitable videos found from any curated creator');
+}
 
-  // Pick the top one (most views)
-  candidates.sort((a, b) => parseInt(b.statistics.viewCount) - parseInt(a.statistics.viewCount));
-  const video = candidates[0];
+async function getLatestVideo(creator) {
+  // Step 1: Get the channel's uploads playlist
+  const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${creator.channelId}&key=${YOUTUBE_API_KEY}`;
+  const channelRes = await fetch(channelUrl);
+  if (!channelRes.ok) return null;
+  const channelData = await channelRes.json();
+  const uploadsPlaylist = channelData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+  if (!uploadsPlaylist) return null;
 
-  return {
-    videoId: video.id,
-    title: video.snippet.title,
-    channelTitle: video.snippet.channelTitle,
-    channelId: video.snippet.channelId,
-    viewCount: parseInt(video.statistics.viewCount),
-    url: `https://www.youtube.com/watch?v=${video.id}`,
-    thumbnailUrl: video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.default?.url,
-    categoryId,
-  };
+  // Step 2: Get recent uploads (last 5)
+  const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylist}&maxResults=5&key=${YOUTUBE_API_KEY}`;
+  const playlistRes = await fetch(playlistUrl);
+  if (!playlistRes.ok) return null;
+  const playlistData = await playlistRes.json();
+  const recentVideos = playlistData.items || [];
+
+  if (!recentVideos.length) return null;
+
+  // Step 3: Get stats for the most recent video
+  const latestVideoId = recentVideos[0].snippet.resourceId.videoId;
+  const details = await getVideoDetails(latestVideoId);
+
+  // Require minimum 50K views (established creator, not a dud)
+  if (details.viewCount < 50_000) {
+    // Try the second most recent if the latest is too fresh
+    if (recentVideos.length > 1) {
+      const secondId = recentVideos[1].snippet.resourceId.videoId;
+      const secondDetails = await getVideoDetails(secondId);
+      if (secondDetails.viewCount >= 50_000) return secondDetails;
+    }
+    return null;
+  }
+
+  return details;
 }
 
 async function getVideoDetails(videoId) {
