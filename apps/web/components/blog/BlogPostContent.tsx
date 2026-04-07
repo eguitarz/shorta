@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { ShortaReportEmbed } from './ShortaReportEmbed';
 
 interface Props {
@@ -64,7 +65,7 @@ export function BlogPostContent({ content }: Props) {
   if (segments.length === 1 && segments[0].type === 'markdown') {
     return (
       <div className={PROSE_CLASSES}>
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{content}</ReactMarkdown>
       </div>
     );
   }

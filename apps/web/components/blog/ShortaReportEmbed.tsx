@@ -22,10 +22,16 @@ interface AnalysisData {
   };
   storyboard?: {
     performance?: {
+      hookStrength?: number;
+      structurePacing?: number;
+      deliveryPerformance?: number;
       hookEffectiveness?: string;
       structureScore?: string;
       clarityScore?: string;
       deliveryScore?: string;
+      content?: {
+        valueClarity?: number;
+      };
     };
   };
 }
@@ -137,10 +143,10 @@ export function ShortaReportEmbed({ jobId, creatorName, videoTitle }: ShortaRepo
   const performance = data.storyboard?.performance;
 
   const categories = [
-    { name: 'Hook', score: parseGrade(performance?.hookEffectiveness), key: 'hook' },
-    { name: 'Structure', score: parseGrade(performance?.structureScore), key: 'structure' },
-    { name: 'Clarity', score: parseGrade(performance?.clarityScore), key: 'clarity' },
-    { name: 'Delivery', score: parseGrade(performance?.deliveryScore), key: 'delivery' },
+    { name: 'Hook', score: performance?.hookStrength ?? parseGrade(performance?.hookEffectiveness), key: 'hook' },
+    { name: 'Structure', score: performance?.structurePacing ?? parseGrade(performance?.structureScore), key: 'structure' },
+    { name: 'Clarity', score: performance?.content?.valueClarity ?? parseGrade(performance?.clarityScore), key: 'clarity' },
+    { name: 'Delivery', score: performance?.deliveryPerformance ?? parseGrade(performance?.deliveryScore), key: 'delivery' },
   ];
 
   return (
