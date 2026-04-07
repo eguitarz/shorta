@@ -428,7 +428,9 @@ ${promptTemplate}
 4. Keep it under 1500 words
 5. Output ONLY the markdown content (starting with --- frontmatter)
 6. Today's date is ${new Date().toISOString().split('T')[0]}
-7. Set the slug-appropriate coverImage path as: /blog/${generateSlug(video)}/og-report.png`;
+7. Set the slug-appropriate coverImage path as: /blog/${generateSlug(video)}/og-report.png
+8. Do NOT include any image references (![...](...)). No frame screenshots. Use text-only beat analysis.
+9. Use the "Beat-by-Beat Breakdown" section heading, not "Frame-by-Frame Breakdown"`;
 
   console.log('[Draft] Generating blog post with Gemini...');
 

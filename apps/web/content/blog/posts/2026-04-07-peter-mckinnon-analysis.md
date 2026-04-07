@@ -29,17 +29,13 @@ Peter McKinnon consistently demonstrates a mastery of engaging delivery and comp
 
 However, Shorta's AI identified a critical pattern in this video: while the core content and delivery are exceptionally strong, fundamental structural issues at the beginning and end significantly impacted overall retention and potential viewership. A slow hook (73/100) and an abrupt ending without a clear call-to-action contributed to viewer drop-off, suggesting that even with a strong performance in the middle, weak "bookends" can limit a video's full potential.
 
-## Frame-by-Frame Breakdown
+## Beat-by-Beat Breakdown
 
 ### The Critical Hook Miss (0:00-0:12)
-
-![Frame screenshot](/blog/2026-04-07-peter-mckinnon-analysis/frame-01-hook.png)
 
 Shorta's analysis of the opening beat highlights a "moderate_drop" in retention due to a slow start. The video begins with a conversational, almost generic introduction: "Okay, I recently bought this Rolleiflex camera." While Peter's natural charm shines through, this opening lacks the immediate punch required to capture attention within the critical first 3 seconds. The director's assessment specifically noted the "hook lacks pattern interrupt - opens with generic greeting." Shorta recommended cutting the first 5 seconds entirely and starting directly with a high-impact claim, such as: "This 60-year-old camera takes better photos than your phone." This immediate value proposition is crucial for retaining viewers in a crowded feed.
 
 ### Engaging Visual Storytelling (0:12-0:50)
-
-![Frame screenshot](/blog/2026-04-07-peter-mckinnon-analysis/frame-02-pattern.png)
 
 Once past the initial hook, Peter McKinnon's strengths truly take over. This segment, covering the camera's mechanics, saw only a "minimal_drop" in retention. Shorta noted "strong visual demonstration of the camera's unique features keeps the viewer engaged." Peter uses close-up B-roll of the Rolleiflex's unique top-down viewfinder, bellows system, and light meter, combined with his enthusiastic, clear explanations. This visually rich, informative approach is a hallmark of his content and a key driver for viewer engagement when the topic allows for detailed demonstrations.
 

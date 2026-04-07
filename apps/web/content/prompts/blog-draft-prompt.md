@@ -40,23 +40,19 @@ faqs:
 
 [The main editorial insight. What this creator does that others don't. This is the value of the post. Not the scores, but the WHY behind them. 2-3 paragraphs.]
 
-## Frame-by-Frame Breakdown
+## Beat-by-Beat Breakdown
 
 ### [Key Moment 1: e.g., "The Hook (0:00-0:03)"]
 
-![Frame screenshot](/blog/[slug]/frame-01-hook.png)
-
-[What Gemini's visual analysis found at this moment. What the creator did with framing, text, movement, or expression that a human reviewer might miss. 1-2 paragraphs.]
+[What Shorta's AI found at this moment. What the creator did with framing, pacing, delivery, or structure that matters for retention. Reference the beat number, timestamp, and retention level from the analysis data. 1-2 paragraphs. NO image references.]
 
 ### [Key Moment 2]
 
-![Frame screenshot](/blog/[slug]/frame-02-pattern.png)
-
-[Analysis of second key moment. Connect to the overall pattern.]
+[Analysis of second key moment. Connect to the overall pattern. NO image references.]
 
 ### [Key Moment 3 (optional)]
 
-[If there's a third significant moment worth highlighting.]
+[If there's a third significant moment worth highlighting. NO image references.]
 
 ## How This Applies to Your Videos
 
