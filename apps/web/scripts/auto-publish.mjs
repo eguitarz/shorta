@@ -262,7 +262,7 @@ function isAlreadyPublished(videoId) {
 async function runAnalysis(videoUrl) {
   const supabase = createSupabase();
 
-  // Create job directly in DB
+  // Create job as anonymous so the polling endpoint allows access without auth
   const { data: job, error } = await supabase
     .from('analysis_jobs')
     .insert({
@@ -270,7 +270,7 @@ async function runAnalysis(videoUrl) {
       status: 'pending',
       current_step: 0,
       total_steps: 3,
-      is_anonymous: false,
+      is_anonymous: true,
     })
     .select()
     .single();
@@ -278,31 +278,44 @@ async function runAnalysis(videoUrl) {
   if (error) throw new Error(`Failed to create job: ${error.message}`);
   console.log(`[Analysis] Created job: ${job.id}`);
 
-  // Poll the analysis API to trigger processing steps
+  // Poll the production API to trigger processing steps.
+  // The analysis runs on Cloudflare Workers (Gemini video analysis).
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://shorta.ai';
-  const maxAttempts = 60; // 5 minutes at 5s intervals
+  const maxAttempts = 90; // 7.5 minutes at 5s intervals (storyboard step can take 90s+)
 
   for (let i = 0; i < maxAttempts; i++) {
     await sleep(5000);
 
-    const pollRes = await fetch(`${APP_URL}/api/jobs/analysis/${job.id}`);
-    if (!pollRes.ok) {
-      console.log(`[Analysis] Poll failed (${pollRes.status}), retrying...`);
-      continue;
-    }
+    try {
+      const pollRes = await fetch(`${APP_URL}/api/jobs/analysis/${job.id}`);
+      if (!pollRes.ok) {
+        const errText = await pollRes.text().catch(() => '');
+        console.log(`[Analysis] Poll ${pollRes.status}: ${errText.slice(0, 100)}`);
+        // 403 means auth issue, 500 might be transient
+        if (pollRes.status === 403) {
+          console.log('[Analysis] Auth error. Job was created with is_anonymous=true, this should work.');
+        }
+        continue;
+      }
 
-    const pollData = await pollRes.json();
-    console.log(`[Analysis] Step ${pollData.current_step}/${pollData.total_steps} (${pollData.status})`);
+      const pollData = await pollRes.json();
+      const step = pollData.current_step ?? '?';
+      const total = pollData.total_steps ?? 3;
+      console.log(`[Analysis] Step ${step}/${total} (${pollData.status})`);
 
-    if (pollData.status === 'completed') {
-      return { jobId: job.id, analysis: pollData };
-    }
-    if (pollData.status === 'failed') {
-      throw new Error(`Analysis failed: ${pollData.error_message || 'Unknown error'}`);
+      if (pollData.status === 'completed') {
+        return { jobId: job.id, analysis: pollData };
+      }
+      if (pollData.status === 'failed') {
+        throw new Error(`Analysis failed: ${pollData.error_message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      if (err.message?.includes('Analysis failed')) throw err;
+      console.log(`[Analysis] Poll error: ${err.message}, retrying...`);
     }
   }
 
-  throw new Error('Analysis timed out after 5 minutes');
+  throw new Error('Analysis timed out after 7.5 minutes');
 }
 
 // ─── 4. Mark as Public ──────────────────────────────────────────────────
