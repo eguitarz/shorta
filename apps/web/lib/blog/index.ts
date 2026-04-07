@@ -18,6 +18,7 @@ export interface BlogPost {
       canonicalUrl?: string;
       ogImage?: string;
     };
+    faqs?: Array<{ question: string; answer: string }>;
   };
   content: string;
   readingTime: string;
