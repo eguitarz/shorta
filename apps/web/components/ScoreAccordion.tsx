@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { trackEvent } from "@/lib/posthog";
 
 interface ScoreAccordionProps {
   category: "hook" | "structure" | "clarity" | "delivery";
@@ -262,8 +263,8 @@ export function ScoreAccordion({
         onClick={() => {
           const next = !expanded;
           setExpanded(next);
-          if (next && typeof window !== 'undefined' && (window as any).posthog) {
-            (window as any).posthog.capture('score_accordion_expanded', { category });
+          if (next) {
+            trackEvent('score_accordion_expanded', { category });
           }
         }}
         aria-expanded={expanded}

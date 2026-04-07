@@ -1,6 +1,10 @@
 # TODOS
 
-(no open items)
+### Pin analysis data for blog-referenced analyses
+**Added:** 2026-04-07 (from /plan-eng-review)
+**What:** Add a `pinned` boolean to `analysis_jobs` table. Jobs referenced in blog posts (via `<!-- shorta-report:JOB_ID -->` placeholders) should be marked pinned and excluded from any future data cleanup or deletion automation.
+**Why:** Blog posts are permanent content. If analysis data is ever cleaned up automatically, embedded report cards will break silently. Currently mitigated by not having cleanup automation, but this should be addressed before adding any data lifecycle management.
+**Depends on:** Only needed before implementing data cleanup/retention policies.
 
 ## Completed
 

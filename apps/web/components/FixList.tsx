@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
+import { trackEvent } from "@/lib/posthog";
 import { NICHE_WEIGHTS } from "@/lib/scoring/constants";
 import type { VideoFormat } from "@/lib/linter/types";
 import { SpriteFrame } from "@/components/SpriteFrame";
@@ -144,9 +145,7 @@ export function FixList({
                 clickable ? "cursor-pointer hover:border-gray-700 transition-colors" : ""
               }`}
               onClick={clickable ? () => {
-                if (typeof window !== 'undefined' && (window as any).posthog) {
-                  (window as any).posthog.capture('fix_list_card_clicked', { category: change.category, index });
-                }
+                trackEvent('fix_list_card_clicked', { category: change.category, index });
                 onCardClick(change.timestamp);
               } : undefined}
               role={clickable ? "button" : undefined}
