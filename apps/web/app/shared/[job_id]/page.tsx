@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import { trackEvent } from '@/lib/posthog';
+import posthog from '@/lib/posthog';
 import {
   Loader2,
   AlertCircle,
@@ -144,6 +146,20 @@ export default function SharedAnalysisPage() {
 
         console.log('[SharedPage] Analysis loaded successfully');
         setAnalysis(data.analysis);
+
+        // Track shared report view with referrer for attribution
+        const referrer = document.referrer;
+        const isFromBlog = referrer.includes('/blog/');
+        trackEvent('shared_report_viewed', {
+          job_id: params.job_id,
+          referrer: referrer || 'direct',
+          from_blog: isFromBlog,
+        });
+        // Set person property for signup attribution
+        if (isFromBlog) {
+          const blogSlug = referrer.match(/\/blog\/([^/?#]+)/)?.[1];
+          posthog.setPersonProperties({ last_blog_report_slug: blogSlug });
+        }
       } catch (err) {
         console.error('[SharedPage] Failed to load:', err);
         setError(err instanceof Error ? err.message : 'Failed to load analysis');

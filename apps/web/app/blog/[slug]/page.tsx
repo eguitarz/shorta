@@ -8,6 +8,7 @@ import { TableOfContents } from '@/components/blog/TableOfContents';
 import { Footer } from '@/components/Footer';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { BlogPostTracker } from '@/components/blog/BlogPostTracker';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -91,6 +92,22 @@ export default async function BlogPostPage({ params }: Props) {
     },
   };
 
+  // FAQ structured data (if faqs are defined in frontmatter)
+  const faqStructuredData = post.frontmatter.faqs && post.frontmatter.faqs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: post.frontmatter.faqs.map(faq => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faq.answer,
+          },
+        })),
+      }
+    : null;
+
   return (
     <>
       {/*
@@ -103,6 +120,17 @@ export default async function BlogPostPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      {faqStructuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
+        />
+      )}
+
+      <BlogPostTracker
+        slug={slug}
+        category={post.frontmatter.categories[0]}
       />
 
       <article className="min-h-screen bg-background">
