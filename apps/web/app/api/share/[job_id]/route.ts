@@ -78,17 +78,28 @@ export async function GET(
 
     console.log('[Share] Successfully serving public share for job:', job_id);
 
+    // Strip replicationBlueprint from public responses — contains
+    // creator-copying instructions that could cause PR issues
+    const storyboard = job.storyboard_result.storyboard
+      ? { ...job.storyboard_result.storyboard, replicationBlueprint: undefined }
+      : job.storyboard_result.storyboard;
+
     // Return analysis data (NO USER PII)
-    return NextResponse.json({
+    const response = NextResponse.json({
       analysis: {
         url: job.storyboard_result.url,
         isUploadedFile: job.storyboard_result.isUploadedFile || false,
         classification: job.storyboard_result.classification,
         lintSummary: job.storyboard_result.lintSummary,
-        storyboard: job.storyboard_result.storyboard,
+        storyboard,
         analyzedAt: job.completed_at,
       },
     });
+
+    // Cache for 24h — analysis data doesn't change after completion
+    response.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=86400');
+
+    return response;
 
   } catch (error) {
     console.error('Public share API error:', error);
