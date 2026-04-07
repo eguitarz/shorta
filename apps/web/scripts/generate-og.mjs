@@ -70,19 +70,21 @@ async function generateOG(args) {
   const clarityScore = args.clarity || '';
   const deliveryScore = args.delivery || '';
 
-  // Load fonts
-  const spaceGroteskBold = readFileSync(
-    join(ROOT, 'node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff2')
-  );
+  // Load fonts — check both apps/web/node_modules and root node_modules (monorepo hoisting)
+  const fontPaths = [
+    join(ROOT, 'node_modules/@fontsource/space-grotesk/files'),
+    join(ROOT, '../../node_modules/@fontsource/space-grotesk/files'),
+  ];
+  let fontDir = fontPaths.find(p => existsSync(join(p, 'space-grotesk-latin-700-normal.woff2')));
+  if (!fontDir) throw new Error(`Space Grotesk font not found in: ${fontPaths.join(', ')}`);
 
-  // Try to find a regular weight font for body text
+  const spaceGroteskBold = readFileSync(join(fontDir, 'space-grotesk-latin-700-normal.woff2'));
+
   let systemFont;
   try {
-    systemFont = readFileSync(
-      join(ROOT, 'node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2')
-    );
+    systemFont = readFileSync(join(fontDir, 'space-grotesk-latin-400-normal.woff2'));
   } catch {
-    systemFont = spaceGroteskBold; // fallback
+    systemFont = spaceGroteskBold;
   }
 
   // Fetch YouTube thumbnail
