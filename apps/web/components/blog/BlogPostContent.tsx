@@ -85,7 +85,7 @@ export function BlogPostContent({ content }: Props) {
         }
         return (
           <div key={`md-${i}`} className={PROSE_CLASSES}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{segment.content || ''}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{segment.content || ''}</ReactMarkdown>
           </div>
         );
       })}
