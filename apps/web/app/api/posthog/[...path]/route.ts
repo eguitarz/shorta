@@ -44,8 +44,12 @@ async function handleRequest(
 ) {
 	try {
 		const path = params.path.join('/');
-		const searchParams = request.nextUrl.searchParams.toString();
-		const queryString = searchParams ? `?${searchParams}` : '';
+		const searchParams = new URL(request.url).searchParams;
+		// Force PostHog to capture IP by setting this param, as client may send ip=0
+		searchParams.set('ip', '1');
+		
+		const searchParamsStr = searchParams.toString();
+		const queryString = searchParamsStr ? `?${searchParamsStr}` : '';
 
 		// Determine which host to use based on the path
 		// Static assets go to asset host, everything else goes to API host
@@ -59,8 +63,8 @@ async function handleRequest(
 			try {
 				// PostHog uses client-side compression (compression=gzip-js in URL)
 				// so we need to check the query string, not content-encoding header
-				const isCompressed = searchParams.includes('compression=gzip') ||
-				                     searchParams.includes('compression=base64');
+				const isCompressed = searchParamsStr.includes('compression=gzip') ||
+				                     searchParamsStr.includes('compression=base64');
 
 				// Always use binary for compressed data
 				if (isCompressed) {
