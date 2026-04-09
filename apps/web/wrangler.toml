@@ -33,8 +33,7 @@ STRIPE_PRO_MONTHLY_PRICE_ID = "price_0SyyJi3ieIhLaR2RaV7y2TTO"
 STRIPE_PRO_YEARLY_PRICE_ID = "price_0SyyK73ieIhLaR2ReVBdNVsV"
 STRIPE_PRODUCER_MONTHLY_PRICE_ID = "price_0SyyKn3ieIhLaR2RtEyI7ml6"
 STRIPE_PRODUCER_YEARLY_PRICE_ID = "price_0SyyLD3ieIhLaR2ROSDAMIyZ"
-# NEXT_PUBLIC_POSTHOG_KEY — set via Cloudflare dashboard → Workers → Settings → Variables
-# (do NOT hardcode here — this file is committed to git)
+NEXT_PUBLIC_POSTHOG_KEY = "YOUR_POSTHOG_KEY"
 NEXT_PUBLIC_POSTHOG_HOST = "https://us.i.posthog.com"
 
 # LLM Configuration

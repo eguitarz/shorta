@@ -95,6 +95,12 @@ async function handleRequest(
 			}
 		});
 
+		// Explicitly forward the client IP address so PostHog can track it properly
+		const clientIp = request.ip || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
+		if (clientIp) {
+			headers.set('X-Forwarded-For', clientIp);
+		}
+
 		// Create the proxied request
 		const proxyRequest = new Request(targetUrl, {
 			method: request.method,
