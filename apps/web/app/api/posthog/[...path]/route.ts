@@ -100,9 +100,14 @@ async function handleRequest(
 		});
 
 		// Explicitly forward the client IP address so PostHog can track it properly
-		const clientIp = request.ip || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
+		// Cloudflare Workers pass the real IP in the cf-connecting-ip header
+		const clientIp = request.headers.get('cf-connecting-ip') || request.ip || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
+		
 		if (clientIp) {
-			headers.set('X-Forwarded-For', clientIp);
+			// If there are multiple proxies, X-Forwarded-For contains a comma-separated list.
+			// We only want the first one (original client).
+			const firstIp = clientIp.split(',')[0].trim();
+			headers.set('X-Forwarded-For', firstIp);
 		}
 
 		// Create the proxied request
