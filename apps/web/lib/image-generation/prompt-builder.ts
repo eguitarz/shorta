@@ -13,6 +13,11 @@ const contentTypeStyles: Record<string, string> = {
     'Clear instructional setup, well-organized workspace, bright even lighting, educational context',
   gameplay:
     'Gaming setup with RGB lighting, screen glow illumination, dark background, neon accent colors',
+  // AI Animation mode: the concrete style is supplied by the user as
+  // AnimationMeta.styleAnchor and injected at the call site — this fallback
+  // just ensures the baseline text emphasizes consistency/identity locking.
+  ai_animation:
+    'Animated scene with cohesive art direction across beats, consistent character identity, 9:16 vertical composition for short-form video',
 };
 
 /**
