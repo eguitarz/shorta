@@ -5,6 +5,33 @@ const IMAGE_GENERATION_COST_PER_IMAGE = 10; // Define the cost per image in cred
 const THUMBNAIL_ANALYSIS_COST = 20; // AI thumbnail analysis with Gemini vision
 const STORYBOARD_GENERATION_COST = 50; // Generate director storyboard from approved changes
 
+// ────────────────────────────────────────────────────────────────────────────
+// AI Animation Storyboard pricing
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Base cost for an animation storyboard. Covers Pass 1 (arc + char
+ * descriptions) and Pass 2 (beat generation). Per-image costs are charged
+ * separately as they generate, at IMAGE_GENERATION_COST_PER_IMAGE each.
+ * Decided in eng review (4A): 150 base + ~70 for images = ~220 typical.
+ */
+const ANIMATION_STORYBOARD_BASE_COST = 150;
+
+/**
+ * Hard cap per animation job. If cumulative charges (base + char sheets +
+ * beat images + re-roll retries) reach this, the job halts and the overage
+ * (if any) is refunded; the UI renders a "Spend cap reached" banner with a
+ * continue CTA. Prevents retry-loop billing surprises (Codex T6).
+ */
+const MAX_CREDITS_PER_ANIMATION_JOB = 350;
+
+/**
+ * How many free re-rolls a user gets per animation storyboard before further
+ * re-rolls are credit-gated at IMAGE_GENERATION_COST_PER_IMAGE each. Tracked
+ * per-storyboard on the client + validated server-side.
+ */
+const FREE_REROLLS_PER_STORYBOARD = 3;
+
 /**
  * Checks if a user has enough credits to create a storyboard.
  * All tiers (including founder/lifetime) use credits.
@@ -153,8 +180,58 @@ export async function chargeCredits(
   return { error: null };
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// Animation-mode helpers
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Check whether user has enough credits to START an animation job (base cost
+ * only; image costs are checked as they're generated).
+ */
+export async function hasSufficientCreditsForAnimationStoryboard(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<boolean> {
+  return hasSufficientCredits(supabase, userId, ANIMATION_STORYBOARD_BASE_COST);
+}
+
+/**
+ * Charge the animation storyboard base cost (Pass 1 + Pass 2 LLM). Called on
+ * job creation. If the job later fails before delivering any value (i.e. char
+ * sheets gen fails hard — though that's now soft-fail per Codex T3), the
+ * caller should compensate via `chargeCredits(..., -ANIMATION_STORYBOARD_BASE_COST)`.
+ */
+export async function chargeAnimationStoryboardBase(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<{ error: any }> {
+  return chargeCredits(supabase, userId, ANIMATION_STORYBOARD_BASE_COST);
+}
+
+/**
+ * Given a user's current re-roll count on a storyboard, tell callers whether
+ * this re-roll should be free or should charge IMAGE_GENERATION_COST_PER_IMAGE.
+ */
+export function canRerollFree(currentRerollCount: number): boolean {
+  return currentRerollCount < FREE_REROLLS_PER_STORYBOARD;
+}
+
+/**
+ * Charge for a post-cap re-roll. Returns an error if insufficient credits.
+ * Callers handle the "show upgrade modal" UX on error.
+ */
+export async function chargeReroll(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<{ error: any }> {
+  return chargeCredits(supabase, userId, IMAGE_GENERATION_COST_PER_IMAGE);
+}
+
 export {
   IMAGE_GENERATION_COST_PER_IMAGE,
   THUMBNAIL_ANALYSIS_COST,
   STORYBOARD_GENERATION_COST,
+  ANIMATION_STORYBOARD_BASE_COST,
+  MAX_CREDITS_PER_ANIMATION_JOB,
+  FREE_REROLLS_PER_STORYBOARD,
 };

@@ -68,3 +68,113 @@ export type BeatForImage = Pick<
 	Beat,
 	'beatNumber' | 'title' | 'type' | 'visual' | 'script' | 'directorNotes' | 'shotType' | 'cameraMovement' | 'bRollSuggestions'
 >;
+
+// ────────────────────────────────────────────────────────────────────────────
+// AI Animation Storyboard types
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Arc template id. `custom` routes to `arcCustomDescription`. */
+export type ArcTemplateId =
+	| 'setup_twist_payoff'
+	| 'problem_escalation_resolution'
+	| 'loop'
+	| 'reveal'
+	| 'reversal'
+	| 'chase_build'
+	| 'custom';
+
+/** Where a beat sits in the narrative arc. */
+export type NarrativeRole =
+	| 'setup'
+	| 'inciting'
+	| 'escalation'
+	| 'twist'
+	| 'payoff'
+	| 'button';
+
+/** One character in an animation storyboard. */
+export interface AnimationCharacter {
+	/** Stable id used as characterRefs entry on beats. e.g. 'char_1'. */
+	id: string;
+	name: string;
+	/** 3-5 appearance traits, user-authored. */
+	traits: string[];
+	/** One-sentence personality, user-authored. */
+	personality: string;
+	/**
+	 * AI-generated description of the character, suitable for injecting into
+	 * every beat prompt as text. Set by Pass 1 of the animation pipeline.
+	 */
+	sheetPrompt?: string;
+	/** Storage path in the private character-sheets bucket. Undefined until image generated. */
+	sheetStoragePath?: string;
+	sheetGeneratedAt?: string;
+	/** If char sheet generation failed, reason surfaced to the retry UI. */
+	sheetFailureReason?: string;
+}
+
+/**
+ * Storyboard-level animation metadata. NULL on non-animation storyboards.
+ * Lives as a jsonb column on `generated_storyboards`.
+ */
+export interface AnimationMeta {
+	/** User-authored one-sentence premise. */
+	logline: string;
+	/** Tone picked from chip group (e.g. 'funny', 'heartwarming'). */
+	tone: string;
+	/** Visual style descriptor (e.g. 'Pixar-ish 3D', 'Ghibli 2D', 'low-poly'). */
+	styleAnchor: string;
+	/** Setting/world in one sentence. */
+	sceneAnchor: string;
+	/** Arc structure the user picked. */
+	arcTemplate: ArcTemplateId;
+	/** Free-form arc description. Only set when arcTemplate === 'custom'. */
+	arcCustomDescription?: string;
+	/** User-authored payoff — required; this is the fun moment. */
+	payoff: string;
+	/** 1-2 characters. */
+	characters: AnimationCharacter[];
+}
+
+/** Wizard input before a storyboard exists (posted to /api/jobs/animation-storyboard/create). */
+export interface AnimationWizardSpec {
+	logline: string;
+	tone: string;
+	styleAnchor: string;
+	sceneAnchor: string;
+	arcTemplate: ArcTemplateId;
+	arcCustomDescription?: string;
+	payoff: string;
+	characters: Array<Pick<AnimationCharacter, 'name' | 'traits' | 'personality'>>;
+}
+
+/**
+ * Animation-mode beat extensions. Additive — all fields optional on the base
+ * Beat type so legacy talking_head storyboards (animation_meta = null) still
+ * type-check. Pipelines that produce animation output MUST populate these.
+ */
+export interface AnimationBeatFields {
+	narrativeRole?: NarrativeRole;
+	/** Character ids from AnimationMeta.characters[].id that appear in this beat. */
+	characterRefs?: string[];
+	/** What each character does in this beat. */
+	characterAction?: string;
+	/** Framing + movement semantics (richer than just shotType + cameraMovement). */
+	cameraAction?: string;
+	/** Scene-specific visual detail that inherits from AnimationMeta.sceneAnchor. */
+	sceneSnippet?: string;
+	/** Optional dialogue line. */
+	dialogue?: string;
+}
+
+/**
+ * Beat with optional animation fields attached. Beats written by the animation
+ * pipeline should populate the Animation* fields; readers can narrow via
+ * `'narrativeRole' in beat` or similar.
+ *
+ * We intentionally do NOT store rendered exportPrompts on the beat. Per the
+ * eng review (Codex T1), prompts are rendered on demand from this structured
+ * data via `lib/animation/render-export.ts` so prompt-engineering improvements
+ * propagate without migration.
+ */
+export type AnimationBeat = Beat & AnimationBeatFields;
