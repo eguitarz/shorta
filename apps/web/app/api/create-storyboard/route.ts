@@ -6,6 +6,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getLanguageName } from '@/lib/i18n-helpers';
 import { hasSufficientCreditsForStoryboard, chargeUserForStoryboard } from '@/lib/storyboard-usage';
+import type { Beat } from '@/lib/types/beat';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,35 +42,10 @@ interface CreateStoryboardInput {
   locale?: string;
 }
 
-// Shot types for professional video production
-export type ShotType = 'CU' | 'MCU' | 'MS' | 'MLS' | 'WS' | 'OTS' | 'POV' | 'INSERT';
-export type CameraMovement = 'static' | 'pan' | 'tilt' | 'track' | 'zoom' | 'handheld' | 'dolly';
-export type TransitionType = 'cut' | 'dissolve' | 'fade' | 'zoom' | 'swipe' | 'whip' | 'none';
-
-interface TextOverlay {
-  text: string;
-  position: 'top' | 'center' | 'bottom' | 'lower-third';
-  timing: string;
-}
-
-interface Beat {
-  beatNumber: number;
-  startTime: number;
-  endTime: number;
-  type: string;
-  title: string;
-  directorNotes: string;
-  script: string;
-  visual: string;
-  audio: string;
-  // Enhanced fields
-  shotType?: ShotType;
-  cameraMovement?: CameraMovement;
-  transition?: TransitionType;
-  textOverlays?: TextOverlay[];
-  bRollSuggestions?: string[];
-  retentionTip?: string;
-}
+// Shot/camera/transition/overlay types + Beat are now defined canonically in
+// `@/lib/types/beat` (imported above). Re-exports retained for callers that
+// still import them from this route module.
+export type { ShotType, CameraMovement, TransitionType } from '@/lib/types/beat';
 
 // Hook variant styles aligned with rehook presets
 export type HookVariantStyle = 'bold' | 'question' | 'emotional' | 'specific' | 'library' | 'viral';

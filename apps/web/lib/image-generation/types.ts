@@ -16,17 +16,11 @@ export interface StoryboardOverviewForImage {
   targetAudience: string;
 }
 
-export interface BeatForImage {
-  beatNumber: number;
-  title: string;
-  type: string;
-  visual: string;
-  script: string;
-  directorNotes: string | string[];
-  shotType?: string;
-  cameraMovement?: string;
-  bRollSuggestions?: string[];
-}
+// BeatForImage is now derived from the canonical Beat type in `@/lib/types/beat`.
+// Imported (for local use in GenerateImageRequest) and re-exported (so existing
+// import sites keep working without path changes).
+import type { BeatForImage } from '@/lib/types/beat';
+export type { BeatForImage };
 
 export interface ReferenceImage {
   mimeType: string;
