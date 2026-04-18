@@ -111,6 +111,13 @@ export interface AnimationCharacter {
 	sheetGeneratedAt?: string;
 	/** If char sheet generation failed, reason surfaced to the retry UI. */
 	sheetFailureReason?: string;
+	/**
+	 * Transient short-lived signed URL for the private sheet image. NEVER
+	 * persisted — the API attaches this on polling responses so the UI can
+	 * render character thumbnails during the reveal card (and any other
+	 * future preview surfaces). Expires in ~120s.
+	 */
+	sheetSignedUrl?: string;
 }
 
 /**

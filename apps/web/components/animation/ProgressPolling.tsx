@@ -20,10 +20,13 @@ export type JobStatus =
 
 interface ProgressPollingProps {
 	status: JobStatus;
-	/** Characters from animation_meta once Pass 1 completes — for brief reveal on chars_complete. */
+	/**
+	 * Characters from animation_meta once Pass 1 completes — for brief reveal
+	 * on chars_complete. Expected to include a transient `sheetSignedUrl`
+	 * field (populated server-side by the polling endpoint) for each
+	 * character with a generated sheet. No callback needed on the client.
+	 */
 	characters?: AnimationCharacter[];
-	/** Optional Supabase signed URL fetcher for character sheet thumbnails. */
-	signedUrlFor?: (storagePath: string) => Promise<string | null>;
 	/** Shown when failed / capped so user can retry. */
 	onRetry?: () => void;
 	errorMessage?: string | null;
@@ -49,7 +52,6 @@ type StepState = "pending" | "active" | "done" | "failed";
 export function ProgressPolling({
 	status,
 	characters,
-	signedUrlFor,
 	onRetry,
 	errorMessage,
 }: ProgressPollingProps) {
@@ -125,10 +127,7 @@ export function ProgressPolling({
 
 			{/* Character sheet brief reveal — Pass 3A */}
 			{(status === "chars_complete" || status === "chars_partial") && characters && characters.length > 0 && (
-				<CharacterRevealCard
-					characters={characters}
-					signedUrlFor={signedUrlFor}
-				/>
+				<CharacterRevealCard characters={characters} />
 			)}
 
 			{/* Terminal states */}
@@ -220,37 +219,25 @@ function StepRow({ label, state, elapsed, highlight, highlightLabel }: StepRowPr
 
 interface CharacterRevealCardProps {
 	characters: AnimationCharacter[];
-	signedUrlFor?: (storagePath: string) => Promise<string | null>;
 }
 
-function CharacterRevealCard({ characters, signedUrlFor }: CharacterRevealCardProps) {
+/**
+ * Tiny character sheet thumbnails shown for ~15s when the chars_complete
+ * step lands. Auto-fades. Per Pass 3A of the design review.
+ *
+ * Uses the transient sheetSignedUrl populated by the polling endpoint —
+ * no client-side Supabase calls needed. The URL expires in ~120s, which
+ * is plenty for the 15s reveal window; the next poll refreshes it.
+ */
+function CharacterRevealCard({ characters }: CharacterRevealCardProps) {
 	const t = useTranslations("animation.progress");
-	const [thumbs, setThumbs] = useState<Record<string, string | null>>({});
 	const [visible, setVisible] = useState(true);
 
 	useEffect(() => {
-		let cancelled = false;
-		async function loadThumbs() {
-			if (!signedUrlFor) return;
-			const next: Record<string, string | null> = {};
-			for (const char of characters) {
-				if (char.sheetStoragePath) {
-					const url = await signedUrlFor(char.sheetStoragePath);
-					if (cancelled) return;
-					next[char.id] = url;
-				}
-			}
-			if (!cancelled) setThumbs(next);
-		}
-		loadThumbs();
-
 		// Auto-fade after 15s per design review
-		const timer = setTimeout(() => !cancelled && setVisible(false), 15000);
-		return () => {
-			cancelled = true;
-			clearTimeout(timer);
-		};
-	}, [characters, signedUrlFor]);
+		const timer = setTimeout(() => setVisible(false), 15000);
+		return () => clearTimeout(timer);
+	}, []);
 
 	if (!visible) return null;
 
@@ -261,7 +248,7 @@ function CharacterRevealCard({ characters, signedUrlFor }: CharacterRevealCardPr
 			</p>
 			<div className="flex gap-3">
 				{characters.map((char) => {
-					const thumb = thumbs[char.id];
+					const url = char.sheetSignedUrl;
 					const failed = !!char.sheetFailureReason;
 					return (
 						<div key={char.id} className="flex items-center gap-2">
@@ -270,9 +257,9 @@ function CharacterRevealCard({ characters, signedUrlFor }: CharacterRevealCardPr
 									failed ? "border border-red-500/30" : ""
 								}`}
 							>
-								{thumb ? (
+								{url ? (
 									// eslint-disable-next-line @next/next/no-img-element
-									<img src={thumb} alt={char.name} className="w-full h-full object-cover" />
+									<img src={url} alt={char.name} className="w-full h-full object-cover" />
 								) : (
 									<div className="w-full h-full" />
 								)}

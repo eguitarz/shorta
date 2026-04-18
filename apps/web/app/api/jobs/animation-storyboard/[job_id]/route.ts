@@ -335,6 +335,32 @@ async function buildResponse(
 			.eq('id', storyboardId)
 			.single();
 		storyboard = data;
+
+		// Enrich characters with short-lived signed URLs for the private
+		// character-sheets bucket. The polling UI displays these as tiny
+		// thumbnails during the reveal card. Generated per-poll (cheap — just
+		// HMAC signing server-side, no storage I/O), TTL 120s is plenty for a
+		// polling cycle + React render.
+		if (storyboard?.animation_meta?.characters) {
+			await Promise.all(
+				storyboard.animation_meta.characters.map(async (char: any) => {
+					if (!char?.sheetStoragePath) return;
+					try {
+						const { data: signed } = await (supabase as any).storage
+							.from('character-sheets')
+							.createSignedUrl(char.sheetStoragePath, 120);
+						if (signed?.signedUrl) {
+							char.sheetSignedUrl = signed.signedUrl;
+						}
+					} catch (err) {
+						console.warn(
+							`[Animation Job ${job.id}] sheet signed-url failed for ${char.id}:`,
+							err
+						);
+					}
+				})
+			);
+		}
 	}
 
 	return {
