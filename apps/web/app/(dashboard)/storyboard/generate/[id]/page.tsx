@@ -141,7 +141,13 @@ export default function StoryboardResultsPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-        toast.error(err.error || "Export pack failed");
+        // Surface the actual message (route returns { error, message, stack }
+        // on 500 so we can diagnose from the UI without log access).
+        const userMsg = err.message
+          ? `${err.error}: ${err.message}`
+          : err.error || `HTTP ${res.status}`;
+        console.error("Export pack failed:", err);
+        toast.error(userMsg);
         return;
       }
       const blob = await res.blob();

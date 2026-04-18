@@ -241,9 +241,18 @@ export async function GET(
 			},
 		});
 	} catch (err) {
-		console.error('[Pack] export failed:', err);
+		// Surface the actual error to the client response body so we can
+		// diagnose without needing log access. Include stack in production
+		// since this endpoint is auth-gated (owner only) — not a public leak.
+		const message = err instanceof Error ? err.message : String(err);
+		const stack = err instanceof Error ? err.stack : undefined;
+		console.error('[Pack] export failed:', message, stack);
 		return NextResponse.json(
-			{ error: err instanceof Error ? err.message : 'Internal server error' },
+			{
+				error: 'Export pack failed',
+				message,
+				stack: stack?.split('\n').slice(0, 5).join('\n'),
+			},
 			{ status: 500 }
 		);
 	}
