@@ -126,6 +126,48 @@ export default function StoryboardResultsPage() {
    * double-charge credits).
    */
   const autoGenFiredRef = useRef(false);
+
+  // Export pack (animation mode only): fetch the zip and trigger download.
+  // Using fetch + blob instead of <a download> because the anchor-tag path
+  // routes through Cloudflare in ways that can drop auth cookies for
+  // large-ish responses; explicit fetch is more reliable.
+  const [isExportingPack, setIsExportingPack] = useState(false);
+  const handleExportPack = async () => {
+    if (isExportingPack) return;
+    setIsExportingPack(true);
+    try {
+      const res = await fetch(`/api/storyboard-pack/${params.id}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        toast.error(err.error || "Export pack failed");
+        return;
+      }
+      const blob = await res.blob();
+
+      // Read filename from Content-Disposition, fall back to storyboard title.
+      const disposition = res.headers.get("Content-Disposition") || "";
+      const match = disposition.match(/filename="?([^"]+)"?/i);
+      const filename = match?.[1] || `storyboard-${params.id}.zip`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      toast.success("Pack downloaded");
+    } catch (err) {
+      console.error("Export pack error:", err);
+      toast.error("Export pack failed");
+    } finally {
+      setIsExportingPack(false);
+    }
+  };
   const [referenceImage, setReferenceImage] = useState<ReferenceImage | null>(null);
   const [referencePreviewUrl, setReferencePreviewUrl] = useState<string | null>(null);
   const referenceInputRef = useRef<HTMLInputElement>(null);
@@ -928,16 +970,26 @@ export default function StoryboardResultsPage() {
                   {/* Animation mode: Export pack for Flow / Sora / Runway / Kling.
                       Bundles prompts + character sheets + beat images into a zip. */}
                   {storyboardData?.animation_meta && (
-                    <a
-                      href={`/api/storyboard-pack/${params.id}`}
-                      download
-                      className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-gray-800 hover:border-gray-700 rounded-lg text-sm font-medium text-white transition-colors focus-visible:ring-1 ring-gray-500 ring-offset-2 ring-offset-[#0a0a0a]"
+                    <button
+                      type="button"
+                      onClick={handleExportPack}
+                      disabled={isExportingPack}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-gray-800 hover:border-gray-700 rounded-lg text-sm font-medium text-white transition-colors focus-visible:ring-1 ring-gray-500 ring-offset-2 ring-offset-[#0a0a0a] disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Download a .zip with character sheets, beat images, and prompts ready for Google Flow, Sora, Runway, or Kling."
                     >
-                      <Download className="w-4 h-4" />
-                      <span>Export pack</span>
-                      <span className="text-[10px] uppercase tracking-wider text-gray-500">.zip</span>
-                    </a>
+                      {isExportingPack ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Packing…</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4" />
+                          <span>Export pack</span>
+                          <span className="text-[10px] uppercase tracking-wider text-gray-500">.zip</span>
+                        </>
+                      )}
+                    </button>
                   )}
                   <ExportDropdown
                     overview={storyboardData.overview}
