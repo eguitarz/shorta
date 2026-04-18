@@ -9,7 +9,7 @@ let supabase: SupabaseClient | null = null;
 if (supabaseUrl && supabaseKey) {
 	supabase = createClient(supabaseUrl, supabaseKey);
 } else if (process.env.NODE_ENV === 'development') {
-	console.warn('Supabase environment variables not configured. Waitlist feature will not work.');
+	console.warn('Supabase environment variables not configured.');
 }
 
 export { supabase };

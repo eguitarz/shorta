@@ -4,7 +4,6 @@ import { Footer } from "@/components/Footer";
 import { QuestionButton } from "@/components/QuestionButton";
 import { Button } from "@/components/ui/button";
 import { TrustBadges } from "@/components/TrustBadges";
-import { WaitlistForm } from "@/components/WaitlistForm";
 import type { Metadata } from "next";
 
 const shortaLogo = "/shorta-logo.png";
@@ -456,11 +455,6 @@ export default function KoreanHomePage() {
           </div>
         </div>
 
-        {/* Waitlist */}
-        <div className="max-w-sm mx-auto mt-8 bg-surface/30 p-5 rounded-xl border border-border/30">
-          <p className="text-sm text-muted-foreground text-center mb-3">아직 준비가 안 됐나요? 출시 알림을 받으세요.</p>
-          <WaitlistForm />
-        </div>
       </Section>
 
       {/* 7. FAQ */}
