@@ -82,9 +82,50 @@ export async function POST(request: NextRequest) {
     const imageClient = new NanaBananaClient(apiKey);
     const styleContext = buildStyleContext(input.overview);
     const characterContext = buildCharacterContext(input.overview, input.beats);
-    const hasRef = !!input.referenceImage;
     const results: GenerateImageResult[] = [];
     const errors: { beatNumber: number; error: string }[] = [];
+
+    // ANIMATION MODE: if this storyboard has animation_meta with character
+    // sheets, fetch the FIRST character's sheet from the private bucket and
+    // use it as the persistent reference for every beat. This is stronger
+    // than the first-image-as-reference trick because the sheet is
+    // identity-optimized (neutral pose, plain background). Caller-provided
+    // referenceImage still wins if explicitly passed.
+    let animationCharSheetRef: ReferenceImage | undefined;
+    if (!input.referenceImage) {
+      try {
+        const { data: sb } = await supabase
+          .from('generated_storyboards')
+          .select('animation_meta')
+          .eq('id', input.storyboardId)
+          .single();
+
+        const firstCharWithSheet = sb?.animation_meta?.characters?.find(
+          (c: { sheetStoragePath?: string }) => !!c.sheetStoragePath
+        );
+
+        if (firstCharWithSheet?.sheetStoragePath) {
+          const { data: blob, error: dlError } = await supabase.storage
+            .from('character-sheets')
+            .download(firstCharWithSheet.sheetStoragePath);
+
+          if (!dlError && blob) {
+            const arrayBuf = await blob.arrayBuffer();
+            animationCharSheetRef = {
+              mimeType: blob.type || 'image/png',
+              data: Buffer.from(arrayBuf).toString('base64'),
+              name: `char-sheet-${firstCharWithSheet.id ?? 'anim'}`,
+            };
+            console.log(
+              `[Image Gen] Animation mode: using char sheet ${firstCharWithSheet.sheetStoragePath} as reference`
+            );
+          }
+        }
+      } catch (err) {
+        // Non-fatal: fall back to first-image-as-reference trick below.
+        console.warn('[Image Gen] Failed to fetch animation char sheet, falling back:', err);
+      }
+    }
 
     console.log(`[Image Gen] Starting generation for ${input.beats.length} beats, storyboard: ${input.storyboardId}`);
 
@@ -95,11 +136,12 @@ export async function POST(request: NextRequest) {
     for (const beat of input.beats) {
       console.log(`[Image Gen] Processing beat ${beat.beatNumber}...`);
       try {
-        // Use user's reference if provided, otherwise use first generated image
-        // to maintain character consistency across beats
-        const referenceForBeat = input.referenceImage
-          ? input.referenceImage
-          : firstGeneratedImage;
+        // Reference image precedence (strongest → weakest):
+        //   1. Caller-provided referenceImage (user's explicit upload)
+        //   2. Animation character sheet (identity-optimized portrait)
+        //   3. First generated image (legacy first-image-as-reference trick)
+        const referenceForBeat =
+          input.referenceImage ?? animationCharSheetRef ?? firstGeneratedImage;
         const isUsingRef = !!referenceForBeat;
 
         const prompt = buildImagePrompt(input.overview, beat, {

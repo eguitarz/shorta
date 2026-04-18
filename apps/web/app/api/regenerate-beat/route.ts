@@ -1,8 +1,9 @@
 import { createDefaultLLMClient } from '@/lib/llm';
 import type { LLMEnv } from '@/lib/llm';
 import { NextRequest, NextResponse } from 'next/server';
-import type { Beat } from '@/lib/types/beat';
+import type { AnimationBeat, Beat } from '@/lib/types/beat';
 import { createRegenerationPrompt } from '@/lib/regenerate-beat-prompt';
+import { createAnimationRegenerationPrompt } from '@/lib/animation/regenerate-beat-prompt';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,8 +34,17 @@ export async function POST(request: NextRequest) {
 
     const client = createDefaultLLMClient(env);
 
-    // Create regeneration prompt
-    const prompt = createRegenerationPrompt(storyboard, beatToRegenerate, locale);
+    // Dispatch: animation storyboards use a dedicated prompt that locks
+    // narrativeRole + injects character sheets. Non-animation storyboards
+    // use the legacy prompt unchanged.
+    const isAnimation = !!storyboard.animation_meta;
+    const prompt = isAnimation
+      ? createAnimationRegenerationPrompt(
+          storyboard,
+          beatToRegenerate as AnimationBeat,
+          locale
+        )
+      : createRegenerationPrompt(storyboard, beatToRegenerate, locale);
 
     console.log('Regenerating beat:', beatNumber);
 

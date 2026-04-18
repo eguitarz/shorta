@@ -1,5 +1,14 @@
 # TODOS
 
+### Analyzer reverse-engineering for AI animation Shorts
+**Added:** 2026-04-18 (from /plan-eng-review — animation storyboard v1, deferred from Layer 3b)
+**What:** When `classifyVideo` returns `format === 'ai_animation'`, run a dedicated analyzer prompt that extracts structured `animationMeta` from the uploaded Short (characters, styleAnchor, sceneAnchor, arcTemplate, narrativeRole per beat) — text-only, no image gen. Surface the result on the analyzer page as a new top-level accordion titled "Reverse-engineered animation" with an "AI ANIMATION DETECTED" badge (see plan Design Decisions, Issue 7A).
+**Why:** Users who upload AI animation Shorts for analysis get richer insights (style/character/arc extraction) and a bridge to create mode — they can see "here's what your Short looks like in our schema" and then tweak into a new storyboard.
+**Pros:** Completes the reverse-direction workflow; richer analyzer value; natural upsell from analyze → create.
+**Cons:** Text-only extraction is fragile (character identity from video frames is hard to describe back in words consistently); risk of "uncanny valley" descriptions; adds classifier branch complexity.
+**Context:** The foundation is in place — `classifyVideo` now returns `ai_animation` (Layer 3b), and `AnimationMeta` type is canonical. What's missing: (a) `lib/animation/reverse-engineer-prompt.ts` with the analyzer prompt, (b) a branch in `lib/analysis/process-storyboard.ts` that runs this prompt when format is `ai_animation` and writes the result to `storyboard.animationMeta`, (c) UI accordion on `/analyzer/[id]/page.tsx` below ScoreAccordion.
+**Depends on:** Layer 3b landed (classifier extended). Should ship AFTER the create flow is validated in beta — reverse-engineering is a secondary value prop.
+
 ### Wizard draft persistence for AI Animation wizard
 **Added:** 2026-04-18 (from /plan-design-review — animation storyboard v1)
 **What:** Auto-save animation wizard draft state to localStorage on field blur. Restore on wizard re-entry. Clear on successful job submit.

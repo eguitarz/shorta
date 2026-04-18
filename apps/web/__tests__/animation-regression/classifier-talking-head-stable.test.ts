@@ -28,9 +28,15 @@ describe('classifier: talking_head regression', () => {
 	});
 
 	it('VideoClassification.format accepts all existing non-animation values', () => {
-		const formats: VideoClassification['format'][] = ['talking_head', 'gameplay', 'demo', 'other'];
+		const formats: VideoClassification['format'][] = [
+			'talking_head',
+			'gameplay',
+			'demo',
+			'other',
+			'ai_animation', // added consciously as part of PR 1 (animation mode)
+		];
 
-		expect(formats).toHaveLength(4);
+		expect(formats).toHaveLength(5);
 		for (const f of formats) {
 			const sample: VideoClassification = {
 				format: f,
@@ -42,17 +48,17 @@ describe('classifier: talking_head regression', () => {
 		}
 	});
 
-	// Snapshot: if someone adds 'ai_animation' without updating this list, the
-	// runtime length check below will still pass (it's a union, no iteration at
-	// runtime). But the TYPE-LEVEL guard here will fail to compile.
-	it('[TYPE GUARD] format union has NOT yet been extended (fails once ai_animation is added)', () => {
+	// Type-level snapshot: fails the build if anyone extends the union again
+	// without updating this test. Keeps future contributors honest.
+	it('[TYPE GUARD] format union matches expected extended shape after animation PR', () => {
 		type CurrentFormats = VideoClassification['format'];
-		type Expected = 'talking_head' | 'gameplay' | 'demo' | 'other';
+		type Expected =
+			| 'talking_head'
+			| 'gameplay'
+			| 'demo'
+			| 'ai_animation'
+			| 'other';
 
-		// These type-level assertions fail the build the moment the union is widened
-		// in either direction. When the animation PR adds 'ai_animation', update
-		// both `Expected` above AND the array in the previous test — that's the
-		// conscious-extension checkpoint this regression is designed to force.
 		expectTypeOf<CurrentFormats>().toEqualTypeOf<Expected>();
 	});
 

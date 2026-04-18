@@ -36,12 +36,14 @@ export interface LLMEnv {
   LLM_MODEL?: string;
 }
 
+export type VideoFormat = 'talking_head' | 'gameplay' | 'demo' | 'ai_animation' | 'other';
+
 export interface VideoClassification {
-  format: 'talking_head' | 'gameplay' | 'demo' | 'other';
+  format: VideoFormat;
   confidence: number;
   evidence: string[];
   fallback: {
-    format: 'talking_head' | 'gameplay' | 'demo' | 'other';
+    format: VideoFormat;
     confidence: number;
   };
 }

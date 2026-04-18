@@ -239,15 +239,16 @@ Do NOT give feedback, suggestions, or evaluation.
 1. **talking_head** - Person speaking directly to camera (can include b-roll, but speaker is the PRIMARY focus)
 2. **gameplay** - Video game footage (can include commentary, but gameplay is the PRIMARY visual)
 3. **demo** - Screen recording, product demo, software walkthrough, or tutorial showing a screen/app/tool. The PRIMARY visual is a screen, UI, or product being demonstrated (with or without voiceover/facecam). Key indicators: cursor movement, UI interactions, code editors, browser windows, app interfaces, product showcases.
-4. **other** - Everything else (animations, vlogs, montages, lifestyle content, etc.)
+4. **ai_animation** - AI-generated or fully animated short. Characters and scenes are illustrated/rendered, not filmed. Key indicators: cartoon/3D/stylized characters (not live actors), consistent illustrated style throughout, no real-world footage, no live-action person visible. Covers Pixar-style 3D, Ghibli-style 2D, low-poly, Sora/Veo/Runway/Kling output, and similar.
+5. **other** - Everything else (vlogs, montages, lifestyle content, mixed live-action, etc.)
 
 Return ONLY this JSON structure:
 {
-  "format": "talking_head | gameplay | demo | other",
+  "format": "talking_head | gameplay | demo | ai_animation | other",
   "confidence": 0.95,
   "evidence": ["short bullet points explaining why"],
   "fallback": {
-    "format": "talking_head | gameplay | demo | other",
+    "format": "talking_head | gameplay | demo | ai_animation | other",
     "confidence": 0.0
   }
 }`;
@@ -259,14 +260,15 @@ IMPORTANT:
 - NO additional commentary
 - Choose the MOST DOMINANT format
 - If the video primarily shows a screen, UI, app, or product being demonstrated, classify as "demo"
+- If the video is entirely illustrated/animated (no live-action footage), classify as "ai_animation"
 
 Return JSON:
 {
-  "format": "talking_head | gameplay | demo | other",
+  "format": "talking_head | gameplay | demo | ai_animation | other",
   "confidence": 0.95,
   "evidence": ["short bullet points explaining why"],
   "fallback": {
-    "format": "talking_head | gameplay | demo | other",
+    "format": "talking_head | gameplay | demo | ai_animation | other",
     "confidence": 0.0
   }
 }`;
