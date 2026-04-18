@@ -114,6 +114,16 @@ export interface AnimationCharacter {
 }
 
 /**
+ * Per-beat narrative intent produced by Pass 1 and consumed by Pass 2.
+ * Not user-facing; intermediate pipeline state.
+ */
+export interface AnimationBeatIntent {
+	beatIndex: number;
+	narrativeRole: NarrativeRole;
+	intent: string;
+}
+
+/**
  * Storyboard-level animation metadata. NULL on non-animation storyboards.
  * Lives as a jsonb column on `generated_storyboards`.
  */
@@ -134,6 +144,12 @@ export interface AnimationMeta {
 	payoff: string;
 	/** 1-2 characters. */
 	characters: AnimationCharacter[];
+	/**
+	 * Beat intents from Pass 1, consumed by Pass 2. Discarded from the UI
+	 * after Pass 2 writes them into beats. Left here so Pass 2 can run in a
+	 * separate request from Pass 1 (resumable pipeline).
+	 */
+	beatIntents?: AnimationBeatIntent[];
 }
 
 /** Wizard input before a storyboard exists (posted to /api/jobs/animation-storyboard/create). */

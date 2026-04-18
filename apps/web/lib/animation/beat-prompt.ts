@@ -18,17 +18,15 @@
  */
 
 import { getLanguageName } from '@/lib/i18n-helpers';
-import type { AnimationMeta, NarrativeRole } from '@/lib/types/beat';
+import type { AnimationBeatIntent, AnimationMeta } from '@/lib/types/beat';
 
-export interface BeatIntent {
-	beatIndex: number;
-	narrativeRole: NarrativeRole;
-	intent: string;
-}
+// Re-export so existing callers that imported BeatIntent from this module
+// keep working. The canonical definition lives in lib/types/beat.ts.
+export type BeatIntent = AnimationBeatIntent;
 
 export interface BeatsPromptInput {
 	meta: AnimationMeta;
-	beatIntents: BeatIntent[];
+	beatIntents: AnimationBeatIntent[];
 	totalLengthSeconds: number;
 	locale?: string;
 }
