@@ -91,6 +91,28 @@ export async function GET(
 		const beats = (sb.generated_beats as AnimationBeat[]) ?? [];
 		const beatImages = (sb.beat_images as BeatImageMap) ?? {};
 
+		// Defensive shape checks — surface meaningful errors instead of 500ing
+		// deep inside parallel Promise.all chains.
+		if (!Array.isArray(meta.characters)) {
+			return NextResponse.json(
+				{ error: 'Storyboard animation_meta is missing characters[]' },
+				{ status: 422 }
+			);
+		}
+		if (!Array.isArray(beats) || beats.length === 0) {
+			return NextResponse.json(
+				{
+					error:
+						'Storyboard has no beats yet. Wait for generation to reach beats_complete, then try again.',
+				},
+				{ status: 422 }
+			);
+		}
+
+		console.log(
+			`[Pack] exporting storyboard=${id} chars=${meta.characters.length} beats=${beats.length} images=${Object.keys(beatImages).length}`
+		);
+
 		// Build the zip contents in parallel where possible.
 		const files: Record<string, Uint8Array> = {};
 
@@ -111,34 +133,38 @@ export async function GET(
 			)
 		);
 
-		// Characters: text descriptions + sheet images (parallel download)
+		// Characters: text descriptions + sheet images (parallel download).
+		// Each character is wrapped — one bad character never blocks the pack.
 		await Promise.all(
 			meta.characters.map(async (char) => {
-				// Text description always available
-				const charText = [
-					`Character: ${char.name}`,
-					`ID: ${char.id}`,
-					`Traits: ${char.traits.join(', ')}`,
-					`Personality: ${char.personality}`,
-					'',
-					'Full description (inject as identity anchor):',
-					char.sheetPrompt || '(no AI-generated description — use traits + personality)',
-				].join('\n');
-				files[`characters/${char.id}.txt`] = strToU8(charText);
+				try {
+					// Text description always available
+					const traits = Array.isArray(char.traits) ? char.traits : [];
+					const charText = [
+						`Character: ${char.name ?? '(unnamed)'}`,
+						`ID: ${char.id ?? '(no id)'}`,
+						`Traits: ${traits.join(', ') || '(none)'}`,
+						`Personality: ${char.personality ?? '(unspecified)'}`,
+						'',
+						'Full description (inject as identity anchor):',
+						char.sheetPrompt || '(no AI-generated description — use traits + personality)',
+					].join('\n');
+					files[`characters/${char.id ?? 'unknown'}.txt`] = strToU8(charText);
 
-				// Sheet image — download from private bucket if available
-				if (char.sheetStoragePath) {
-					try {
+					// Sheet image — download from private bucket if available
+					if (char.sheetStoragePath) {
 						const { data: blob, error: dlErr } = await supabase.storage
 							.from('character-sheets')
 							.download(char.sheetStoragePath);
-						if (!dlErr && blob) {
+						if (dlErr) {
+							console.warn(`[Pack] char ${char.id} sheet download: ${dlErr.message}`);
+						} else if (blob) {
 							const buf = new Uint8Array(await blob.arrayBuffer());
 							files[`characters/${char.id}.png`] = buf;
 						}
-					} catch (err) {
-						console.warn(`[Pack] char ${char.id} sheet download failed:`, err);
 					}
+				} catch (err) {
+					console.error(`[Pack] char ${char?.id} failed:`, err);
 				}
 			})
 		);
@@ -146,39 +172,45 @@ export async function GET(
 		// Beats: per-platform prompts + generated beat images
 		await Promise.all(
 			beats.map(async (beat) => {
-				const num = String(beat.beatNumber).padStart(2, '0');
+				try {
+					const num = String(beat.beatNumber ?? 0).padStart(2, '0');
 
-				// Flow (Veo 3.1 ingredients) variant
-				const flowPrompt = renderExportPrompt({ meta, beat, platform: 'flow' });
-				files[`beats/beat-${num}-flow.txt`] = strToU8(
-					buildBeatHeader(beat) + flowPrompt + '\n'
-				);
+					// Flow (Veo 3.1 ingredients) variant
+					const flowPrompt = renderExportPrompt({ meta, beat, platform: 'flow' });
+					files[`beats/beat-${num}-flow.txt`] = strToU8(
+						buildBeatHeader(beat) + flowPrompt + '\n'
+					);
 
-				// Universal variant (works in any tool)
-				const universalPrompt = renderExportPrompt({ meta, beat, platform: 'universal' });
-				files[`beats/beat-${num}-universal.txt`] = strToU8(
-					buildBeatHeader(beat) + universalPrompt + '\n'
-				);
+					// Universal variant (works in any tool)
+					const universalPrompt = renderExportPrompt({ meta, beat, platform: 'universal' });
+					files[`beats/beat-${num}-universal.txt`] = strToU8(
+						buildBeatHeader(beat) + universalPrompt + '\n'
+					);
 
-				// Beat image — download from the public storyboard-images bucket
-				// via the URL recorded in beat_images. Cheaper than another
-				// Supabase download call since these URLs are already public.
-				const imgMeta = beatImages[String(beat.beatNumber)];
-				if (imgMeta?.url) {
-					try {
-						// Strip cache-busting query param if present
-						const cleanUrl = imgMeta.url.split('?')[0];
-						const imgRes = await fetch(cleanUrl);
-						if (imgRes.ok) {
-							const buf = new Uint8Array(await imgRes.arrayBuffer());
-							files[`beats/beat-${num}.png`] = buf;
+					// Beat image — download from the public storyboard-images bucket
+					// via the URL recorded in beat_images.
+					const imgMeta = beatImages[String(beat.beatNumber)];
+					if (imgMeta?.url) {
+						try {
+							const cleanUrl = imgMeta.url.split('?')[0];
+							const imgRes = await fetch(cleanUrl);
+							if (imgRes.ok) {
+								const buf = new Uint8Array(await imgRes.arrayBuffer());
+								files[`beats/beat-${num}.png`] = buf;
+							} else {
+								console.warn(`[Pack] beat ${beat.beatNumber} image fetch: HTTP ${imgRes.status}`);
+							}
+						} catch (err) {
+							console.warn(`[Pack] beat ${beat.beatNumber} image fetch failed:`, err);
 						}
-					} catch (err) {
-						console.warn(`[Pack] beat ${beat.beatNumber} image fetch failed:`, err);
 					}
+				} catch (err) {
+					console.error(`[Pack] beat ${beat?.beatNumber} failed:`, err);
 				}
 			})
 		);
+
+		console.log(`[Pack] assembled ${Object.keys(files).length} files, zipping…`);
 
 		// Zip it. fflate.zip is callback-based; wrap in Promise.
 		const zipped: Uint8Array = await new Promise((resolve, reject) => {
@@ -188,14 +220,23 @@ export async function GET(
 			});
 		});
 
+		console.log(`[Pack] zipped: ${zipped.byteLength} bytes`);
+
 		const filename = safeFilename(sb.title || 'storyboard');
 
-		return new NextResponse(zipped as unknown as BodyInit, {
+		// Copy into a fresh ArrayBuffer. Some runtimes (including certain
+		// Cloudflare Worker + Next adapter combos) reject SharedArrayBuffer-
+		// backed Uint8Arrays or typed arrays from pooled memory. Taking a
+		// clean ArrayBuffer avoids BodyInit edge cases.
+		const ab = new ArrayBuffer(zipped.byteLength);
+		new Uint8Array(ab).set(zipped);
+
+		return new NextResponse(ab, {
 			status: 200,
 			headers: {
 				'Content-Type': 'application/zip',
 				'Content-Disposition': `attachment; filename="${filename}.zip"`,
-				'Content-Length': String(zipped.length),
+				'Content-Length': String(ab.byteLength),
 				'Cache-Control': 'no-store',
 			},
 		});
