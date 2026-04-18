@@ -1037,5 +1037,87 @@
         "explosive": "Explosivo"
       }
     }
+  },
+  "animation": {
+    "wizard": {
+      "title": "Storyboard de Animación IA",
+      "subtitle": "Personajes, escena, arco — prompts listos para pegar en tu herramienta de video.",
+      "steps_nav_label": "Pasos del asistente",
+      "nav": {
+        "back": "← Atrás",
+        "back_to_create": "Volver a Crear",
+        "continue": "Continuar →",
+        "generate": "Generar",
+        "generating": "Generando…",
+        "credits": "créditos"
+      },
+      "crumb": {
+        "premise": "Premisa",
+        "characters": "Personajes",
+        "arc": "Arco"
+      },
+      "premise": {
+        "title": "¿Cuál es la historia?",
+        "subtitle": "Con una frase basta. El tono y el estilo van después.",
+        "logline_label": "Logline",
+        "logline_placeholder": "p. ej. Un gato cansado descubre que la aspiradora es en realidad su amiga",
+        "logline_hint": "Al menos 10 caracteres.",
+        "logline_ok": "Bien.",
+        "tone_label": "Tono",
+        "style_label": "Estilo",
+        "scene_label": "Escenario",
+        "scene_placeholder": "p. ej. Un salón suburbano soleado"
+      },
+      "characters": {
+        "title": "¿Quién está en esta historia?",
+        "subtitle": "Define 1-2 personajes. Su apariencia y personalidad se mantienen en cada beat.",
+        "slot_label": "Personaje {n}",
+        "remove": "Quitar",
+        "add_second": "Añadir segundo personaje (opcional)",
+        "name_label": "Nombre",
+        "name_placeholder": "p. ej. Bigotes",
+        "appearance_label": "Apariencia",
+        "appearance_placeholder": "Escribe rasgos, pulsa Enter",
+        "appearance_hint": "3-5 rasgos cortos funcionan mejor. Enter para añadir, Backspace para quitar.",
+        "personality_label": "Personalidad",
+        "personality_placeholder": "Una frase. ¿Qué los define?"
+      },
+      "arc": {
+        "title": "¿Cómo aterriza?",
+        "subtitle": "Elige una forma de arco y escribe el clímax que hace que valga la pena.",
+        "template_label": "Forma del arco",
+        "roles_word": "{count, plural, one {rol de beat} other {roles de beat}}",
+        "custom_label": "Arco personalizado",
+        "custom_description": "Describe tu propia forma de arco en una frase.",
+        "custom_placeholder": "p. ej. Estructura de dos actos con un flashback oculto.",
+        "custom_hint": "Al menos 10 caracteres.",
+        "payoff_label": "El clímax — el momento que aterriza",
+        "payoff_placeholder": "¿Qué pasa que hace que valga la pena verlo?",
+        "payoff_hint": "Al menos 5 caracteres. Aquí está la diversión.",
+        "payoff_ok": "Bien."
+      }
+    },
+    "progress": {
+      "steps": {
+        "story": "Escribiendo tu historia",
+        "chars": "Conociendo a tus personajes",
+        "beats": "Escena a escena",
+        "images": "Renderizando fotogramas"
+      },
+      "beats_complete_hint": "Listo para ver",
+      "chars_reveal_title": "Tus personajes están listos",
+      "capped_title": "Límite de gasto alcanzado",
+      "stale_title": "Trabajo pausado",
+      "failed_title": "Algo salió mal",
+      "retry": "Reintentar"
+    },
+    "export": {
+      "expand_prompt": "Copiar prompt ↓",
+      "copy_prompt": "Copiar ahora",
+      "copied_with_context": "✓ Copiado — pégalo en tu herramienta de video",
+      "expand_label": "Expandir prompt",
+      "copy_label": "Copiar prompt al portapapeles",
+      "collapse_label": "Contraer prompt"
+    }
   }
 }

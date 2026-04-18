@@ -8,6 +8,8 @@ import type { BeatImageMap, ReferenceImage } from "@/lib/image-generation/types"
 import { ExportDropdown } from "@/components/ExportDropdown";
 import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
 import { TechnicalBadge } from "@/components/TechnicalBadge";
+import { ExportPrompts } from "@/components/animation/ExportPrompts";
+import type { AnimationBeat, AnimationMeta } from "@/lib/types/beat";
 import { useTranslations, useLocale } from "next-intl";
 
 interface TextOverlay {
@@ -33,6 +35,13 @@ interface GeneratedBeat {
   textOverlays?: TextOverlay[];
   bRollSuggestions?: string[];
   retentionTip?: string;
+  // Animation-mode fields (optional; present only for animation storyboards)
+  narrativeRole?: string;
+  characterRefs?: string[];
+  characterAction?: string;
+  cameraAction?: string;
+  sceneSnippet?: string;
+  dialogue?: string;
 }
 
 interface GeneratedData {
@@ -46,6 +55,8 @@ interface GeneratedData {
   beats: GeneratedBeat[];
   hookVariants?: HookVariant[];
   selectedHookId?: string;
+  /** Present when this storyboard was generated in ai_animation mode. */
+  animation_meta?: AnimationMeta | null;
   generatedAt: string;
   inputInsights?: {
     viralPatterns?: {
@@ -1088,6 +1099,14 @@ export default function StoryboardResultsPage() {
                           <div>
                             <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-semibold">{t('beatContent.whatToSay')}</h4>
                             <p className="text-lg leading-relaxed text-gray-100 font-medium">{beat.script}</p>
+
+                            {/* Animation-mode export prompt (inline collapsed) */}
+                            {storyboardData?.animation_meta && (
+                              <ExportPrompts
+                                meta={storyboardData.animation_meta}
+                                beat={beat as unknown as AnimationBeat}
+                              />
+                            )}
                           </div>
 
                           {/* Visual & Audio - Concise Bullets */}

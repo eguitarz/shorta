@@ -1029,5 +1029,87 @@
         "explosive": "폭발적"
       }
     }
+  },
+  "animation": {
+    "wizard": {
+      "title": "AI 애니메이션 스토리보드",
+      "subtitle": "캐릭터, 장면, 아크 — 영상 생성 도구에 바로 붙여넣을 수 있는 프롬프트를 만듭니다.",
+      "steps_nav_label": "마법사 단계",
+      "nav": {
+        "back": "← 뒤로",
+        "back_to_create": "만들기로 돌아가기",
+        "continue": "계속 →",
+        "generate": "생성",
+        "generating": "생성 중…",
+        "credits": "크레딧"
+      },
+      "crumb": {
+        "premise": "전제",
+        "characters": "캐릭터",
+        "arc": "아크"
+      },
+      "premise": {
+        "title": "어떤 이야기인가요?",
+        "subtitle": "한 문장이면 충분합니다. 분위기와 스타일은 다음 단계에서.",
+        "logline_label": "로그라인",
+        "logline_placeholder": "예: 지친 고양이가 사실은 청소기가 친구라는 걸 발견한다",
+        "logline_hint": "최소 10자.",
+        "logline_ok": "좋아요.",
+        "tone_label": "분위기",
+        "style_label": "스타일",
+        "scene_label": "배경",
+        "scene_placeholder": "예: 햇살 비치는 교외 거실"
+      },
+      "characters": {
+        "title": "등장인물은 누구인가요?",
+        "subtitle": "1~2명의 캐릭터를 정의하세요. 모든 장면에서 외모와 성격이 유지됩니다.",
+        "slot_label": "캐릭터 {n}",
+        "remove": "제거",
+        "add_second": "두 번째 캐릭터 추가 (선택)",
+        "name_label": "이름",
+        "name_placeholder": "예: 수염이",
+        "appearance_label": "외모",
+        "appearance_placeholder": "특징을 입력하고 Enter",
+        "appearance_hint": "짧은 특징 3~5개가 가장 좋습니다. Enter로 추가, Backspace로 제거.",
+        "personality_label": "성격",
+        "personality_placeholder": "한 문장으로. 이 캐릭터를 정의하는 것은?"
+      },
+      "arc": {
+        "title": "어떻게 마무리되나요?",
+        "subtitle": "아크 모양을 고르고, 볼 가치가 있게 만드는 페이오프를 적으세요.",
+        "template_label": "아크 모양",
+        "roles_word": "{count, plural, other {비트 역할}}",
+        "custom_label": "커스텀 아크",
+        "custom_description": "한 문장으로 직접 아크 모양을 설명하세요.",
+        "custom_placeholder": "예: 중간에 숨겨진 플래시백이 있는 2막 구조.",
+        "custom_hint": "최소 10자.",
+        "payoff_label": "페이오프 — 마음에 꽂히는 순간",
+        "payoff_placeholder": "볼 가치가 있게 만드는 무언가는?",
+        "payoff_hint": "최소 5자. 이게 재미의 핵심입니다.",
+        "payoff_ok": "좋아요."
+      }
+    },
+    "progress": {
+      "steps": {
+        "story": "이야기 작성 중",
+        "chars": "캐릭터 만나는 중",
+        "beats": "장면별 제작 중",
+        "images": "프레임 렌더링 중"
+      },
+      "beats_complete_hint": "확인 가능",
+      "chars_reveal_title": "캐릭터 준비 완료",
+      "capped_title": "사용 한도 도달",
+      "stale_title": "작업 중단됨",
+      "failed_title": "문제가 발생했습니다",
+      "retry": "다시 시도"
+    },
+    "export": {
+      "expand_prompt": "프롬프트 복사 ↓",
+      "copy_prompt": "지금 복사",
+      "copied_with_context": "✓ 복사됨 — 영상 생성 도구에 붙여넣으세요",
+      "expand_label": "프롬프트 펼치기",
+      "copy_label": "프롬프트를 클립보드에 복사",
+      "collapse_label": "프롬프트 접기"
+    }
   }
 }

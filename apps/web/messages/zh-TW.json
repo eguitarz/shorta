@@ -1044,5 +1044,87 @@
         "explosive": "爆發性"
       }
     }
+  },
+  "animation": {
+    "wizard": {
+      "title": "AI 動畫分鏡",
+      "subtitle": "角色、場景、敘事弧 — 生成可貼入影片工具的提示詞。",
+      "steps_nav_label": "精靈步驟",
+      "nav": {
+        "back": "← 返回",
+        "back_to_create": "返回建立頁面",
+        "continue": "繼續 →",
+        "generate": "生成",
+        "generating": "生成中…",
+        "credits": "點數"
+      },
+      "crumb": {
+        "premise": "前提",
+        "characters": "角色",
+        "arc": "敘事弧"
+      },
+      "premise": {
+        "title": "這是什麼故事?",
+        "subtitle": "一句話就夠了。風格和基調在下一步。",
+        "logline_label": "故事梗概",
+        "logline_placeholder": "例:一隻疲倦的貓發現吸塵器其實是它的朋友",
+        "logline_hint": "至少 10 個字元。",
+        "logline_ok": "很好。",
+        "tone_label": "基調",
+        "style_label": "風格",
+        "scene_label": "場景",
+        "scene_placeholder": "例:陽光普照的郊區客廳"
+      },
+      "characters": {
+        "title": "這個故事裡有誰?",
+        "subtitle": "定義 1~2 個角色。外觀與個性會在每個鏡頭中保持一致。",
+        "slot_label": "角色 {n}",
+        "remove": "移除",
+        "add_second": "新增第二個角色(選填)",
+        "name_label": "名字",
+        "name_placeholder": "例:鬍鬚",
+        "appearance_label": "外觀",
+        "appearance_placeholder": "輸入特徵後按 Enter",
+        "appearance_hint": "3~5 個簡短特徵最好。Enter 新增,Backspace 移除。",
+        "personality_label": "個性",
+        "personality_placeholder": "一句話。是什麼定義了他們?"
+      },
+      "arc": {
+        "title": "結局是什麼?",
+        "subtitle": "挑一個敘事弧,再寫出讓人覺得值得看的結尾。",
+        "template_label": "敘事弧",
+        "roles_word": "{count, plural, other {beat 角色}}",
+        "custom_label": "自訂敘事弧",
+        "custom_description": "用一句話描述你自己的敘事弧。",
+        "custom_placeholder": "例:兩幕結構,中段有隱藏的閃回。",
+        "custom_hint": "至少 10 個字元。",
+        "payoff_label": "結尾 — 讓人印象深刻的瞬間",
+        "payoff_placeholder": "什麼讓這個故事值得被看?",
+        "payoff_hint": "至少 5 個字元。這是重點。",
+        "payoff_ok": "很好。"
+      }
+    },
+    "progress": {
+      "steps": {
+        "story": "撰寫故事中",
+        "chars": "認識角色中",
+        "beats": "逐鏡頭創作中",
+        "images": "渲染畫面中"
+      },
+      "beats_complete_hint": "可開始檢視",
+      "chars_reveal_title": "角色準備就緒",
+      "capped_title": "已達使用上限",
+      "stale_title": "作業已暫停",
+      "failed_title": "發生錯誤",
+      "retry": "再試一次"
+    },
+    "export": {
+      "expand_prompt": "複製提示詞 ↓",
+      "copy_prompt": "立即複製",
+      "copied_with_context": "✓ 已複製 — 貼到你的影片工具中",
+      "expand_label": "展開提示詞",
+      "copy_label": "複製提示詞到剪貼簿",
+      "collapse_label": "收起提示詞"
+    }
   }
 }

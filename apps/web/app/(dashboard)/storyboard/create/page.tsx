@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Loader2, Send, Sparkles, ArrowLeft, Paperclip, X, FileText, Image as ImageIcon, Film } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import ReactMarkdown from "react-markdown";
@@ -75,8 +76,25 @@ export default function CreateStoryboardPage() {
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const [referenceVideo, setReferenceVideo] = useState<ReferenceVideo | null>(null);
   const [isReferencePickerOpen, setIsReferencePickerOpen] = useState(false);
+  const [animationEnabled, setAnimationEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check feature flags once on mount. Animation link only renders when enabled.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/feature-flags", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((flags) => {
+        if (!cancelled && flags?.animation) setAnimationEnabled(true);
+      })
+      .catch(() => {
+        // Non-fatal — animation link just stays hidden.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -462,24 +480,54 @@ Incorporating these into your storyboard...`;
 
           {/* Quick-start format templates — only show before first user message */}
           {messages.length === 1 && !isLoading && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {[
-                { label: "💡 Story + Lesson", prompt: "I want to create a talking-head Short where I share a personal story and end with a lesson or takeaway." },
-                { label: "📋 Top Tips List", prompt: "I want to create a 'top tips' style Short — a numbered list of actionable advice on my topic." },
-                { label: "🎭 Myth vs Fact", prompt: "I want to debunk a common misconception or myth about my topic in a Short." },
-                { label: "📖 Tutorial", prompt: "I want to create a step-by-step tutorial Short that teaches viewers how to do something." },
-                { label: "⚡ Controversial Take", prompt: "I want to share a controversial or unpopular opinion on my topic that will spark discussion." },
-                { label: "🔄 Before / After", prompt: "I want to create a before/after or transformation Short showing contrast or change." },
-              ].map(({ label, prompt }) => (
-                <button
-                  key={label}
-                  onClick={() => handleSendWithMessage(prompt)}
-                  className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-gray-300 transition-colors"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {[
+                  { label: "💡 Story + Lesson", prompt: "I want to create a talking-head Short where I share a personal story and end with a lesson or takeaway." },
+                  { label: "📋 Top Tips List", prompt: "I want to create a 'top tips' style Short — a numbered list of actionable advice on my topic." },
+                  { label: "🎭 Myth vs Fact", prompt: "I want to debunk a common misconception or myth about my topic in a Short." },
+                  { label: "📖 Tutorial", prompt: "I want to create a step-by-step tutorial Short that teaches viewers how to do something." },
+                  { label: "⚡ Controversial Take", prompt: "I want to share a controversial or unpopular opinion on my topic that will spark discussion." },
+                  { label: "🔄 Before / After", prompt: "I want to create a before/after or transformation Short showing contrast or change." },
+                ].map(({ label, prompt }) => (
+                  <button
+                    key={label}
+                    onClick={() => handleSendWithMessage(prompt)}
+                    className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-gray-300 transition-colors"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* AI Animation Storyboard — slow mode, separate wizard route */}
+              {animationEnabled && (
+                <div className="mt-4 pt-4 border-t border-gray-800">
+                  <Link
+                    href="/storyboard/create/animation"
+                    className="flex items-center justify-between gap-3 p-3 bg-[#1a1a1a] border border-gray-800 rounded-xl hover:border-gray-700 transition-colors group"
+                    aria-label="Switch to AI Animation Storyboard mode"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-wider text-orange-400">
+                          New · Slow mode
+                        </span>
+                      </div>
+                      <p className="font-[var(--font-space-grotesk)] text-sm text-white mt-1">
+                        AI Animation Storyboard
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Characters + scene + arc → ready-to-paste prompts for Veo, Sora, Runway, or Kling.
+                      </p>
+                    </div>
+                    <span className="text-gray-500 group-hover:text-white transition-colors text-sm" aria-hidden>
+                      →
+                    </span>
+                  </Link>
+                </div>
+              )}
+            </>
           )}
 
           {isLoading && (

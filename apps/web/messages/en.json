@@ -1074,5 +1074,87 @@
         "explosive": "Explosive"
       }
     }
+  },
+  "animation": {
+    "wizard": {
+      "title": "AI Animation Storyboard",
+      "subtitle": "Characters, scene, arc — ready-to-paste prompts for your video tool.",
+      "steps_nav_label": "Wizard steps",
+      "nav": {
+        "back": "← Back",
+        "back_to_create": "Back to Create",
+        "continue": "Continue →",
+        "generate": "Generate",
+        "generating": "Generating…",
+        "credits": "credits"
+      },
+      "crumb": {
+        "premise": "Premise",
+        "characters": "Characters",
+        "arc": "Arc"
+      },
+      "premise": {
+        "title": "What's the story?",
+        "subtitle": "One sentence is enough. Tone and style come next.",
+        "logline_label": "Logline",
+        "logline_placeholder": "e.g. A tired cat discovers the vacuum is actually its friend",
+        "logline_hint": "At least 10 characters.",
+        "logline_ok": "Good.",
+        "tone_label": "Tone",
+        "style_label": "Style",
+        "scene_label": "Setting",
+        "scene_placeholder": "e.g. A sunny suburban living room"
+      },
+      "characters": {
+        "title": "Who's in this story?",
+        "subtitle": "Define 1-2 characters. Their appearance and personality lock across every beat.",
+        "slot_label": "Character {n}",
+        "remove": "Remove",
+        "add_second": "Add second character (optional)",
+        "name_label": "Name",
+        "name_placeholder": "e.g. Whiskers",
+        "appearance_label": "Appearance",
+        "appearance_placeholder": "Type traits, press Enter",
+        "appearance_hint": "3-5 short traits work best. Enter to add, backspace to remove.",
+        "personality_label": "Personality",
+        "personality_placeholder": "One sentence. What defines them?"
+      },
+      "arc": {
+        "title": "How does it land?",
+        "subtitle": "Pick an arc shape, then write the payoff that makes it worth watching.",
+        "template_label": "Arc shape",
+        "roles_word": "{count, plural, one {beat role} other {beat roles}}",
+        "custom_label": "Custom arc",
+        "custom_description": "Describe your own arc shape in one sentence.",
+        "custom_placeholder": "e.g. Two-act structure with a hidden flashback in the middle.",
+        "custom_hint": "At least 10 characters.",
+        "payoff_label": "The payoff — the moment that lands",
+        "payoff_placeholder": "What happens that makes this worth watching?",
+        "payoff_hint": "At least 5 characters. This is the fun part.",
+        "payoff_ok": "Good."
+      }
+    },
+    "progress": {
+      "steps": {
+        "story": "Writing your story",
+        "chars": "Meeting your characters",
+        "beats": "Scene by scene",
+        "images": "Rendering frames"
+      },
+      "beats_complete_hint": "Ready to view",
+      "chars_reveal_title": "Your characters are ready",
+      "capped_title": "Spend cap reached",
+      "stale_title": "Job paused",
+      "failed_title": "Something went wrong",
+      "retry": "Retry"
+    },
+    "export": {
+      "expand_prompt": "Copy prompt ↓",
+      "copy_prompt": "Copy now",
+      "copied_with_context": "✓ Copied — paste into your video tool",
+      "expand_label": "Expand prompt",
+      "copy_label": "Copy prompt to clipboard",
+      "collapse_label": "Collapse prompt"
+    }
   }
 }
