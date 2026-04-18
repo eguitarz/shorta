@@ -143,12 +143,18 @@ export default function StoryboardResultsPage() {
           setStoryboardData(parsed);
           setLoading(false);
 
-          // Still fetch from DB to hydrate beat images
+          // Still fetch from DB to hydrate beat images + animation_meta.
+          // animation_meta must hydrate here because older cached entries
+          // (pre-animation-mode) won't have it — otherwise the Export pack
+          // button and auto-gen effect silently no-op.
           const response = await fetch(`/api/storyboards/generated/${id}`);
           if (response.ok) {
             const data = await response.json();
             if (data.beatImages && Object.keys(data.beatImages).length > 0) {
               setBeatImages(data.beatImages);
+            }
+            if (data.animation_meta && !parsed.animation_meta) {
+              setStoryboardData({ ...parsed, animation_meta: data.animation_meta });
             }
           }
           return;
@@ -182,6 +188,11 @@ export default function StoryboardResultsPage() {
           beats: data.generated?.beats || data.original?.beats || [],
           hookVariants: data.hookVariants || [],
           selectedHookId: data.selectedHookId,
+          // Animation mode metadata (null for non-animation storyboards) —
+          // gates the Export pack button, auto-image-gen effect, and the
+          // hide-the-manual-button logic. Without this field the whole
+          // animation UI silently no-ops on a valid animation storyboard.
+          animation_meta: data.animation_meta ?? null,
           generatedAt: data.generatedAt || new Date().toISOString(),
         };
 

@@ -99,6 +99,9 @@ export async function GET(
 
             // Beat images
             beatImages: storyboard.beat_images || {},
+
+            // Animation mode metadata (null for non-animation storyboards)
+            animation_meta: storyboard.animation_meta || null,
         });
     } catch (error) {
         console.error('[Storyboard] API error:', error);
