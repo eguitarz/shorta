@@ -117,6 +117,15 @@ export default function StoryboardResultsPage() {
   const [generatingImageBeats, setGeneratingImageBeats] = useState<Set<number>>(new Set());
   const [imagesCompleted, setImagesCompleted] = useState(0);
   const [regeneratingImageBeat, setRegeneratingImageBeat] = useState<number | null>(null);
+
+  /**
+   * Animation-mode auto-trigger guard.
+   * Ref (not state) so React Strict Mode's double-mount doesn't double-fire.
+   * sessionStorage persists across in-tab navigations so if the user bounces
+   * off and back mid-generation we don't re-fire the gen (which would
+   * double-charge credits).
+   */
+  const autoGenFiredRef = useRef(false);
   const [referenceImage, setReferenceImage] = useState<ReferenceImage | null>(null);
   const [referencePreviewUrl, setReferencePreviewUrl] = useState<string | null>(null);
   const referenceInputRef = useRef<HTMLInputElement>(null);
@@ -663,6 +672,34 @@ export default function StoryboardResultsPage() {
     }
   };
 
+  /**
+   * Animation-mode: auto-fire image generation ONCE when the storyboard
+   * loads. Fires only when:
+   *   - storyboard is animation mode (animation_meta present)
+   *   - no beat images exist yet
+   *   - nothing is already running (guards button + auto)
+   *   - this tab hasn't fired gen for this storyboard yet (sessionStorage)
+   *
+   * sessionStorage-keyed on storyboard id guards against:
+   *   (a) React Strict Mode double-mount (extra guard beyond autoGenFiredRef)
+   *   (b) user navigating away mid-gen and coming back (we'd otherwise
+   *       double-charge credits by firing again)
+   */
+  useEffect(() => {
+    if (!storyboardData?.animation_meta) return;
+    if (autoGenFiredRef.current) return;
+    if (isGeneratingImages) return;
+    if (Object.keys(beatImages).length > 0) return; // images already exist
+
+    const sessionKey = `anim-autogen-${params.id}`;
+    if (typeof window !== 'undefined' && sessionStorage.getItem(sessionKey)) return;
+
+    autoGenFiredRef.current = true;
+    if (typeof window !== 'undefined') sessionStorage.setItem(sessionKey, '1');
+    handleGenerateAllImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storyboardData?.animation_meta, beatImages, isGeneratingImages, params.id]);
+
   // Regenerate image for a single beat
   const handleRegenerateImage = async (beatNumber: number) => {
     if (!storyboardData || regeneratingImageBeat !== null) return;
@@ -817,8 +854,11 @@ export default function StoryboardResultsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {/* Image Generation Group */}
-                  <div className="flex items-center bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+                  {/* Image Generation Group — hidden for animation mode
+                      (auto-generated on page load; per-beat regen button
+                      handles re-runs) */}
+                  <div className={`flex items-center bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden ${storyboardData?.animation_meta ? 'hidden' : ''}`}>
+
                     {/* Reference Image Upload */}
                     <input
                       ref={referenceInputRef}
