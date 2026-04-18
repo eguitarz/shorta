@@ -913,6 +913,21 @@ export default function StoryboardResultsPage() {
                       )}
                     </button>
                   </div>
+
+                  {/* Animation mode: Export pack for Flow / Sora / Runway / Kling.
+                      Bundles prompts + character sheets + beat images into a zip. */}
+                  {storyboardData?.animation_meta && (
+                    <a
+                      href={`/api/storyboard-pack/${params.id}`}
+                      download
+                      className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-gray-800 hover:border-gray-700 rounded-lg text-sm font-medium text-white transition-colors focus-visible:ring-1 ring-gray-500 ring-offset-2 ring-offset-[#0a0a0a]"
+                      title="Download a .zip with character sheets, beat images, and prompts ready for Google Flow, Sora, Runway, or Kling."
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Export pack</span>
+                      <span className="text-[10px] uppercase tracking-wider text-gray-500">.zip</span>
+                    </a>
+                  )}
                   <ExportDropdown
                     overview={storyboardData.overview}
                     beats={storyboardData.beats}

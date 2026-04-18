@@ -16,7 +16,7 @@
 
 import type { AnimationBeat, AnimationMeta } from '@/lib/types/beat';
 
-export type ExportPlatform = 'universal'; // v1: only universal; others tracked in TODOs
+export type ExportPlatform = 'universal' | 'flow';
 
 export interface RenderExportInput {
 	meta: AnimationMeta;
@@ -27,16 +27,19 @@ export interface RenderExportInput {
 /**
  * Render a copy-paste prompt for pasting into an external AI video tool.
  * Produces clean text — no markdown, no backticks, no smart quotes.
+ *
+ * Variants:
+ *   universal — generic [Camera] + [Subject] + [Action] + [Scene] + [Style]
+ *               format. Works in any tool; characters described inline.
+ *   flow      — Google Flow / Veo 3.1 "Ingredients" syntax. Expects the user
+ *               to have uploaded the character sheet as ingredient #1 named
+ *               `@{character_id}`. Prompt references characters by @mention.
  */
 export function renderExportPrompt(input: RenderExportInput): string {
 	const { meta, beat } = input;
 	const platform = input.platform ?? 'universal';
 
-	if (platform !== 'universal') {
-		// Should be unreachable given the type but belt-and-braces for JS callers.
-		throw new Error(`renderExportPrompt: platform '${platform}' not yet supported (v1 = universal only)`);
-	}
-
+	if (platform === 'flow') return renderFlow(meta, beat);
 	return renderUniversal(meta, beat);
 }
 
@@ -109,6 +112,69 @@ function renderSubject(meta: AnimationMeta, beat: AnimationBeat): string {
 		}
 	}
 	return pieces.join('; ');
+}
+
+/**
+ * Google Flow / Veo 3.1 variant. Uses @mention syntax for characters — the
+ * user must upload each character sheet as a Flow "ingredient" first, named
+ * `{character_id}`. The render emits exactly what Flow's ingredients-to-video
+ * flow expects: a plain-English prompt with @mentions for recurring subjects.
+ */
+function renderFlow(meta: AnimationMeta, beat: AnimationBeat): string {
+	const segments: string[] = [];
+
+	// [Camera] — Flow is cinematic-first; lead with camera.
+	const camera = beat.cameraAction?.trim() || joinCamera(beat.shotType, beat.cameraMovement);
+	if (camera) segments.push(`${sanitize(camera)}.`);
+
+	// [Subject + Action] combined — Flow prefers a single narrative sentence
+	// with @mentions for ingredients rather than separate labeled fields.
+	const subjectAction = renderFlowSubjectAction(meta, beat);
+	if (subjectAction) segments.push(subjectAction);
+
+	// [Scene]
+	const context = renderContext(meta, beat);
+	if (context) segments.push(sanitize(context));
+
+	// Dialogue
+	if (beat.dialogue?.trim()) {
+		segments.push(`Dialogue: "${sanitize(beat.dialogue.trim())}"`);
+	}
+
+	// [Style] as tail modifier.
+	if (meta.styleAnchor?.trim()) {
+		segments.push(`Style: ${sanitize(meta.styleAnchor.trim())}.`);
+	}
+
+	return segments.join(' ');
+}
+
+function renderFlowSubjectAction(meta: AnimationMeta, beat: AnimationBeat): string {
+	const refs = beat.characterRefs ?? [];
+	const action = beat.characterAction?.trim() || beat.script?.trim() || '';
+
+	if (refs.length === 0) {
+		return action ? sanitize(action) : '';
+	}
+
+	// Build a "@char_1 and @char_2" subject clause. Flow treats @mentions as
+	// ingredient lookups — the user must upload each character sheet as an
+	// ingredient with the matching name before generating.
+	const mentions: string[] = [];
+	for (const ref of refs) {
+		const char = meta.characters.find((c) => c.id === ref);
+		if (!char) continue;
+		// Use ingredient mention followed by human name for readability.
+		mentions.push(`@${char.id}`);
+	}
+	if (mentions.length === 0) return action ? sanitize(action) : '';
+
+	const subjectClause =
+		mentions.length === 1
+			? `Using ${mentions[0]},`
+			: `Using ${mentions.slice(0, -1).join(', ')} and ${mentions[mentions.length - 1]},`;
+
+	return action ? `${subjectClause} ${sanitize(action)}` : subjectClause;
 }
 
 function renderContext(meta: AnimationMeta, beat: AnimationBeat): string {

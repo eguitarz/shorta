@@ -125,10 +125,10 @@ describe('renderExportPrompt (universal)', () => {
 		expect(out).toContain("Don't render text inline.");
 	});
 
-	it('rejects unsupported platforms (v1 is universal only)', () => {
-		expect(() =>
-			renderExportPrompt({ meta: META, beat: BEAT, platform: 'veo' as any })
-		).toThrow(/not yet supported/);
+	it('defaults to universal when platform is omitted', () => {
+		const out1 = renderExportPrompt({ meta: META, beat: BEAT });
+		const out2 = renderExportPrompt({ meta: META, beat: BEAT, platform: 'universal' });
+		expect(out1).toBe(out2);
 	});
 
 	it('uses script as Action fallback when characterAction is missing', () => {
@@ -141,5 +141,90 @@ describe('renderExportPrompt (universal)', () => {
 		const out = renderExportPrompt({ meta: META, beat: BEAT });
 		expect(out).not.toMatch(/```/);
 		expect(out).not.toMatch(/^#+ /m);
+	});
+});
+
+describe('renderExportPrompt (flow)', () => {
+	it('uses @ingredient mention syntax for characters', () => {
+		const out = renderExportPrompt({ meta: META, beat: BEAT, platform: 'flow' });
+		expect(out).toContain('@char_1');
+		expect(out).toMatch(/Using @char_1,/);
+	});
+
+	it('does NOT inline the character description (ingredient carries identity)', () => {
+		const out = renderExportPrompt({ meta: META, beat: BEAT, platform: 'flow' });
+		// Universal variant would embed the full sheetPrompt text. Flow
+		// variant relies on the uploaded ingredient instead.
+		expect(out).not.toContain('notched left ear');
+	});
+
+	it('joins multiple characters with "and"', () => {
+		const multiCharMeta = {
+			...META,
+			characters: [
+				META.characters[0],
+				{
+					...META.characters[0],
+					id: 'char_2',
+					name: 'Rover',
+					sheetPrompt: 'Shaggy golden retriever',
+				},
+			],
+		};
+		const multiCharBeat = {
+			...BEAT,
+			characterRefs: ['char_1', 'char_2'],
+		};
+		const out = renderExportPrompt({
+			meta: multiCharMeta,
+			beat: multiCharBeat,
+			platform: 'flow',
+		});
+		expect(out).toMatch(/Using @char_1 and @char_2,/);
+	});
+
+	it('includes camera + scene + style tail modifier', () => {
+		const out = renderExportPrompt({ meta: META, beat: BEAT, platform: 'flow' });
+		expect(out).toContain('Medium close-up, slow dolly in.');
+		expect(out).toContain(META.sceneAnchor);
+		expect(out).toMatch(/Style: Pixar-ish 3D/);
+	});
+
+	it('handles no-character beats (pure landscape scene)', () => {
+		const noCharBeat = { ...BEAT, characterRefs: [] };
+		const out = renderExportPrompt({
+			meta: META,
+			beat: noCharBeat,
+			platform: 'flow',
+		});
+		expect(out).not.toContain('@');
+		expect(out).not.toMatch(/Using/);
+		// Should still have camera + action + scene + style
+		expect(out.length).toBeGreaterThan(20);
+	});
+
+	it('includes dialogue when beat speaks', () => {
+		const speakingBeat = { ...BEAT, dialogue: "I guess you're okay." };
+		const out = renderExportPrompt({
+			meta: META,
+			beat: speakingBeat,
+			platform: 'flow',
+		});
+		expect(out).toMatch(/Dialogue: "I guess you're okay\."/);
+	});
+
+	it('sanitizes the same way universal does (smart quotes, backticks)', () => {
+		const dirtyBeat = {
+			...BEAT,
+			characterAction: 'Uses \u201cfancy\u201d quotes and `backticks`',
+		};
+		const out = renderExportPrompt({
+			meta: META,
+			beat: dirtyBeat,
+			platform: 'flow',
+		});
+		expect(out).not.toContain('\u201c');
+		expect(out).not.toContain('`');
+		expect(out).toContain('"fancy"');
 	});
 });

@@ -60,6 +60,7 @@
     "disposable-email-domains": "^1.0.62",
     "embla-carousel-react": "^8.6.0",
     "feed": "^5.1.0",
+    "fflate": "^0.4.8",
     "framer-motion": "^12.23.26",
     "gray-matter": "^4.0.3",
     "input-otp": "^1.4.2",
