@@ -140,5 +140,12 @@ RULES:
 - Style identity: every beat where a character appears must feel like the SAME ${meta.styleAnchor} world. Do not drift between styles across beats.
 - LAND the payoff: the beat with narrativeRole 'payoff' must deliver the user's payoff line (${meta.payoff}) in either characterAction, dialogue, or sceneSnippet.
 
+EVERY beat MUST include ALL of these fields — no exceptions, no skipping, even if the information duplicates the animation-mode fields (characterAction, cameraAction, sceneSnippet). The downstream renderer requires them:
+  - script (what's said/narrated in this beat)
+  - visual (bullet list of what the camera shows)
+  - audio (bullet list of music/SFX/ambience)
+  - directorNotes (bullet list of shooting instructions)
+If you feel these overlap with characterAction/cameraAction/sceneSnippet, restate in bullet form. Do NOT omit.
+
 RESPONSE FORMAT: Return ONLY the JSON object. No markdown fences, no preamble, no commentary.${localeInstruction}`;
 }

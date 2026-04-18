@@ -230,7 +230,8 @@ describe('parsePass2Output', () => {
 		expect(out[1].dialogue).toBe('Hello there.');
 	});
 
-	it('throws on missing required string fields', () => {
+	it('throws on missing truly-required string fields (title)', () => {
+		// title is structurally required — no sensible fallback.
 		const raw = {
 			beats: [
 				{ ...VALID_BEAT, title: undefined },
@@ -238,6 +239,54 @@ describe('parsePass2Output', () => {
 			],
 		};
 		expect(() => parsePass2Output(raw, EXPECTED)).toThrow(/title/);
+	});
+
+	it('synthesizes missing legacy fields (visual/audio/script/directorNotes) from animation fields', () => {
+		// Pass 2 sometimes omits the legacy bullet fields because the richer
+		// animation fields already cover them. Parser should fill in rather
+		// than discarding the whole job.
+		const raw = {
+			beats: [
+				{
+					...VALID_BEAT,
+					visual: undefined,
+					audio: undefined,
+					script: undefined,
+					directorNotes: undefined,
+				},
+				{ ...VALID_BEAT, beatNumber: 2 },
+			],
+		};
+
+		const out = parsePass2Output(raw, EXPECTED);
+		expect(out).toHaveLength(2);
+
+		// Synthesized visual should include cameraAction + sceneSnippet bullets
+		expect(out[0].visual).toContain('•');
+		expect(out[0].visual).toMatch(/Medium shot|MS/);
+		expect(out[0].visual).toContain(VALID_BEAT.sceneSnippet);
+
+		// Script falls back to characterAction (or dialogue/title, whichever first)
+		expect(out[0].script.length).toBeGreaterThan(0);
+
+		// Audio has a non-empty default
+		expect(out[0].audio).toContain('•');
+
+		// Director notes include narrative role + action
+		expect(out[0].directorNotes).toContain('•');
+		expect(out[0].directorNotes).toMatch(/setup/i);
+	});
+
+	it('prefers provided legacy fields over synthesized ones when present', () => {
+		const raw = {
+			beats: [
+				{ ...VALID_BEAT, visual: '• Author-provided visual line' },
+				{ ...VALID_BEAT, beatNumber: 2 },
+			],
+		};
+
+		const out = parsePass2Output(raw, EXPECTED);
+		expect(out[0].visual).toBe('• Author-provided visual line');
 	});
 
 	it('sorts beats by beatNumber', () => {

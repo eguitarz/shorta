@@ -96,15 +96,13 @@ export function parsePass2Output(
 		if (!b || typeof b !== 'object') continue;
 		const bb = b as Record<string, unknown>;
 
+		// Truly-required fields: beatNumber, startTime, endTime, type, title.
+		// If these are missing, the beat is structurally unusable — throw.
 		const beatNumber = numberField(bb, 'beatNumber');
 		const startTime = numberField(bb, 'startTime');
 		const endTime = numberField(bb, 'endTime');
 		const type = stringField(bb, 'type');
 		const title = stringField(bb, 'title');
-		const script = stringField(bb, 'script');
-		const visual = stringField(bb, 'visual');
-		const audio = stringField(bb, 'audio');
-		const directorNotes = stringField(bb, 'directorNotes');
 
 		const narrativeRole = enumField(bb.narrativeRole, VALID_NARRATIVE_ROLES) as NarrativeRole | undefined;
 		const shotType = enumField(bb.shotType, VALID_SHOT_TYPES) as ShotType | undefined;
@@ -122,6 +120,26 @@ export function parsePass2Output(
 		const cameraAction = typeof bb.cameraAction === 'string' ? bb.cameraAction : undefined;
 		const sceneSnippet = typeof bb.sceneSnippet === 'string' ? bb.sceneSnippet : undefined;
 		const dialogue = typeof bb.dialogue === 'string' && bb.dialogue.trim() ? bb.dialogue : undefined;
+
+		// Legacy fields (script/visual/audio/directorNotes) are required by the
+		// EXISTING storyboard renderer at /storyboard/generate/[id]. The LLM
+		// sometimes skips them because the richer animation fields already
+		// describe the same info. Synthesize from animation fields instead of
+		// failing the whole job — user already paid base + char sheet costs.
+		const script =
+			optionalStringField(bb, 'script') ??
+			dialogue ??
+			characterAction ??
+			title;
+		const visual =
+			optionalStringField(bb, 'visual') ??
+			synthVisual({ cameraAction, shotType, cameraMovement, sceneSnippet, characterAction });
+		const audio =
+			optionalStringField(bb, 'audio') ??
+			'• Ambient scene audio\n• Sound design appropriate to tone';
+		const directorNotes =
+			optionalStringField(bb, 'directorNotes') ??
+			synthDirectorNotes({ narrativeRole, characterAction, cameraAction });
 
 		beats.push({
 			beatNumber,
@@ -162,6 +180,52 @@ function stringField(obj: Record<string, unknown>, field: string): string {
 		throw new Error(`Pass 2 beat missing string field '${field}'`);
 	}
 	return v;
+}
+
+/** Read a string field if present + non-empty, otherwise undefined. */
+function optionalStringField(obj: Record<string, unknown>, field: string): string | undefined {
+	const v = obj[field];
+	return typeof v === 'string' && v.trim().length > 0 ? v : undefined;
+}
+
+/**
+ * Synthesize a legacy bullet-list "visual" field from the richer animation
+ * fields when the LLM skipped it. The existing storyboard renderer splits on
+ * newlines and bullets each line.
+ */
+function synthVisual(args: {
+	cameraAction?: string;
+	shotType?: string;
+	cameraMovement?: string;
+	sceneSnippet?: string;
+	characterAction?: string;
+}): string {
+	const lines: string[] = [];
+	if (args.cameraAction) {
+		lines.push(`• ${args.cameraAction}`);
+	} else if (args.shotType || args.cameraMovement) {
+		const parts = [args.shotType, args.cameraMovement].filter(Boolean).join(', ');
+		lines.push(`• ${parts}`);
+	}
+	if (args.sceneSnippet) lines.push(`• ${args.sceneSnippet}`);
+	if (args.characterAction) lines.push(`• ${args.characterAction}`);
+	return lines.length > 0 ? lines.join('\n') : '• Scene in progress';
+}
+
+/** Synthesize default director notes from animation-mode fields. */
+function synthDirectorNotes(args: {
+	narrativeRole?: string;
+	characterAction?: string;
+	cameraAction?: string;
+}): string {
+	const lines: string[] = [];
+	if (args.narrativeRole) {
+		lines.push(`• Narrative role: **${args.narrativeRole}** — make it land`);
+	}
+	if (args.cameraAction) lines.push(`• Camera: ${args.cameraAction}`);
+	if (args.characterAction) lines.push(`• Action: ${args.characterAction}`);
+	if (lines.length === 0) lines.push('• Shoot beat as described');
+	return lines.join('\n');
 }
 
 function numberField(obj: Record<string, unknown>, field: string): number {
