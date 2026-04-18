@@ -25,7 +25,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth-helpers';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { zip, strToU8 } from 'fflate';
+import { zipSync, strToU8 } from 'fflate';
 import { renderExportPrompt } from '@/lib/animation/render-export';
 import type { AnimationBeat, AnimationMeta } from '@/lib/types/beat';
 import type { BeatImageMap } from '@/lib/image-generation/types';
@@ -151,16 +151,30 @@ export async function GET(
 					].join('\n');
 					files[`characters/${char.id ?? 'unknown'}.txt`] = strToU8(charText);
 
-					// Sheet image — download from private bucket if available
+					// Sheet image — fetch via signed URL from private bucket.
+					// Using createSignedUrl + fetch() instead of storage.download()
+					// because Supabase's download() returns a Blob stream that can
+					// hang in Cloudflare Workers runtime (same class of bug as
+					// fflate async zip). Signed URL + plain fetch() is guaranteed
+					// to terminate.
 					if (char.sheetStoragePath) {
-						const { data: blob, error: dlErr } = await supabase.storage
+						const { data: signed, error: sErr } = await supabase.storage
 							.from('character-sheets')
-							.download(char.sheetStoragePath);
-						if (dlErr) {
-							console.warn(`[Pack] char ${char.id} sheet download: ${dlErr.message}`);
-						} else if (blob) {
-							const buf = new Uint8Array(await blob.arrayBuffer());
-							files[`characters/${char.id}.png`] = buf;
+							.createSignedUrl(char.sheetStoragePath, 60); // 60s TTL
+						if (sErr || !signed?.signedUrl) {
+							console.warn(
+								`[Pack] char ${char.id} signed URL failed: ${sErr?.message ?? 'unknown'}`
+							);
+						} else {
+							const imgRes = await fetch(signed.signedUrl);
+							if (imgRes.ok) {
+								const buf = new Uint8Array(await imgRes.arrayBuffer());
+								files[`characters/${char.id}.png`] = buf;
+							} else {
+								console.warn(
+									`[Pack] char ${char.id} fetch failed: HTTP ${imgRes.status}`
+								);
+							}
 						}
 					}
 				} catch (err) {
@@ -212,13 +226,13 @@ export async function GET(
 
 		console.log(`[Pack] assembled ${Object.keys(files).length} files, zipping…`);
 
-		// Zip it. fflate.zip is callback-based; wrap in Promise.
-		const zipped: Uint8Array = await new Promise((resolve, reject) => {
-			zip(files, { level: 6 }, (err, data) => {
-				if (err) reject(err);
-				else resolve(data);
-			});
-		});
+		// Use zipSync, NOT async zip(). fflate's async zip() tries to spawn
+		// Web Workers for parallel compression. Cloudflare Workers runtime
+		// doesn't have Web Workers, so the callback never fires and the
+		// request hangs until the runtime kills it (~30s). zipSync does
+		// everything on the main thread — slower for massive payloads but
+		// our packs are ~10MB max, fine to do synchronously.
+		const zipped: Uint8Array = zipSync(files, { level: 6 });
 
 		console.log(`[Pack] zipped: ${zipped.byteLength} bytes`);
 
