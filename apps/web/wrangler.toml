@@ -39,6 +39,10 @@ NEXT_PUBLIC_POSTHOG_HOST = "https://us.i.posthog.com"
 # LLM Configuration
 LLM_MODEL = "gemini-3.1-flash-lite-preview"
 
+# Evidence Mode — analyzer "why we flagged this" + "why this grade" receipts.
+# Client-visible (NEXT_PUBLIC_) so the React analyzer page can read it.
+NEXT_PUBLIC_EVIDENCE_MODE_ENABLED = "1"
+
 # Cloudflare Turnstile (CAPTCHA)
 # Get your keys from: https://dash.cloudflare.com/?to=/:account/turnstile
 NEXT_PUBLIC_TURNSTILE_SITE_KEY = "0x4AAAAAACLij6umuhK1Iw-g"
