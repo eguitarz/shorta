@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
 				content_type
 			`)
             .eq('user_id', user.id)
+            .eq('kind', 'analysis')
             .eq('status', 'completed')
             .order('completed_at', { ascending: false })
             .limit(limit);

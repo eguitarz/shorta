@@ -91,6 +91,7 @@ export async function GET(request: NextRequest) {
 				content_type
 			`)
 			.eq('user_id', user.id)
+			.eq('kind', 'analysis')
 			.order('created_at', { ascending: false })
 			.limit(5);
 

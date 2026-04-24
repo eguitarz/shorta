@@ -139,6 +139,7 @@ export async function GET(request: NextRequest) {
 				storyboard_result
 			`, { count: 'exact' })
 			.eq('user_id', user.id)
+			.eq('kind', 'analysis')
 			.eq('status', 'completed'); // Only return completed analyses
 
 		// Apply filters using generated columns

@@ -67,6 +67,13 @@ export async function GET(
       );
     }
 
+    if (job.kind && job.kind !== 'analysis') {
+      return NextResponse.json(
+        { error: 'Job not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify ownership: either user owns job OR it's an anonymous job
     if (job.is_anonymous) {
       // Anonymous jobs are accessible to anyone with the job_id (trial mode)

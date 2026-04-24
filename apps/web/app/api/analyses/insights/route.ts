@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
 			.from('analysis_jobs')
 			.select('id, created_at, deterministic_score, storyboard_result, video_url, file_uri')
 			.eq('user_id', user.id)
+			.eq('kind', 'analysis')
 			.eq('status', 'completed')
 			.not('deterministic_score', 'is', null)
 			.order('created_at', { ascending: false })

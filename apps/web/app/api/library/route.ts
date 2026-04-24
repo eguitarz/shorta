@@ -139,6 +139,7 @@ export async function GET(request: NextRequest) {
       .from('analysis_jobs')
       .select(SELECTABLE_COLUMNS.join(',') + ',youtube_video_id', { count: 'exact' })
       .eq('user_id', user.id)
+      .eq('kind', 'analysis')
       .eq('status', 'completed'); // Only show completed analyses
 
     // For 'own' source, only show analysis_jobs that have a youtube_video_id (own analyzed videos)
@@ -323,6 +324,7 @@ export async function OPTIONS(request: NextRequest) {
       .from('analysis_jobs')
       .select('niche_category, hook_category, content_type, video_format')
       .eq('user_id', user.id)
+      .eq('kind', 'analysis')
       .eq('status', 'completed');
 
     const niches = [...new Set((data || []).map(d => d.niche_category).filter(Boolean))];
