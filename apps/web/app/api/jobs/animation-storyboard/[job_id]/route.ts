@@ -207,6 +207,10 @@ async function runStory(
 			arcCustomDescription: spec.arcCustomDescription,
 			payoff: spec.payoff,
 			characters: spec.characters,
+			// CRITICAL: pass productContext through. Without this, Pass 1
+			// never sees it, animation_meta ends up without productContext,
+			// and the UI thinks the storyboard has no product uploaded.
+			productContext: spec.productContext,
 		},
 		beatCount: spec.beatCount,
 		totalLengthSeconds: spec.totalLengthSeconds,

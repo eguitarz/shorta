@@ -201,8 +201,10 @@ export async function GET(
 						buildBeatHeader(beat) + universalPrompt + '\n'
 					);
 
-					// Beat image — download from the public storyboard-images bucket
-					// via the URL recorded in beat_images.
+					// Beat image(s) — download from the public storyboard-images
+					// bucket via the URLs recorded in beat_images. Start frame is
+					// beat-NN.png; if an end frame exists, also include beat-NN-end.png
+					// so users on Veo 3 / Runway Gen-4 can use first+last-frame mode.
 					const imgMeta = beatImages[String(beat.beatNumber)];
 					if (imgMeta?.url) {
 						try {
@@ -216,6 +218,25 @@ export async function GET(
 							}
 						} catch (err) {
 							console.warn(`[Pack] beat ${beat.beatNumber} image fetch failed:`, err);
+						}
+					}
+					if (imgMeta?.endUrl) {
+						try {
+							const cleanUrl = imgMeta.endUrl.split('?')[0];
+							const imgRes = await fetch(cleanUrl);
+							if (imgRes.ok) {
+								const buf = new Uint8Array(await imgRes.arrayBuffer());
+								files[`beats/beat-${num}-end.png`] = buf;
+							} else {
+								console.warn(
+									`[Pack] beat ${beat.beatNumber} end-frame fetch: HTTP ${imgRes.status}`
+								);
+							}
+						} catch (err) {
+							console.warn(
+								`[Pack] beat ${beat.beatNumber} end-frame fetch failed:`,
+								err
+							);
 						}
 					}
 				} catch (err) {
@@ -282,14 +303,78 @@ function safeFilename(s: string): string {
 	);
 }
 
+/**
+ * Normalize a legacy string-or-array directorNotes / visual / audio field
+ * into a single multi-line string. Pass 2 emits these as either:
+ *   - a pre-formatted bullet list string like "• line1\n• line2"
+ *   - an array of strings (newer beats)
+ */
+function normalizeBulletField(value: unknown): string {
+	if (Array.isArray(value)) {
+		return value
+			.filter((v): v is string => typeof v === 'string' && !!v.trim())
+			.map((v) => (v.trim().startsWith('•') ? v.trim() : `• ${v.trim()}`))
+			.join('\n');
+	}
+	if (typeof value === 'string') return value.trim();
+	return '';
+}
+
 function buildBeatHeader(beat: AnimationBeat): string {
 	const duration = beat.endTime - beat.startTime;
-	return [
+	const lines: string[] = [
 		`=== Beat ${beat.beatNumber}: ${beat.title} ===`,
 		`Narrative role: ${beat.narrativeRole ?? '(unspecified)'}`,
 		`Timing: ${beat.startTime}s–${beat.endTime}s (${duration.toFixed(1)}s duration)`,
-		'',
-	].join('\n');
+	];
+	if (beat.shotType || beat.cameraMovement || beat.transition) {
+		const frame: string[] = [];
+		if (beat.shotType) frame.push(`shot=${beat.shotType}`);
+		if (beat.cameraMovement) frame.push(`movement=${beat.cameraMovement}`);
+		if (beat.transition) frame.push(`transition=${beat.transition}`);
+		lines.push(`Framing: ${frame.join(', ')}`);
+	}
+	lines.push('');
+
+	// Creative direction — script, visual, audio, director notes. These
+	// carry a lot of the creative intent and were previously dropped from
+	// the per-beat text files (only storyboard.json had them).
+	if (beat.script?.trim()) {
+		lines.push('SCRIPT / NARRATION:');
+		lines.push(beat.script.trim());
+		lines.push('');
+	}
+	const visualBlock = normalizeBulletField(beat.visual);
+	if (visualBlock) {
+		lines.push('VISUAL:');
+		lines.push(visualBlock);
+		lines.push('');
+	}
+	const audioBlock = normalizeBulletField(beat.audio);
+	if (audioBlock) {
+		lines.push('AUDIO:');
+		lines.push(audioBlock);
+		lines.push('');
+	}
+	const directorBlock = normalizeBulletField(beat.directorNotes);
+	if (directorBlock) {
+		lines.push("DIRECTOR'S NOTES:");
+		lines.push(directorBlock);
+		lines.push('');
+	}
+	if (beat.dialogue?.trim()) {
+		lines.push('DIALOGUE:');
+		lines.push(`"${beat.dialogue.trim()}"`);
+		lines.push('');
+	}
+	if (beat.endFrameIntent?.trim()) {
+		lines.push('END FRAME (post-action state):');
+		lines.push(beat.endFrameIntent.trim());
+		lines.push('');
+	}
+	lines.push('--- VIDEO MODEL PROMPT ---');
+	lines.push('');
+	return lines.join('\n');
 }
 
 function buildReadme(
@@ -359,28 +444,51 @@ ${beatList}
    export as a single video.
 
 ────────────────────────────────────────────────────────────────────────────
-HOW TO USE WITH OTHER TOOLS (Sora, Runway, Kling)
+FIRST + LAST FRAME MODE (Veo 3, Runway Gen-4 — BEST QUALITY)
 ────────────────────────────────────────────────────────────────────────────
 
-These tools don't have Flow's @ingredient syntax. Use the *-universal.txt
-prompt variants instead — character descriptions are inlined so the tool
-can render from text alone. For best consistency:
+If a beat has both beat-NN.png (start) AND beat-NN-end.png (end), your
+video model can interpolate between them. This is Veo 3's and Runway
+Gen-4's strongest mode — much cleaner motion and beat boundaries than
+image-to-video.
 
-  - Sora:   upload a character sheet image and use "Cameo" mode
-  - Runway: use Gen-4.5's Reference feature and attach the sheet
-  - Kling:  upload character as Reference Image
+How to use per beat in Veo 3 / Flow (Veo 3.1):
+  - Click "New scene" → "Frames to Video"
+  - Upload beat-NN.png as first frame
+  - Upload beat-NN-end.png as last frame
+  - Paste the beat's -flow.txt prompt
+  - Generate — Veo renders the motion between the two frames
+
+Runway Gen-4:
+  - Start a new generation → "First & Last Frame" mode
+  - Upload both frames
+  - Paste the -universal.txt prompt
+
+If a beat has only beat-NN.png (no end frame), use image-to-video mode —
+upload that single frame and the prompt describes the motion.
+
+────────────────────────────────────────────────────────────────────────────
+HOW TO USE WITH OTHER TOOLS (Sora, Kling)
+────────────────────────────────────────────────────────────────────────────
+
+These tools don't currently support first+last frame input. Use the
+*-universal.txt prompt variant plus beat-NN.png as the reference:
+
+  - Sora:   upload beat-NN.png and use "Cameo" mode with the -universal prompt
+  - Kling:  upload beat-NN.png as Reference Image
 
 ────────────────────────────────────────────────────────────────────────────
 FILES
 ────────────────────────────────────────────────────────────────────────────
 
-  README.txt                this file
-  storyboard.json           full structured data (for programmatic use)
-  characters/<id>.png       character sheet (upload as Flow ingredient)
-  characters/<id>.txt       character description (for tools without ingredient systems)
-  beats/beat-NN-flow.txt    Flow-specific prompt with @mention syntax
-  beats/beat-NN-universal.txt  platform-agnostic prompt
-  beats/beat-NN.png         Shorta's pre-visualization frame (optional reference)
+  README.txt                    this file
+  storyboard.json               full structured data (for programmatic use)
+  characters/<id>.png           character sheet (upload as Flow ingredient)
+  characters/<id>.txt           character description (for tools without ingredient systems)
+  beats/beat-NN-flow.txt        Flow-specific prompt with @mention syntax
+  beats/beat-NN-universal.txt   platform-agnostic prompt
+  beats/beat-NN.png             START frame of the beat
+  beats/beat-NN-end.png         END frame of the beat (for first+last frame mode)
 
 Generated ${new Date().toISOString()}
 `;

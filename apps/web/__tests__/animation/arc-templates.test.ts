@@ -7,8 +7,8 @@ import {
 import type { ArcTemplateId, NarrativeRole } from '../../lib/types/beat';
 
 describe('ARC_TEMPLATES', () => {
-	it('contains exactly 6 presets', () => {
-		expect(ARC_TEMPLATES).toHaveLength(6);
+	it('contains exactly 7 presets', () => {
+		expect(ARC_TEMPLATES).toHaveLength(7);
 	});
 
 	it('each template has a unique id matching ArcTemplateId (minus custom)', () => {
@@ -20,6 +20,7 @@ describe('ARC_TEMPLATES', () => {
 			'reveal',
 			'reversal',
 			'chase_build',
+			'product_demo',
 		];
 		expect(new Set(ids)).toEqual(new Set(expected));
 	});
@@ -40,6 +41,10 @@ describe('ARC_TEMPLATES', () => {
 			'twist',
 			'payoff',
 			'button',
+			'hook_problem',
+			'product_reveal',
+			'feature_highlight',
+			'cta',
 		];
 		for (const t of ARC_TEMPLATES) {
 			for (const role of t.roles) {

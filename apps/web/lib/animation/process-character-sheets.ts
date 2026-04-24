@@ -54,6 +54,17 @@ export async function processCharacterSheets(
 	let anyFailed = false;
 
 	for (const character of meta.characters) {
+		// Pre-pinned sheet (e.g. reused avatar from product landing page).
+		// Skip generation, skip credit charge, keep the existing path.
+		if (character.sheetStoragePath) {
+			updatedChars.push({
+				...character,
+				sheetGeneratedAt: character.sheetGeneratedAt ?? new Date().toISOString(),
+				sheetFailureReason: undefined,
+			});
+			continue;
+		}
+
 		if (!character.sheetPrompt) {
 			// Pass 1 didn't produce a sheetPrompt for this character; skip with
 			// a recorded reason.

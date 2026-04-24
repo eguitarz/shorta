@@ -3,6 +3,16 @@ export interface BeatImageData {
   storagePath: string;
   prompt: string;
   generatedAt: string;
+  /**
+   * End-frame image for this beat (optional). Populated when Pass 2 provided
+   * an endFrameIntent and Pass 4 successfully generated the second frame.
+   * Used for "first + last frame" mode in Veo 3, Runway Gen-4, and similar
+   * video models. Downstream export packs should ship both frames together.
+   */
+  endUrl?: string;
+  endStoragePath?: string;
+  endPrompt?: string;
+  endGeneratedAt?: string;
 }
 
 export interface BeatImageMap {

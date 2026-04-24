@@ -43,6 +43,12 @@ LLM_MODEL = "gemini-3.1-flash-lite-preview"
 # Client-visible (NEXT_PUBLIC_) so the React analyzer page can read it.
 NEXT_PUBLIC_EVIDENCE_MODE_ENABLED = "1"
 
+# AI Animation Storyboard mode (premium feature)
+ANIMATION_MODE_ENABLED = "1"
+# Product Demo mode (requires ANIMATION_MODE_ENABLED)
+ANIMATION_PRODUCT_MODE_ENABLED = "1"
+NEXT_PUBLIC_ANIMATION_PRODUCT_MODE_ENABLED = "1"
+
 # Cloudflare Turnstile (CAPTCHA)
 # Get your keys from: https://dash.cloudflare.com/?to=/:account/turnstile
 NEXT_PUBLIC_TURNSTILE_SITE_KEY = "0x4AAAAAACLij6umuhK1Iw-g"

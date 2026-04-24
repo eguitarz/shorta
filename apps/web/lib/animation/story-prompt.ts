@@ -51,14 +51,17 @@ export function buildStoryPrompt(input: StoryPromptInput): string {
 	const { spec, beatCount, locale } = input;
 	const roles = resolveBeatRoles(spec, beatCount);
 
-	const charsList = spec.characters
-		.map((c, i) => {
-			const traits = c.traits.length ? c.traits.join(', ') : '(no appearance traits given)';
-			return `${i + 1}. id="${characterId(i)}" name="${c.name}"
+	const charsList =
+		spec.characters.length === 0
+			? '(no characters — narration / product-only shots)'
+			: spec.characters
+					.map((c, i) => {
+						const traits = c.traits.length ? c.traits.join(', ') : '(no appearance traits given)';
+						return `${i + 1}. id="${characterId(i)}" name="${c.name}"
    traits: ${traits}
    personality: ${c.personality || '(not specified)'}`;
-		})
-		.join('\n');
+					})
+					.join('\n');
 
 	const arcDirection =
 		spec.arcTemplate === 'custom' && spec.arcCustomDescription
@@ -70,6 +73,79 @@ ROLE SEQUENCE (beatIndex → role): ${roles.map((r, i) => `${i + 1}→${r}`).joi
 		locale && locale !== 'en'
 			? `\nLANGUAGE: Write ALL user-facing text (intents, sheetPrompts) in ${getLanguageName(locale)}. Keep field keys in English.`
 			: '';
+
+	// Product demo branch: swap the framing and inject product context.
+	if (spec.productContext) {
+		const pc = spec.productContext;
+		const subheadLine = pc.subhead ? `- Value prop: ${pc.subhead}` : '';
+		const brief = pc.brief;
+		const briefBlock = brief
+			? `
+DEMO BRIEF (distilled from the live product page — trust this over generic SaaS tropes):
+${brief.oneLiner ? `- One-liner: ${brief.oneLiner}` : ''}
+${brief.valueProps?.length ? `- Value props: ${brief.valueProps.map((v) => `"${v}"`).join(' · ')}` : ''}
+${brief.features?.length ? `- Features worth highlighting:\n${brief.features.map((f) => `  - ${f.name}: ${f.benefit}`).join('\n')}` : ''}
+${brief.inferredTone ? `- Product's own voice: ${brief.inferredTone}` : ''}
+${brief.inferredAudience ? `- Audience: ${brief.inferredAudience}` : ''}
+${brief.brandSignals ? `- Brand signals: ${brief.brandSignals}` : ''}
+${brief.avoid?.length ? `- AVOID: ${brief.avoid.map((a) => `"${a}"`).join(' · ')}` : ''}
+`
+			: '';
+		return `You are a product marketing writer for a short animated product demo. The user has supplied a real product (name, headline, optional subhead, CTA) and a visual style. Your job is to plan a 5-beat animated demo that ends with the CTA, using the product_demo arc.
+
+PRODUCT:
+- Name: ${pc.productName}
+- Headline: ${pc.headline}
+${subheadLine}
+- CTA (final beat payoff): ${pc.ctaText}
+${pc.sourceUrl ? `- Source URL (context only): ${pc.sourceUrl}` : ''}
+${briefBlock}
+STYLE:
+- Tone: ${spec.tone}
+- Visual style: ${spec.styleAnchor}
+- Setting: ${spec.sceneAnchor}
+
+CHARACTERS (${spec.characters.length}):
+${charsList}
+
+${arcDirection}
+BEAT COUNT: ${beatCount}
+
+NARRATIVE ROLES (product_demo arc):
+- hook_problem: open on the pain or status-quo frustration the product solves. No branding yet.
+- product_reveal: introduce the product by name. This beat pins the product screenshot as its visual reference — describe the screen honestly.
+- feature_highlight: showcase ONE concrete feature or moment. Each feature_highlight beat should spotlight a DIFFERENT aspect. Pins the product screenshot again.
+- cta: land the user's CTA text. Brand-forward, confident, action-oriented.
+
+YOUR TASK — produce STRICT JSON with this shape:
+
+{
+  "characters": [
+    {
+      "id": "char_1",
+      "sheetPrompt": "<one-paragraph visual description of the character (e.g. a narrator / mascot) in the user's visual style. Empty if no characters.>"
+    }
+  ],
+  "beatIntents": [
+    {
+      "beatIndex": 1,
+      "narrativeRole": "hook_problem",
+      "intent": "<one-sentence declarative: what HAPPENS in this beat. Concrete, specific to THIS product. Not generic marketing speak.>"
+    }
+  ]
+}
+
+RULES:
+- characters: ${spec.characters.length === 0 ? 'Return an empty array.' : 'One object per character in the same order. id matches. sheetPrompt must lock identity across beats (describe face, build, wardrobe, style, distinguishing features). Describe IN the user\'s visual style (' + spec.styleAnchor + ').'}
+- beatIntents: exactly ${beatCount} entries. beatIndex is 1-based. narrativeRole MUST come from the ROLE SEQUENCE above.
+- product_reveal and feature_highlight beats MUST reference the product by name and describe what the viewer sees ON the product (not abstract).
+- feature_highlight beats should each cover a DISTINCT feature or benefit — no generic restating. If the DEMO BRIEF lists specific features, use those exactly; do not invent new ones.
+- cta beat MUST deliver the exact CTA text "${pc.ctaText}" via action or dialogue.
+- Tone (${spec.tone}) governs the emotional register.
+- Do NOT invent new characters. Do NOT shift the product name. Do NOT make claims the product doesn't support.
+
+RESPONSE FORMAT: Return ONLY the JSON object. No markdown fences, no preamble, no trailing commentary.${localeInstruction}`;
+	}
 
 	return `You are a story editor for short-form animated video. The user has supplied a premise, characters, an arc, and a payoff. Your job is to expand this into a structured plan that a downstream shot writer will turn into beats.
 

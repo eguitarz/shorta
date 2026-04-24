@@ -1131,7 +1131,8 @@
         "continue": "Continue →",
         "generate": "Generate",
         "generating": "Generating…",
-        "credits": "credits"
+        "credits": "credits",
+        "generate_ad": "Generate the ad"
       },
       "crumb": {
         "premise": "Premise",
@@ -1144,11 +1145,11 @@
       "mode": {
         "tablist": "Wizard mode",
         "story": "Story",
-        "product_demo": "Product Demo"
+        "product_demo": "Ad Generator"
       },
       "product": {
-        "title": "What are we demoing?",
-        "subtitle": "Paste a URL or upload product screenshots. We'll pin the real UI in the animation.",
+        "title": "What are we making an ad for?",
+        "subtitle": "Paste a URL or upload product screenshots. We'll pin the real product in the ad.",
         "url_label": "Product URL",
         "url_fetch": "Fetch",
         "url_fetching": "Fetching…",
@@ -1178,7 +1179,7 @@
         "cta_placeholder": "e.g. Try Tabnora free",
         "cta_default": "Try it free",
         "from_website": "from website",
-        "brief_label": "Demo brief (from your live page — edit anything)",
+        "brief_label": "Ad brief (from your live page — edit anything)",
         "brief_oneliner_label": "One-liner",
         "brief_oneliner_placeholder": "One sentence describing the product",
         "brief_valueprops_label": "Value props",

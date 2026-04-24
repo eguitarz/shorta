@@ -19,6 +19,12 @@ const TONE_OPTIONS = [
 ] as const;
 
 const STYLE_OPTIONS = [
+	// Photoreal — for real-person product promos (cosmetics, skincare, physical goods).
+	// Short label; expandStyleAnchor() on the server injects the full photoreal prompt.
+	"Photoreal beauty",
+	"Photoreal creator",
+	"Photoreal studio ad",
+	// Animated — for stylized demos and narrative shorts.
 	"Pixar-ish 3D",
 	"Ghibli-style 2D",
 	"Low-poly stylized",
@@ -34,6 +40,16 @@ interface PremiseStepProps {
 	/** Called when user clicks Continue. The wizard validates min-length server-side too. */
 	onContinue: () => void;
 	onBack?: () => void;
+	/**
+	 * Optional override for the primary-action button label, as an
+	 * `animation.wizard.*` translation key. Defaults to `nav.continue`.
+	 * The Ad Generator final step overrides with `nav.generate_ad` so
+	 * the button reads "Generate the ad" instead of a generic "Continue".
+	 */
+	ctaKey?: string;
+	/** Optional disabled-state label, mirrors ctaKey. Defaults to `nav.generating`. */
+	ctaBusyKey?: string;
+	busy?: boolean;
 }
 
 /**
@@ -45,7 +61,15 @@ interface PremiseStepProps {
  *   - Big logline textarea (4 rows min)
  *   - Compact row below: TONE chips + STYLE chips + SETTING text input
  */
-export function PremiseStep({ fields, onChange, onContinue, onBack }: PremiseStepProps) {
+export function PremiseStep({
+	fields,
+	onChange,
+	onContinue,
+	onBack,
+	ctaKey = "nav.continue",
+	ctaBusyKey = "nav.generating",
+	busy = false,
+}: PremiseStepProps) {
 	const t = useTranslations("animation.wizard");
 
 	const loglineValid = fields.logline.trim().length >= 10;
@@ -135,10 +159,10 @@ export function PremiseStep({ fields, onChange, onContinue, onBack }: PremiseSte
 				<button
 					type="button"
 					onClick={onContinue}
-					disabled={!canContinue}
+					disabled={!canContinue || busy}
 					className="bg-white text-black rounded-md px-4 py-2 text-sm font-medium hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-1 ring-gray-500 ring-offset-2 ring-offset-[#0a0a0a]"
 				>
-					{t("nav.continue")}
+					{busy ? t(ctaBusyKey) : t(ctaKey)}
 				</button>
 			</div>
 		</div>

@@ -436,6 +436,17 @@ Incorporating these into your storyboard...`;
                 </div>
               </div>
             </div>
+            {animationEnabled && (
+              <Link
+                href="/storyboard/create/animation"
+                className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 text-xs uppercase tracking-wide rounded-md bg-[#1a1a1a] border border-gray-800 text-gray-300 hover:text-white hover:border-gray-700 transition-colors"
+                aria-label="Switch to AI Animation Storyboard mode"
+              >
+                <span className="text-orange-400">●</span>
+                <span>AI Animation</span>
+                <span className="text-gray-500">→</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -500,33 +511,7 @@ Incorporating these into your storyboard...`;
                 ))}
               </div>
 
-              {/* AI Animation Storyboard — slow mode, separate wizard route */}
-              {animationEnabled && (
-                <div className="mt-4 pt-4 border-t border-gray-800">
-                  <Link
-                    href="/storyboard/create/animation"
-                    className="flex items-center justify-between gap-3 p-3 bg-[#1a1a1a] border border-gray-800 rounded-xl hover:border-gray-700 transition-colors group"
-                    aria-label="Switch to AI Animation Storyboard mode"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] uppercase tracking-wider text-orange-400">
-                          New · Slow mode
-                        </span>
-                      </div>
-                      <p className="font-[var(--font-space-grotesk)] text-sm text-white mt-1">
-                        AI Animation Storyboard
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Characters + scene + arc → ready-to-paste prompts for Veo, Sora, Runway, or Kling.
-                      </p>
-                    </div>
-                    <span className="text-gray-500 group-hover:text-white transition-colors text-sm" aria-hidden>
-                      →
-                    </span>
-                  </Link>
-                </div>
-              )}
+              {/* AI Animation entry lives in the header (stable) — see top of page. */}
             </>
           )}
 

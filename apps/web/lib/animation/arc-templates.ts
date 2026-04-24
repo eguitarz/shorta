@@ -68,6 +68,12 @@ export const ARC_TEMPLATES: readonly ArcTemplate[] = Object.freeze([
 		description: 'Stakes keep rising until a climax, then release.',
 		roles: ['inciting', 'escalation', 'escalation', 'payoff'],
 	},
+	{
+		id: 'product_demo',
+		label: 'Product Demo',
+		description: 'Problem → product reveal → feature tour → CTA. Auto-selected in Product Demo mode.',
+		roles: ['hook_problem', 'product_reveal', 'feature_highlight', 'feature_highlight', 'cta'],
+	},
 ]);
 
 const TEMPLATE_BY_ID: Record<ArcTemplateId, ArcTemplate | undefined> = Object.fromEntries(

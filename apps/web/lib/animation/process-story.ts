@@ -143,12 +143,16 @@ export async function processStory(
 	});
 
 	// Build the final animation_meta by merging user inputs with Pass 1 output.
+	// sheetStoragePath is carried from the spec when the user pre-pinned a
+	// character sheet (e.g. reused a character from the product's landing page).
+	// Pass 3 will skip generation for those.
 	const characters: AnimationCharacter[] = spec.characters.map((c, i) => ({
 		id: characterId(i),
 		name: c.name,
 		traits: c.traits,
 		personality: c.personality,
 		sheetPrompt: parsed.characters.find((p) => p.id === characterId(i))?.sheetPrompt,
+		sheetStoragePath: c.sheetStoragePath,
 	}));
 
 	const animationMeta: AnimationMeta = {
@@ -161,6 +165,11 @@ export async function processStory(
 		payoff: spec.payoff,
 		characters,
 		beatIntents: parsed.beatIntents,
+		// Persist productContext into animation_meta (not just animation_spec).
+		// Every downstream consumer — Pass 4, the UI toggle, export pack —
+		// reads from animation_meta. Missing this here is why the "Use
+		// product image" button never appeared in the plan review.
+		productContext: spec.productContext,
 	};
 
 	// Create the storyboard row. Title derived from logline (first 80 chars).

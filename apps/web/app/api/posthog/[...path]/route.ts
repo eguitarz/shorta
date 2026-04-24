@@ -47,116 +47,86 @@ async function handleRequest(
 		const searchParams = new URL(request.url).searchParams;
 		// Force PostHog to capture IP by setting this param, as client may send ip=0
 		searchParams.set('ip', '1');
-		
+
 		const searchParamsStr = searchParams.toString();
 		const queryString = searchParamsStr ? `?${searchParamsStr}` : '';
 
-		// Determine which host to use based on the path
-		// Static assets go to asset host, everything else goes to API host
+		// Determine which host to use based on the path. Static assets go to
+		// the asset host, everything else (events, session recording, etc.) to
+		// the API host.
 		const isStaticAsset = path.startsWith('static/') || path.startsWith('_next/static/');
 		const targetHost = isStaticAsset ? POSTHOG_ASSET_HOST : POSTHOG_API_HOST;
 		const targetUrl = `${targetHost}/${path}${queryString}`;
 
-		// Get request body if present
-		let body: BodyInit | null = null;
-		if (request.method !== 'GET' && request.method !== 'HEAD') {
-			try {
-				// PostHog uses client-side compression (compression=gzip-js in URL)
-				// so we need to check the query string, not content-encoding header
-				const isCompressed = searchParamsStr.includes('compression=gzip') ||
-				                     searchParamsStr.includes('compression=base64');
-
-				// Always use binary for compressed data
-				if (isCompressed) {
-					body = await request.arrayBuffer();
-				} else {
-					// For uncompressed, check content type
-					const contentType = request.headers.get('content-type') || '';
-					if (contentType.includes('application/json') || contentType.includes('text/')) {
-						body = await request.text();
-					} else {
-						body = await request.arrayBuffer();
-					}
-				}
-			} catch {
-				// No body or body already consumed
-				body = null;
-			}
-		}
-
-		// Prepare headers - remove host and connection headers, add CORS if needed
-		const headers = new Headers();
+		// Build forwarded headers. Strip hop-by-hop + host-specific headers.
+		const forwardedHeaders = new Headers();
 		request.headers.forEach((value, key) => {
 			const lowerKey = key.toLowerCase();
-			// Skip headers that shouldn't be forwarded
 			if (
 				lowerKey !== 'host' &&
 				lowerKey !== 'connection' &&
 				lowerKey !== 'content-length' &&
 				lowerKey !== 'transfer-encoding'
 			) {
-				headers.set(key, value);
+				forwardedHeaders.set(key, value);
 			}
 		});
 
-		// Explicitly forward the client IP address so PostHog can track it properly
-		// Cloudflare Workers pass the real IP in the cf-connecting-ip header
-		const clientIp = request.headers.get('cf-connecting-ip') || request.ip || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
-		
+		// Preserve the real client IP so PostHog attributes sessions correctly.
+		const clientIp =
+			request.headers.get('cf-connecting-ip') ||
+			request.ip ||
+			request.headers.get('x-forwarded-for') ||
+			request.headers.get('x-real-ip');
 		if (clientIp) {
-			// If there are multiple proxies, X-Forwarded-For contains a comma-separated list.
-			// We only want the first one (original client).
-			const firstIp = clientIp.split(',')[0].trim();
-			headers.set('X-Forwarded-For', firstIp);
+			forwardedHeaders.set('X-Forwarded-For', clientIp.split(',')[0].trim());
 		}
 
-		// Create the proxied request
-		const proxyRequest = new Request(targetUrl, {
+		// STREAM the body instead of buffering. Session-recording payloads can
+		// be hundreds of KB each — buffering them in memory blows the CF
+		// Workers CPU budget at any real traffic level. Passing request.body
+		// as a ReadableStream keeps the proxy on the happy path where no byte
+		// is copied in the isolate.
+		const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
+		const proxyResponse = await fetch(targetUrl, {
 			method: request.method,
-			headers: headers,
-			body: body,
+			headers: forwardedHeaders,
+			body: hasBody ? (request.body as ReadableStream | null) : null,
+			// duplex: 'half' is REQUIRED when sending a streaming body with fetch.
+			// The Workers runtime supports it; Node typings may not have the
+			// field yet, hence the cast.
+			...(hasBody ? { duplex: 'half' } : {}),
+		} as RequestInit);
+
+		// Pass the PostHog response body straight back as a stream. No
+		// .text() / .arrayBuffer() — same CPU reasoning as the request side.
+		const responseHeaders = new Headers({
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+			'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+			'Access-Control-Max-Age': '86400',
 		});
-
-		// Fetch from PostHog
-		const response = await fetch(proxyRequest);
-
-		// Get response body - handle both text and binary
-		const contentType = response.headers.get('Content-Type') || '';
-		let responseBody: BodyInit;
-		if (contentType.includes('application/json') || contentType.includes('text/')) {
-			responseBody = await response.text();
-		} else {
-			responseBody = await response.arrayBuffer();
+		const passthroughHeaders = [
+			'content-type',
+			'cache-control',
+			'etag',
+			'last-modified',
+			'content-encoding',
+			'vary',
+		];
+		for (const h of passthroughHeaders) {
+			const value = proxyResponse.headers.get(h);
+			if (value) responseHeaders.set(h, value);
+		}
+		if (!responseHeaders.has('content-type')) {
+			responseHeaders.set('content-type', 'application/json');
 		}
 
-		// Create response with CORS headers to allow requests from your domain
-		const proxyResponse = new NextResponse(responseBody, {
-			status: response.status,
-			statusText: response.statusText,
-			headers: {
-				'Content-Type': contentType || 'application/json',
-				'Access-Control-Allow-Origin': '*',
-				'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-				'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-				'Access-Control-Max-Age': '86400',
-			},
+		return new NextResponse(proxyResponse.body, {
+			status: proxyResponse.status,
+			statusText: proxyResponse.statusText,
+			headers: responseHeaders,
 		});
-
-		// Copy other important headers from PostHog response
-		const cacheControl = response.headers.get('Cache-Control');
-		if (cacheControl) {
-			proxyResponse.headers.set('Cache-Control', cacheControl);
-		}
-		const etag = response.headers.get('ETag');
-		if (etag) {
-			proxyResponse.headers.set('ETag', etag);
-		}
-		const lastModified = response.headers.get('Last-Modified');
-		if (lastModified) {
-			proxyResponse.headers.set('Last-Modified', lastModified);
-		}
-
-		return proxyResponse;
 	} catch (error) {
 		console.error('PostHog proxy error:', error);
 		return NextResponse.json(

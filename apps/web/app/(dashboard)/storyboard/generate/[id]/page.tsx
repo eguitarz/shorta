@@ -9,6 +9,10 @@ import { ExportDropdown } from "@/components/ExportDropdown";
 import { HookVariantSelector, type HookVariant } from "@/components/HookVariantSelector";
 import { TechnicalBadge } from "@/components/TechnicalBadge";
 import { ExportPrompts } from "@/components/animation/ExportPrompts";
+import { AnimationCharactersPanel } from "@/components/animation/AnimationCharactersPanel";
+import { AnimationProductPanel } from "@/components/animation/AnimationProductPanel";
+import { PlanReviewBanner } from "@/components/animation/PlanReviewBanner";
+import type { ProductContext } from "@/lib/types/beat";
 import type { AnimationBeat, AnimationMeta } from "@/lib/types/beat";
 import { useTranslations, useLocale } from "next-intl";
 
@@ -42,6 +46,9 @@ interface GeneratedBeat {
   cameraAction?: string;
   sceneSnippet?: string;
   dialogue?: string;
+  endFrameIntent?: string;
+  useRefAsImage?: 'product' | 'character';
+  productRefs?: Array<'hero'>;
 }
 
 interface GeneratedData {
@@ -114,6 +121,15 @@ export default function StoryboardResultsPage() {
   // Image generation state
   const [beatImages, setBeatImages] = useState<BeatImageMap>({});
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
+  const [isClearingImages, setIsClearingImages] = useState(false);
+  const [togglingRefBeat, setTogglingRefBeat] = useState<number | null>(null);
+  // Track beats whose productRefs changed but whose image hasn't been
+  // regenerated since. Client-side only — resets on reload. Shows the
+  // "Regenerate to apply" notice next to the beat image so the user knows
+  // their toggle hasn't propagated to the rendered frame yet.
+  const [beatsNeedingRegen, setBeatsNeedingRegen] = useState<Set<number>>(
+    () => new Set()
+  );
   const [generatingImageBeats, setGeneratingImageBeats] = useState<Set<number>>(new Set());
   const [imagesCompleted, setImagesCompleted] = useState(0);
   const [regeneratingImageBeat, setRegeneratingImageBeat] = useState<number | null>(null);
@@ -192,16 +208,18 @@ export default function StoryboardResultsPage() {
           setLoading(false);
 
           // Still fetch from DB to hydrate beat images + animation_meta.
-          // animation_meta must hydrate here because older cached entries
-          // (pre-animation-mode) won't have it — otherwise the Export pack
-          // button and auto-gen effect silently no-op.
+          // ALWAYS prefer the fresh server animation_meta over the cached
+          // copy — sessionStorage can be stale (e.g. missing productContext
+          // on storyboards generated before we started persisting it into
+          // animation_meta). Before this, the override only fired when the
+          // cache was null, so stale entries silently stuck.
           const response = await fetch(`/api/storyboards/generated/${id}`);
           if (response.ok) {
             const data = await response.json();
             if (data.beatImages && Object.keys(data.beatImages).length > 0) {
               setBeatImages(data.beatImages);
             }
-            if (data.animation_meta && !parsed.animation_meta) {
+            if (data.animation_meta) {
               setStoryboardData({ ...parsed, animation_meta: data.animation_meta });
             }
           }
@@ -366,11 +384,16 @@ export default function StoryboardResultsPage() {
       beats: updatedBeats,
     };
 
-    setStoryboardData(updatedData);
-
-    // Update sessionStorage
-    const id = params.id as string;
-    sessionStorage.setItem(`created_${id}`, JSON.stringify(updatedData));
+    // Use saveStoryboardData so the edit persists to the DB too —
+    // otherwise subsequent image regens would read the pre-edit beat
+    // from generated_beats. Also flag this beat as needing an image
+    // regen since its source content changed.
+    saveStoryboardData(updatedData);
+    setBeatsNeedingRegen((prev) => {
+      const next = new Set(prev);
+      next.add(editingBeatNumber);
+      return next;
+    });
 
     // Close edit panel
     handleCloseEdit();
@@ -416,11 +439,8 @@ export default function StoryboardResultsPage() {
       selectedHookId: variant.id,
     };
 
-    setStoryboardData(updatedData);
-
-    // Update sessionStorage
-    const id = params.id as string;
-    sessionStorage.setItem(`created_${id}`, JSON.stringify(updatedData));
+    // Persist hook-variant swap to the DB alongside local state.
+    saveStoryboardData(updatedData);
   };
 
   // Helper to recalculate beat times proportionally
@@ -447,11 +467,27 @@ export default function StoryboardResultsPage() {
     });
   };
 
-  // Save updated data to state and storage
+  // Save updated data to state, session storage, AND the database.
+  // Without the DB write, server-side routes (image regen, export pack,
+  // animation job polling) would read stale beats because local-state
+  // edits never reached the generated_beats column. Fire-and-forget on
+  // the PATCH — UI updates instantly, network error just logs.
   const saveStoryboardData = (updatedData: GeneratedData) => {
     setStoryboardData(updatedData);
     const id = params.id as string;
     sessionStorage.setItem(`created_${id}`, JSON.stringify(updatedData));
+    void fetch(`/api/storyboards/generated/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        beats: updatedData.beats,
+        hookVariants: updatedData.hookVariants,
+        selectedHookId: updatedData.selectedHookId,
+      }),
+    }).catch((err) => {
+      console.error('saveStoryboardData: PATCH failed', err);
+    });
   };
 
   // Delete a beat
@@ -667,7 +703,69 @@ export default function StoryboardResultsPage() {
     const allBeats = new Set(beats.map(b => b.beatNumber));
     setGeneratingImageBeats(allBeats);
 
+    // Animation storyboards use the dedicated Pass 4 endpoint. This produces
+    // start + end frame PAIRS per beat with character-sheet + product-hero
+    // ref stacking. The generic /api/storyboard-images/generate below only
+    // produces single frames with weaker refs — fine for legacy talking-head
+    // storyboards, wrong for animation mode.
+    const isAnimation = !!storyboardData.animation_meta;
+
     try {
+      if (isAnimation) {
+        const response = await fetch("/api/animation/beat-images/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ storyboardId: params.id }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          if (response.status === 403) {
+            toast.error(t('imageGeneration.noCredits'));
+          } else {
+            toast.error(errorData.error || errorData.message || t('imageGeneration.failed'));
+          }
+          return;
+        }
+        const data = await response.json();
+        // The animation endpoint returns the full beat_images map. Hydrate
+        // directly from it — each entry may contain url, endUrl, and
+        // optionally endError for diagnostic purposes.
+        const hydrated: BeatImageMap = {};
+        for (const [num, entry] of Object.entries(
+          (data.beatImages ?? {}) as Record<string, Record<string, unknown>>
+        )) {
+          hydrated[num] = {
+            url: String(entry.url ?? ''),
+            storagePath: String(entry.storagePath ?? ''),
+            prompt: String(entry.prompt ?? ''),
+            generatedAt: String(entry.generatedAt ?? new Date().toISOString()),
+            endUrl: entry.endUrl ? String(entry.endUrl) : undefined,
+            endStoragePath: entry.endStoragePath
+              ? String(entry.endStoragePath)
+              : undefined,
+            endPrompt: entry.endPrompt ? String(entry.endPrompt) : undefined,
+            endGeneratedAt: entry.endGeneratedAt
+              ? String(entry.endGeneratedAt)
+              : undefined,
+          };
+        }
+        setBeatImages(hydrated);
+        setImagesCompleted(Object.keys(hydrated).length);
+        if (Object.keys(hydrated).length === beats.length) {
+          toast.success(
+            t('imageGeneration.success', { count: Object.keys(hydrated).length })
+          );
+        } else {
+          toast.warning(
+            t('imageGeneration.partial', {
+              completed: Object.keys(hydrated).length,
+              total: beats.length,
+            })
+          );
+        }
+        return;
+      }
+
       const response = await fetch("/api/storyboard-images/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -744,20 +842,14 @@ export default function StoryboardResultsPage() {
    *   (b) user navigating away mid-gen and coming back (we'd otherwise
    *       double-charge credits by firing again)
    */
-  useEffect(() => {
-    if (!storyboardData?.animation_meta) return;
-    if (autoGenFiredRef.current) return;
-    if (isGeneratingImages) return;
-    if (Object.keys(beatImages).length > 0) return; // images already exist
-
-    const sessionKey = `anim-autogen-${params.id}`;
-    if (typeof window !== 'undefined' && sessionStorage.getItem(sessionKey)) return;
-
-    autoGenFiredRef.current = true;
-    if (typeof window !== 'undefined') sessionStorage.setItem(sessionKey, '1');
-    handleGenerateAllImages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storyboardData?.animation_meta, beatImages, isGeneratingImages, params.id]);
+  // Plan Review MVP: do NOT auto-fire image generation on mount. The user
+  // lands on a review page first where they can see all beats, toggle
+  // per-beat "use product image" options, regenerate text, etc. Pass 4
+  // (image gen) only runs when they click the "Generate images" CTA. This
+  // saves wasted credits on beats the user would have changed anyway.
+  // (The autoGenFiredRef / sessionStorage guards are kept to prevent
+  // double-fire should future code paths ever want to auto-gen again.)
+  void autoGenFiredRef;
 
   // Regenerate image for a single beat
   const handleRegenerateImage = async (beatNumber: number) => {
@@ -768,7 +860,53 @@ export default function StoryboardResultsPage() {
     const beat = storyboardData.beats.find(b => b.beatNumber === beatNumber);
     if (!beat) return;
 
+    // Animation storyboards use the dedicated regen route that generates
+    // both start + end frames with full ref-image stacking (character sheets
+    // + product hero). Non-animation storyboards fall through to the legacy
+    // single-image endpoint.
+    const isAnimation = !!storyboardData.animation_meta;
+
     try {
+      if (isAnimation) {
+        const response = await fetch("/api/animation/beat-image/regenerate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            storyboardId: params.id,
+            beatNumber,
+          }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          toast.error(errorData.error || t('imageGeneration.regenerateFailed'));
+          return;
+        }
+        const result = await response.json();
+        setBeatImages(prev => ({
+          ...prev,
+          [String(result.beatNumber)]: {
+            url: result.url,
+            storagePath: '',
+            prompt: result.prompt,
+            generatedAt: new Date().toISOString(),
+            endUrl: result.endUrl,
+            endStoragePath: undefined,
+            endPrompt: result.endPrompt,
+            endGeneratedAt: result.endUrl ? new Date().toISOString() : undefined,
+          },
+        }));
+        // Clear the "needs regen" flag now that a fresh image has landed
+        // for this beat.
+        setBeatsNeedingRegen((prev) => {
+          if (!prev.has(beatNumber)) return prev;
+          const next = new Set(prev);
+          next.delete(beatNumber);
+          return next;
+        });
+        toast.success(t('imageGeneration.regenerateSuccess', { beatNumber }));
+        return;
+      }
+
       const response = await fetch("/api/storyboard-images/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -822,23 +960,171 @@ export default function StoryboardResultsPage() {
     }
   };
 
-  // Download a beat image
+  // Toggle whether a beat uses the product image as a Gemini REFERENCE
+  // during image generation. Flag-only update — does NOT regenerate.
+  // If the beat already has an image, we flag it as "needs regen" so the
+  // UI shows the user a reminder that their toggle hasn't propagated yet.
+  const handleToggleProductRef = async (beatNumber: number, reference: boolean) => {
+    if (togglingRefBeat !== null) return;
+    setTogglingRefBeat(beatNumber);
+    try {
+      const res = await fetch('/api/animation/beat/toggle-product-ref', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          storyboardId: params.id,
+          beatNumber,
+          reference,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data?.error || 'Failed to toggle');
+        return;
+      }
+      // Patch the beat so the UI reflects the new productRefs.
+      if (storyboardData) {
+        const patchedBeats = storyboardData.beats.map((b) =>
+          b.beatNumber === beatNumber
+            ? ({
+                ...b,
+                productRefs:
+                  (data.productRefs as Array<'hero'>)?.length > 0
+                    ? (data.productRefs as Array<'hero'>)
+                    : undefined,
+              } as typeof b)
+            : b
+        );
+        saveStoryboardData({ ...storyboardData, beats: patchedBeats });
+      }
+      // If the beat has an image already, flag it as "needs regen" so the
+      // UI shows a notice. Clears on successful regen.
+      if (data.beatHasImage) {
+        setBeatsNeedingRegen((prev) => {
+          const next = new Set(prev);
+          next.add(beatNumber);
+          return next;
+        });
+        toast.success(
+          reference
+            ? `Beat ${beatNumber} will reference product (regenerate to apply)`
+            : `Beat ${beatNumber} no longer references product (regenerate to apply)`
+        );
+      } else {
+        toast.success(
+          reference
+            ? `Beat ${beatNumber} will reference product on next generation`
+            : `Beat ${beatNumber} won't reference product on next generation`
+        );
+      }
+    } catch (err) {
+      console.error('Toggle product ref error:', err);
+      toast.error('Failed to toggle');
+    } finally {
+      setTogglingRefBeat(null);
+    }
+  };
+
+  // Clear all beat images server-side, then kick off full regeneration. Used
+  // when the user swaps a character's talent photo or edits traits and wants
+  // the existing beat images to reflect the change. Preserves the written
+  // beats (script / visual / audio / characterAction) — only images change.
+  const handleRegenerateAllWithNewModel = async () => {
+    if (!storyboardData || isGeneratingImages || isClearingImages) return;
+    setIsClearingImages(true);
+    try {
+      const clearRes = await fetch('/api/animation/beat-images/clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyboardId: params.id }),
+      });
+      if (!clearRes.ok) {
+        const err = await clearRes.json().catch(() => ({}));
+        toast.error(err.error || 'Failed to clear existing images');
+        return;
+      }
+      setBeatImages({});
+    } catch (err) {
+      console.error('Clear images error:', err);
+      toast.error('Failed to clear existing images');
+      return;
+    } finally {
+      setIsClearingImages(false);
+    }
+    // Fall through to normal batch gen (hits /api/animation/beat-images/generate).
+    await handleGenerateAllImages();
+  };
+
+  // Fetch a public image URL into raw bytes. Used to bundle beat images
+  // into a zip without a second round-trip through the server.
+  async function fetchAsBytes(url: string): Promise<Uint8Array | null> {
+    try {
+      const cleanUrl = url.split('?')[0];
+      const res = await fetch(cleanUrl);
+      if (!res.ok) return null;
+      return new Uint8Array(await res.arrayBuffer());
+    } catch {
+      return null;
+    }
+  }
+
+  // Trigger a browser download for a Blob with a given filename.
+  function triggerDownload(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  // Download beat image(s). If the beat has both start + end frames, bundle
+  // them into a zip. Otherwise just download the single start frame.
   const handleDownloadImage = async (beatNumber: number) => {
     const imageData = beatImages[beatNumber.toString()];
     if (!imageData?.url) return;
 
+    const title =
+      storyboardData?.overview.title
+        .replace(/[<>:"/\\|?*\x00-\x1f]/g, '')
+        .replace(/\s+/g, '_') || 'storyboard';
+
     try {
-      const response = await fetch(imageData.url);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const title = storyboardData?.overview.title.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, '_') || 'storyboard';
-      link.download = `${title}_beat_${beatNumber}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Fetch start + end frames in parallel. Each is a public URL from the
+      // storyboard-images bucket, so no auth required.
+      const [startBytes, endBytes] = await Promise.all([
+        fetchAsBytes(imageData.url),
+        imageData.endUrl ? fetchAsBytes(imageData.endUrl) : Promise.resolve(null),
+      ]);
+      if (!startBytes) {
+        toast.error('Failed to download image');
+        return;
+      }
+
+      // Single-frame beat → plain PNG download. Pair → zip.
+      if (!endBytes) {
+        triggerDownload(
+          new Blob([startBytes.buffer as ArrayBuffer], { type: 'image/png' }),
+          `${title}_beat_${beatNumber}.png`
+        );
+        return;
+      }
+
+      const { zipSync } = await import('fflate');
+      const zipped = zipSync(
+        {
+          [`beat-${beatNumber}-start.png`]: startBytes,
+          [`beat-${beatNumber}-end.png`]: endBytes,
+        },
+        { level: 6 }
+      );
+      triggerDownload(
+        new Blob([zipped.buffer as ArrayBuffer], { type: 'application/zip' }),
+        `${title}_beat_${beatNumber}.zip`
+      );
     } catch (error) {
       console.error('Download image error:', error);
       toast.error('Failed to download image');
@@ -1064,6 +1350,59 @@ export default function StoryboardResultsPage() {
               />
             )}
 
+            {/* Animation mode: Product panel (attach / replace / edit the
+                product image). Required for per-beat "Use product image"
+                toggles and product-aware image generation. */}
+            {storyboardData.animation_meta && (
+              <div className="mb-4">
+                <AnimationProductPanel
+                  storyboardId={Array.isArray(params.id) ? params.id[0] : (params.id ?? "")}
+                  onProductAttached={(pc: ProductContext) => {
+                    // Refresh storyboard state so the rest of the UI (Plan
+                    // Review banner, per-beat toggles) picks up the new
+                    // productContext.
+                    if (storyboardData.animation_meta) {
+                      saveStoryboardData({
+                        ...storyboardData,
+                        animation_meta: {
+                          ...storyboardData.animation_meta,
+                          productContext: pc,
+                        },
+                      });
+                    }
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Animation mode: Characters panel (view + edit + regenerate).
+                Lets the user swap the talent photo (for photoreal product
+                promos) or tweak traits/personality, then re-run image gen
+                with the same script. */}
+            {storyboardData.animation_meta && (
+              <AnimationCharactersPanel
+                storyboardId={Array.isArray(params.id) ? params.id[0] : (params.id ?? "")}
+                onRegenerateImages={handleRegenerateAllWithNewModel}
+                regenerating={isGeneratingImages || isClearingImages}
+              />
+            )}
+
+            {/* PLAN REVIEW banner for animation storyboards. Shown when
+                beats exist but no images have been generated yet. Explicit
+                gate so users can review beats, toggle per-beat options
+                (e.g. use product image directly), then commit to the
+                expensive Pass 4 image-gen step. Disappears once any beat
+                has images. */}
+            {storyboardData.animation_meta &&
+              Object.keys(beatImages).length === 0 &&
+              !isGeneratingImages && (
+                <PlanReviewBanner
+                  beats={storyboardData.beats}
+                  hasProduct={!!storyboardData.animation_meta.productContext}
+                  onGenerate={handleGenerateAllImages}
+                />
+              )}
+
             {/* Generated Storyboard */}
             <div className="space-y-6">
               <h2 className="text-2xl font-bold">{t('shotList.title')}</h2>
@@ -1175,35 +1514,114 @@ export default function StoryboardResultsPage() {
                     {/* Beat Content */}
                     <div className="p-6 space-y-6">
                       <div className="flex gap-5">
-                        {/* Beat Image - left column */}
+                        {/* Beat Image(s) — START always; END shown when
+                            available so users can see the first+last frame
+                            pair they'll feed into Veo 3 / Runway Gen-4. */}
                         {beatImages[beat.beatNumber.toString()] && (
-                          <div className="relative group flex-shrink-0">
-                            <img
-                              src={beatImages[beat.beatNumber.toString()].url}
-                              alt={`Beat ${beat.beatNumber}: ${beat.title}`}
-                              className="w-32 aspect-[9/16] object-cover rounded-lg border border-gray-700"
-                            />
-                            <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                          <div className="flex flex-col gap-1.5 flex-shrink-0">
+                            <div className="flex gap-2">
+                              <div className="relative">
+                                <img
+                                  src={beatImages[beat.beatNumber.toString()].url}
+                                  alt={`Beat ${beat.beatNumber} start: ${beat.title}`}
+                                  className="w-32 aspect-[9/16] object-cover rounded-lg border border-gray-700"
+                                />
+                                <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 rounded text-[9px] uppercase tracking-wider text-gray-300">
+                                  Start
+                                </span>
+                              </div>
+                              {beatImages[beat.beatNumber.toString()].endUrl && (
+                                <div className="relative">
+                                  <img
+                                    src={beatImages[beat.beatNumber.toString()].endUrl}
+                                    alt={`Beat ${beat.beatNumber} end: ${beat.title}`}
+                                    className="w-32 aspect-[9/16] object-cover rounded-lg border border-gray-700"
+                                  />
+                                  <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 rounded text-[9px] uppercase tracking-wider text-gray-300">
+                                    End
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Always-visible image toolbar. Moved out of
+                                hover overlay so touch devices + product-demo
+                                users can see it. */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <button
+                                type="button"
                                 onClick={() => handleDownloadImage(beat.beatNumber)}
-                                className="p-1 bg-black/70 rounded-md hover:bg-black/90 transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-[#1a1a1a] border border-gray-800 hover:border-gray-700 rounded text-[10px] uppercase tracking-wider text-gray-400 hover:text-white transition-colors"
                                 title={t('imageGeneration.download')}
                               >
-                                <Download className="w-3.5 h-3.5 text-gray-300" />
+                                <Download className="w-3 h-3" />
+                                <span>Save</span>
                               </button>
                               <button
+                                type="button"
                                 onClick={() => handleRegenerateImage(beat.beatNumber)}
                                 disabled={regeneratingImageBeat === beat.beatNumber}
-                                className="p-1 bg-black/70 rounded-md hover:bg-black/90 transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-[#1a1a1a] border border-gray-800 hover:border-gray-700 rounded text-[10px] uppercase tracking-wider text-amber-400 hover:text-amber-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title={t('imageGeneration.regenerate')}
                               >
                                 {regeneratingImageBeat === beat.beatNumber ? (
-                                  <Loader2 className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+                                  <Loader2 className="w-3 h-3 animate-spin" />
                                 ) : (
-                                  <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+                                  <RefreshCw className="w-3 h-3" />
                                 )}
+                                <span>
+                                  {regeneratingImageBeat === beat.beatNumber
+                                    ? 'Regenerating…'
+                                    : 'Regen'}
+                                </span>
                               </button>
+                              {/* Reference-product toggle. Controls whether
+                                  AI generation for this beat pins the user's
+                                  uploaded product as a Gemini reference. Flag
+                                  only — flipping it does NOT regenerate the
+                                  image. If the beat already has an image and
+                                  the flag changed, we show a regen notice. */}
+                              {storyboardData.animation_meta?.productContext && (() => {
+                                const isRef = !!beat.productRefs?.includes('hero');
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleProductRef(beat.beatNumber, !isRef)}
+                                    disabled={togglingRefBeat === beat.beatNumber || regeneratingImageBeat === beat.beatNumber}
+                                    className={`inline-flex items-center gap-1 px-2 py-1 border rounded text-[10px] uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                                      isRef
+                                        ? 'bg-green-600 border-green-500 text-white hover:bg-green-500'
+                                        : 'bg-[#1a1a1a] border-gray-800 text-gray-400 hover:border-gray-700 hover:text-white'
+                                    }`}
+                                    title={
+                                      isRef
+                                        ? 'This beat pins your product image as a Gemini reference. Click to remove.'
+                                        : 'Pin your uploaded product image as a Gemini reference for this beat. Improves label/brand accuracy in the generated frame.'
+                                    }
+                                  >
+                                    {togglingRefBeat === beat.beatNumber ? (
+                                      <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : null}
+                                    <span>
+                                      {isRef
+                                        ? '✓ Referencing product'
+                                        : 'Reference product'}
+                                    </span>
+                                  </button>
+                                );
+                              })()}
                             </div>
+
+                            {beatsNeedingRegen.has(beat.beatNumber) && (
+                              <p className="text-[10px] text-amber-400 tracking-wider">
+                                ⚠ Product reference updated. Regenerate this beat to apply the new setting.
+                              </p>
+                            )}
+                            {beatImages[beat.beatNumber.toString()].endUrl && (
+                              <p className="text-[10px] text-gray-500 tracking-wider">
+                                First + last frame → use Veo 3 / Runway Gen-4 frames-to-video mode
+                              </p>
+                            )}
                           </div>
                         )}
 
@@ -1216,6 +1634,50 @@ export default function StoryboardResultsPage() {
                             </div>
                           </div>
                         )}
+
+                        {/* Plan-review placeholder: no image yet, not generating.
+                            Shows a faint slot + the per-beat toggle so users can
+                            choose "use product image directly" BEFORE burning
+                            Pass 4 credits on AI gen. Only shows for animation
+                            mode (non-animation flows have their own path). */}
+                        {storyboardData.animation_meta &&
+                          !beatImages[beat.beatNumber.toString()] &&
+                          !generatingImageBeats.has(beat.beatNumber) && (
+                            <div className="flex flex-col gap-1.5 flex-shrink-0">
+                              <div className="w-32 aspect-[9/16] bg-gray-900/40 rounded-lg border border-dashed border-gray-800 flex items-center justify-center">
+                                <span className="text-[10px] text-gray-600 px-2 text-center">
+                                  Image will generate here
+                                </span>
+                              </div>
+                              {storyboardData.animation_meta.productContext && (() => {
+                                const isRef = !!beat.productRefs?.includes('hero');
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleProductRef(beat.beatNumber, !isRef)}
+                                    disabled={togglingRefBeat === beat.beatNumber}
+                                    className={`inline-flex items-center gap-1 px-2 py-1 border rounded text-[10px] uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                                      isRef
+                                        ? 'bg-green-600 border-green-500 text-white hover:bg-green-500'
+                                        : 'bg-[#1a1a1a] border-gray-800 text-gray-400 hover:border-gray-700 hover:text-white'
+                                    }`}
+                                    title={
+                                      isRef
+                                        ? 'This beat will pin your product as a Gemini reference during image generation. Click to remove.'
+                                        : 'Pin your product image as a Gemini reference when this beat is generated. Improves label/brand accuracy.'
+                                    }
+                                  >
+                                    {togglingRefBeat === beat.beatNumber ? (
+                                      <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : null}
+                                    <span>
+                                      {isRef ? '✓ Referencing product' : 'Reference product'}
+                                    </span>
+                                  </button>
+                                );
+                              })()}
+                            </div>
+                          )}
 
                         {/* Script + Visual/Audio - right column */}
                         <div className="flex-1 space-y-4 min-w-0">

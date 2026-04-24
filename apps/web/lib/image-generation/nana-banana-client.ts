@@ -13,28 +13,38 @@ export class NanaBananaClient {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
+  /**
+   * Generate an image. Accepts an optional reference image OR an array of
+   * reference images (product demo mode stacks character sheet + product
+   * screenshot). Single-ref call sites remain source-compatible.
+   */
   async generateImage(
     prompt: string,
-    referenceImage?: ReferenceImage
+    referenceImage?: ReferenceImage | ReferenceImage[]
   ): Promise<GeneratedImageData> {
-    return this.generateImageWithRetry(prompt, referenceImage, 2);
+    const refs = Array.isArray(referenceImage)
+      ? referenceImage
+      : referenceImage
+        ? [referenceImage]
+        : [];
+    return this.generateImageWithRetry(prompt, refs, 2);
   }
 
   private async generateImageWithRetry(
     prompt: string,
-    referenceImage: ReferenceImage | undefined,
+    refs: ReferenceImage[],
     maxRetries: number
   ): Promise<GeneratedImageData> {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        // Build contents: text prompt + optional reference image
+        // Build contents: text prompt + zero-or-more reference images
         const parts: any[] = [{ text: prompt }];
 
-        if (referenceImage) {
+        for (const ref of refs) {
           parts.push({
             inlineData: {
-              mimeType: referenceImage.mimeType,
-              data: referenceImage.data,
+              mimeType: ref.mimeType,
+              data: ref.data,
             },
           });
         }

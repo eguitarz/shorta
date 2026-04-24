@@ -1101,7 +1101,8 @@
         "continue": "繼續 →",
         "generate": "生成",
         "generating": "生成中…",
-        "credits": "點數"
+        "credits": "點數",
+        "generate_ad": "產生廣告"
       },
       "crumb": {
         "premise": "前提",
@@ -1114,11 +1115,11 @@
       "mode": {
         "tablist": "精靈模式",
         "story": "故事",
-        "product_demo": "產品示範"
+        "product_demo": "廣告產生器"
       },
       "product": {
-        "title": "要展示什麼產品?",
-        "subtitle": "貼上網址或上傳產品截圖。我們會把真實介面固定在動畫中。",
+        "title": "要為什麼產品做廣告?",
+        "subtitle": "貼上網址或上傳產品截圖,我們會把真實的產品嵌入廣告中。",
         "url_label": "產品網址",
         "url_fetch": "擷取",
         "url_fetching": "擷取中…",
@@ -1148,7 +1149,7 @@
         "cta_placeholder": "例如:免費試用 Tabnora",
         "cta_default": "免費試用",
         "from_website": "來自網站",
-        "brief_label": "示範簡報 (來自實際頁面 — 可自由修改)",
+        "brief_label": "廣告簡報 (從你的網站抓取 — 可自由編輯)",
         "brief_oneliner_label": "一句話",
         "brief_oneliner_placeholder": "用一句話描述產品",
         "brief_valueprops_label": "價值主張",

@@ -1,5 +1,23 @@
 # TODOS
 
+### Paid screenshot API for product-demo animation mode
+**Added:** 2026-04-22 (from /plan-eng-review — product-demo animation mode v1)
+**What:** Integrate a paid screenshot service (`screenshotone.com` or `urlbox.com`, ~$20-50/mo) to replace the OG-image fallback in `lib/product/ingest-url.ts`. Render real product screenshots at a known viewport + delay, store in the `product-assets` bucket, use as hero reference on reveal + feature beats.
+**Why:** OG images are marketing banners, not product UI. Without a real screenshot, the reveal beat generates a re-imagined "vibes-of-the-landing-page" frame instead of the actual UI. Pinning the real screenshot as reference is the whole point of the feature.
+**Pros:** Meaningful quality jump on reveal + feature beats. Closes the loop on the original promise ("paste a URL, see your product animate"). Deterministic output across users.
+**Cons:** Paid dependency ($20-50/mo). External API latency adds ~2-4s to URL ingestion. Rate limits on free tiers.
+**Context:** v1 ships with upload + OG-image URL fallback per eng review decision 2. Gate on quality check: after v1 ships, run 5-10 real products (SaaS, ecom, mobile app pages) through the URL path, evaluate whether OG-only is acceptable. If no → wire the screenshot API. v1 code should abstract the "get hero image from URL" call so the screenshot API drops in as a function swap.
+**Depends on:** v1 ship + quality data on OG-fallback outputs. Cloudflare Workers cannot self-host headless browsers (no filesystem, no binary launch) — external API is the only path.
+
+### LLM eval suite for product_demo prompt
+**Added:** 2026-04-22 (from /plan-eng-review — product-demo animation mode v1)
+**What:** Build a prompt-quality eval for `story-prompt.ts` productContext branch. 5-10 reference products (SaaS, physical, mobile app). Assertions: final beat contains CTA text, each feature_highlight beat mentions one distinct feature, hook_problem beat references the headline's implied pain, characters array 0-1 only, no story-mode artifacts leak (e.g., "payoff" vocabulary).
+**Why:** Product-demo prompt has different quality failure modes than narrative prompts — a "creative" demo that doesn't end with a CTA or doesn't tie to the headline is broken even if it's narratively fine. Eval catches prompt drift on model upgrades.
+**Pros:** Regression safety net for prompt changes. Catches "LLM went narrative instead of promotional." Quantifiable quality metric.
+**Cons:** 5-10 sample products need curation. Eval suite needs a harness (may reuse existing linter/eval patterns in repo).
+**Context:** Defer to v1.1 per eng review decision. Ship v1 without; let real usage surface the failure modes worth asserting. Check `lib/linter/` and existing Vitest setup for reusable eval harness patterns before building from scratch.
+**Depends on:** v1 ship + 5-10 real product demo outputs to curate as expected-behavior references.
+
 ### Analyzer reverse-engineering for AI animation Shorts
 **Added:** 2026-04-18 (from /plan-eng-review — animation storyboard v1, deferred from Layer 3b)
 **What:** When `classifyVideo` returns `format === 'ai_animation'`, run a dedicated analyzer prompt that extracts structured `animationMeta` from the uploaded Short (characters, styleAnchor, sceneAnchor, arcTemplate, narrativeRole per beat) — text-only, no image gen. Surface the result on the analyzer page as a new top-level accordion titled "Reverse-engineered animation" with an "AI ANIMATION DETECTED" badge (see plan Design Decisions, Issue 7A).

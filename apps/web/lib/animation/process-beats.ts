@@ -120,6 +120,21 @@ export function parsePass2Output(
 		const cameraAction = typeof bb.cameraAction === 'string' ? bb.cameraAction : undefined;
 		const sceneSnippet = typeof bb.sceneSnippet === 'string' ? bb.sceneSnippet : undefined;
 		const dialogue = typeof bb.dialogue === 'string' && bb.dialogue.trim() ? bb.dialogue : undefined;
+		const endFrameIntent =
+			typeof bb.endFrameIntent === 'string' && bb.endFrameIntent.trim()
+				? bb.endFrameIntent.trim()
+				: undefined;
+
+		const productRefs = Array.isArray(bb.productRefs)
+			? ((bb.productRefs as unknown[]).filter(
+					(x): x is 'hero' => x === 'hero'
+				) as Array<'hero'>)
+			: undefined;
+
+		const useRefAsImage =
+			bb.useRefAsImage === 'product' || bb.useRefAsImage === 'character'
+				? (bb.useRefAsImage as 'product' | 'character')
+				: undefined;
 
 		// Legacy fields (script/visual/audio/directorNotes) are required by the
 		// EXISTING storyboard renderer at /storyboard/generate/[id]. The LLM
@@ -156,10 +171,13 @@ export function parsePass2Output(
 			transition,
 			narrativeRole,
 			characterRefs,
+			productRefs: productRefs && productRefs.length ? productRefs : undefined,
 			characterAction,
 			cameraAction,
 			sceneSnippet,
 			dialogue,
+			endFrameIntent,
+			useRefAsImage,
 		});
 	}
 

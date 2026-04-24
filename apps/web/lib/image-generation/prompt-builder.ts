@@ -18,6 +18,11 @@ const contentTypeStyles: Record<string, string> = {
   // just ensures the baseline text emphasizes consistency/identity locking.
   ai_animation:
     'Animated scene with cohesive art direction across beats, consistent character identity, 9:16 vertical composition for short-form video',
+  // Photoreal beauty / cosmetic / creator promos. Real people, real products,
+  // preserve label text, realistic skin/material textures. Used when the
+  // user's styleAnchor starts with "Photoreal".
+  ai_photoreal_promo:
+    'Photorealistic live-action scene. Real person (not illustrated) with natural skin texture, real hair, real wardrobe. Consistent talent identity across beats (same face, build, wardrobe). Cinematic beauty lighting, shallow depth of field, 9:16 vertical composition for short-form video. Product labels must render legibly and match the reference exactly.',
 };
 
 /**
@@ -125,7 +130,18 @@ DO NOT render any written words within the image.`;
 export function buildImagePrompt(
   overview: StoryboardOverviewForImage,
   beat: BeatForImage,
-  options?: { styleContext?: string; characterContext?: string; hasReferenceImage?: boolean }
+  options?: {
+    styleContext?: string;
+    characterContext?: string;
+    hasReferenceImage?: boolean;
+    /**
+     * True when one of the reference images is a PRODUCT SCREENSHOT (not a
+     * character sheet). Emphasizes literal UI preservation for product-demo
+     * beats — Gemini's default behavior is to reinterpret, so we push hard
+     * against that here.
+     */
+    hasProductHeroRef?: boolean;
+  }
 ): string {
   const style = options?.styleContext || buildStyleContext(overview);
   const character = options?.characterContext || '';
@@ -146,9 +162,11 @@ export function buildImagePrompt(
 
   const scriptExcerpt = beat.script.substring(0, 200);
 
-  const referenceImageLine = options?.hasReferenceImage
-    ? `\nREFERENCE IMAGE: An image is attached as a visual reference. Use it to match the visual style, color palette, mood, setting, and overall aesthetic. Any people, animals, or key subjects shown in the reference MUST appear identical in the generated image — same face, features, coloring, clothing, breed, markings, etc. Generate images that look like they belong in the same video.`
-    : '';
+  const referenceImageLine = options?.hasProductHeroRef
+    ? `\nREFERENCE IMAGES: Attached images include (a) a PRODUCT SCREENSHOT and optionally (b) a character sheet. The product screenshot MUST appear verbatim as an in-frame element: preserve its layout, colors, typography, logo, and any visible text pixel-for-pixel. Place it prominently in the scene (on a screen, held by a character, filling the frame, etc.) so the viewer sees the REAL product UI, not a stylized reinterpretation. Character sheets, if present, lock identity — same face, build, clothing across beats.`
+    : options?.hasReferenceImage
+      ? `\nREFERENCE IMAGE: An image is attached as a visual reference. Use it to match the visual style, color palette, mood, setting, and overall aesthetic. Any people, animals, or key subjects shown in the reference MUST appear identical in the generated image — same face, features, coloring, clothing, breed, markings, etc. Generate images that look like they belong in the same video.`
+      : '';
 
   const characterBlock = character ? `\n${character}` : '';
 

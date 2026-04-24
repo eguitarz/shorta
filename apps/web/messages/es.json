@@ -1094,7 +1094,8 @@
         "continue": "Continuar →",
         "generate": "Generar",
         "generating": "Generando…",
-        "credits": "créditos"
+        "credits": "créditos",
+        "generate_ad": "Generar el anuncio"
       },
       "crumb": {
         "premise": "Premisa",
@@ -1107,11 +1108,11 @@
       "mode": {
         "tablist": "Modo del asistente",
         "story": "Historia",
-        "product_demo": "Demo de producto"
+        "product_demo": "Generador de anuncios"
       },
       "product": {
-        "title": "¿Qué vamos a mostrar?",
-        "subtitle": "Pega una URL o sube capturas del producto. Fijamos la UI real en la animación.",
+        "title": "¿Para qué producto hacemos el anuncio?",
+        "subtitle": "Pega una URL o sube capturas del producto. Fijaremos el producto real en el anuncio.",
         "url_label": "URL del producto",
         "url_fetch": "Obtener",
         "url_fetching": "Obteniendo…",
@@ -1141,7 +1142,7 @@
         "cta_placeholder": "ej. Prueba Tabnora gratis",
         "cta_default": "Pruébalo gratis",
         "from_website": "del sitio",
-        "brief_label": "Resumen de la demo (desde tu página — editable)",
+        "brief_label": "Brief del anuncio (desde tu página en vivo — edita lo que quieras)",
         "brief_oneliner_label": "Una frase",
         "brief_oneliner_placeholder": "Una frase que describe el producto",
         "brief_valueprops_label": "Propuestas de valor",

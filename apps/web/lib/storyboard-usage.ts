@@ -23,7 +23,13 @@ const ANIMATION_STORYBOARD_BASE_COST = 150;
  * (if any) is refunded; the UI renders a "Spend cap reached" banner with a
  * continue CTA. Prevents retry-loop billing surprises (Codex T6).
  */
-const MAX_CREDITS_PER_ANIMATION_JOB = 350;
+// Raised from 350 → 450 to accommodate the two-pass product-insert edit
+// step added in product_demo mode (each productRef beat does a scene gen
+// + a second edit pass to insert the real product). Worst case for a 5-
+// beat storyboard with 3 productRef beats: 150 base + 20 char sheets + 40
+// (hook non-product frames) + 120 (product beats × 2 frames × 2 passes)
+// = 330. Leaving headroom for retries / edge cases.
+const MAX_CREDITS_PER_ANIMATION_JOB = 450;
 
 /**
  * How many free re-rolls a user gets per animation storyboard before further

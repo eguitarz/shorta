@@ -81,6 +81,7 @@ export type ArcTemplateId =
 	| 'reveal'
 	| 'reversal'
 	| 'chase_build'
+	| 'product_demo'
 	| 'custom';
 
 /** Where a beat sits in the narrative arc. */
@@ -90,7 +91,11 @@ export type NarrativeRole =
 	| 'escalation'
 	| 'twist'
 	| 'payoff'
-	| 'button';
+	| 'button'
+	| 'hook_problem'
+	| 'product_reveal'
+	| 'feature_highlight'
+	| 'cta';
 
 /** One character in an animation storyboard. */
 export interface AnimationCharacter {
@@ -131,6 +136,74 @@ export interface AnimationBeatIntent {
 }
 
 /**
+ * Distilled demo brief produced by Gemini from the Jina-rendered page markdown.
+ * Feeds Pass 1 / Pass 2 prompts and the beat image prompt. Optional throughout
+ * because URL ingest may fail partially, and upload-only jobs never populate it.
+ */
+export interface ProductDemoBrief {
+	/** One-sentence product description — punchier than the scraped headline. */
+	oneLiner?: string;
+	/** 3-5 concise value props in the product's voice. */
+	valueProps?: string[];
+	/** 2-4 specific features worth highlighting, each with a one-line benefit. */
+	features?: Array<{ name: string; benefit: string }>;
+	/** Inferred emotional register of the product's own copy. */
+	inferredTone?: string;
+	/** Who the product is for, inferred from the page. */
+	inferredAudience?: string;
+	/** 2-3 punchy CTA variants Gemini distilled from the page. */
+	ctaSuggestions?: string[];
+	/** Brand signals Gemini inferred from copy tone + og:image colors. */
+	brandSignals?: string;
+	/** Recommended styleAnchor for the animation pipeline. */
+	recommendedStyleAnchor?: string;
+	/** What NOT to do — pitfalls Gemini flagged. */
+	avoid?: string[];
+	/**
+	 * Characters Gemini spotted in the attached page images (mascots, avatars,
+	 * team photos, illustrated figures). Each carries a `sheetStoragePath`
+	 * pointing to the image we saved in the character-sheets bucket — if the
+	 * user picks one, Pass 3 sheet generation is skipped and the landing-page
+	 * image is pinned as the character reference on every beat.
+	 */
+	suggestedCharacters?: Array<{
+		name: string;
+		traits: string[];
+		personality: string;
+		sheetStoragePath: string;
+		/** Short-lived signed URL for wizard preview only. Not persisted to the job. */
+		sheetSignedUrl?: string;
+	}>;
+}
+
+/**
+ * Product demo context. Optional — set when the user picks Product Demo mode
+ * in the wizard. Lives alongside (not instead of) the story fields so the
+ * pipeline can still produce characters/narration on top of the product.
+ */
+export interface ProductContext {
+	mode: 'url' | 'upload';
+	/** URL the user pasted (present for `mode: 'url'`, optional for 'upload'). */
+	sourceUrl?: string;
+	productName: string;
+	headline: string;
+	subhead?: string;
+	/** CTA text shown at the final beat. Replaces the narrative `payoff`. */
+	ctaText: string;
+	/** Storage paths in the private product-assets bucket. 1-4 items. */
+	assetPaths: string[];
+	/** The canonical product frame (pinned on reveal + feature beats). */
+	heroAssetPath: string;
+	/** True when partial scrape left some fields empty. UI-only, non-authoritative. */
+	scrapePartial?: boolean;
+	/**
+	 * Structured demo brief from Jina Reader → Gemini summarizer. Drives
+	 * prompts at every pipeline stage. Populated on URL ingest only.
+	 */
+	brief?: ProductDemoBrief;
+}
+
+/**
  * Storyboard-level animation metadata. NULL on non-animation storyboards.
  * Lives as a jsonb column on `generated_storyboards`.
  */
@@ -149,7 +222,7 @@ export interface AnimationMeta {
 	arcCustomDescription?: string;
 	/** User-authored payoff — required; this is the fun moment. */
 	payoff: string;
-	/** 1-2 characters. */
+	/** 0-2 characters. Product demo mode allows 0. */
 	characters: AnimationCharacter[];
 	/**
 	 * Beat intents from Pass 1, consumed by Pass 2. Discarded from the UI
@@ -157,6 +230,8 @@ export interface AnimationMeta {
 	 * separate request from Pass 1 (resumable pipeline).
 	 */
 	beatIntents?: AnimationBeatIntent[];
+	/** Product demo context. Undefined for story-mode jobs. */
+	productContext?: ProductContext;
 }
 
 /** Wizard input before a storyboard exists (posted to /api/jobs/animation-storyboard/create). */
@@ -168,7 +243,19 @@ export interface AnimationWizardSpec {
 	arcTemplate: ArcTemplateId;
 	arcCustomDescription?: string;
 	payoff: string;
-	characters: Array<Pick<AnimationCharacter, 'name' | 'traits' | 'personality'>>;
+	characters: Array<
+		Pick<AnimationCharacter, 'name' | 'traits' | 'personality'> & {
+			/**
+			 * Optional pre-set character sheet storage path. When present,
+			 * Pass 3 skips sheet generation and pins this image as the
+			 * reference across every beat. Used for "reuse avatar from
+			 * landing page" in product demo mode.
+			 */
+			sheetStoragePath?: string;
+		}
+	>;
+	/** Product demo context. When set, characters may be 0-length. */
+	productContext?: ProductContext;
 }
 
 /**
@@ -180,6 +267,12 @@ export interface AnimationBeatFields {
 	narrativeRole?: NarrativeRole;
 	/** Character ids from AnimationMeta.characters[].id that appear in this beat. */
 	characterRefs?: string[];
+	/**
+	 * Product asset references. Values: 'hero' pins the heroAssetPath from
+	 * ProductContext as a reference image. Set on reveal + feature beats in
+	 * product_demo mode. Empty/undefined for story-mode beats.
+	 */
+	productRefs?: Array<'hero'>;
 	/** What each character does in this beat. */
 	characterAction?: string;
 	/** Framing + movement semantics (richer than just shotType + cameraMovement). */
@@ -188,6 +281,29 @@ export interface AnimationBeatFields {
 	sceneSnippet?: string;
 	/** Optional dialogue line. */
 	dialogue?: string;
+	/**
+	 * Description of the beat's FINAL state — post-action, pre-transition.
+	 * Used to generate the END frame so downstream video models (Veo 3,
+	 * Runway Gen-4) can operate in their strongest "first + last frame"
+	 * mode. If undefined, Pass 4 skips end-frame generation and users fall
+	 * back to image-to-video mode for this beat.
+	 */
+	endFrameIntent?: string;
+	/**
+	 * When set, Pass 4 SKIPS Gemini image generation for this beat and copies
+	 * the referenced asset directly to beat_images. Guarantees pixel-perfect
+	 * fidelity for product hero shots, brand reveals, etc. — the viewer sees
+	 * the user's uploaded image verbatim, not a re-interpretation.
+	 *
+	 * Values:
+	 *   'product'   — use ProductContext.heroAssetPath as the beat frame
+	 *   'character' — use characterRefs[0]'s sheetStoragePath as the beat frame
+	 *
+	 * Typical usage: CTA beat in product_demo arc → 'product' (100% label
+	 * accuracy). Set either automatically by Pass 2 based on narrativeRole or
+	 * toggled per-beat by the user in the storyboard editor.
+	 */
+	useRefAsImage?: 'product' | 'character';
 }
 
 /**
