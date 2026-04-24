@@ -285,7 +285,14 @@ Return ONLY valid JSON in this exact format:
             "message": "string - what the issue is",
             "suggestion": "string - specific actionable fix",
             "ruleId": "string - OPTIONAL, only if from lint violation",
-            "ruleName": "string - OPTIONAL, only if from lint violation"
+            "ruleName": "string - OPTIONAL, only if from lint violation",
+            "evidence": {
+              "startTime": "number - REQUIRED for AI-discovered issues (no ruleId). Seconds into the video where the issue occurs. Must fall inside [beat.startTime, beat.endTime].",
+              "endTime": "number - OPTIONAL. Seconds into the video where the issue stops.",
+              "transcriptSnippet": "string - REQUIRED for AI-discovered issues. The EXACT words from the transcript at this moment that triggered this call. Verbatim, no paraphrasing. Keep under 120 characters; trim long sentences to the telling fragment.",
+              "reasoning": "string - REQUIRED for AI-discovered issues. One sentence grounded in the transcriptSnippet explaining WHY this is a problem. No generic AI-advice vocabulary. Bad: 'pacing is weak'. Good: 'viewer has no reason to keep watching after the hook dropped'.",
+              "falsifier": "string - OPTIONAL but recommended for AI-discovered issues. One concrete, measurable condition that would PROVE THIS CALL WRONG. Must reference an observable property of the video itself, not viewer opinion. Examples: 'If the speaker had said the word \"because\" anywhere in this segment.' / 'If the beat had been 2 seconds shorter.' / 'If a visual overlay had appeared on screen here.' Bad: 'if it were engaging' (unfalsifiable). Bad: 'if retention was higher' (we can't measure that). Keep under 140 characters."
+            }
           }
         ]
       }
@@ -348,9 +355,10 @@ CRITICAL INSTRUCTIONS:
 3. Reference specific moments, timestamps, and signal values in your explanations
 4. Suggestions should directly address the lowest-scoring components
 5. Map lint violations to appropriate beats based on timestamp
-6. For AI-discovered issues, OMIT ruleId and ruleName fields
-7. NEVER include technical rule IDs (like th_hook_energy, gen_hook_clear_promise, etc.) in analysis text - use only human-readable descriptions
-8. Include 1-3 top_changes ranked by expected impact. Focus on lowest-scoring categories. Each change must be specific, actionable, and reference concrete moments in the video. Do NOT output generic advice like "improve pacing"
+6. For AI-discovered issues, OMIT ruleId and ruleName fields AND populate the "evidence" object (startTime, transcriptSnippet, reasoning are mandatory). This is how the viewer sees the receipts for every claim. An AI-discovered issue with no evidence is a failure.
+7. For lint-backed issues (with ruleId), the "evidence" object is OPTIONAL — the rule definition is already its own evidence.
+8. NEVER include technical rule IDs (like th_hook_energy, gen_hook_clear_promise, etc.) in analysis text - use only human-readable descriptions
+9. Include 1-3 top_changes ranked by expected impact. Focus on lowest-scoring categories. Each change must be specific, actionable, and reference concrete moments in the video. Do NOT output generic advice like "improve pacing"
 
 LANGUAGE ALIGNMENT - CRITICAL:
 ${locale && locale !== 'en'

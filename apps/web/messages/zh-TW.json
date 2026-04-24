@@ -724,6 +724,51 @@
         "invalidUrl": "請輸入有效的網址",
         "youtubeOnly": "僅支援 YouTube 網址"
       }
+    },
+    "evidence": {
+      "toggle": "我們為何標記",
+      "rule": "規則",
+      "why": "重要性",
+      "howChecked": "檢查方式",
+      "goodExample": "好的範例",
+      "transcriptAt": "{time} 的逐字稿",
+      "reasoning": "推論",
+      "grade": {
+        "heading": "這個分數的依據",
+        "pulledDown": "拉低的因素",
+        "pulledUp": "拉高的因素",
+        "signals": {
+          "hook": {
+            "TTClaim": "提出主張所需時間",
+            "PB": "模式中斷",
+            "Spec": "具體要素",
+            "QC": "提問/對比"
+          },
+          "structure": {
+            "BC": "節拍數",
+            "PM": "進度指標",
+            "PP": "結論呈現",
+            "LC": "循環暗示"
+          },
+          "clarity": {
+            "WPS": "每秒字數",
+            "SC": "句子複雜度",
+            "TJ": "主題跳躍",
+            "RD": "重複度"
+          },
+          "delivery": {
+            "LS": "音量穩定度",
+            "NS": "音質",
+            "PQ": "停頓與贅詞",
+            "EC": "能量曲線"
+          }
+        }
+      },
+      "falsifierAi": "能證明我們錯了的條件",
+      "falsifier": {
+        "flipStrong": "{driver}({current}) → {threshold} 會翻轉為強",
+        "flipWeak": "{driver}({current}) → {threshold} 會下降為弱"
+      }
     }
   },
   "storyboard": {
@@ -1061,7 +1106,63 @@
       "crumb": {
         "premise": "前提",
         "characters": "角色",
-        "arc": "敘事弧"
+        "arc": "敘事弧",
+        "product": "產品",
+        "style": "風格",
+        "cta": "CTA"
+      },
+      "mode": {
+        "tablist": "精靈模式",
+        "story": "故事",
+        "product_demo": "產品示範"
+      },
+      "product": {
+        "title": "要展示什麼產品?",
+        "subtitle": "貼上網址或上傳產品截圖。我們會把真實介面固定在動畫中。",
+        "url_label": "產品網址",
+        "url_fetch": "擷取",
+        "url_fetching": "擷取中…",
+        "scrape_error_generic": "無法讀取該網址。",
+        "scrape_partial": "部分欄位無法自動填入 — 請手動輸入。",
+        "or": "或",
+        "upload_label": "上傳截圖",
+        "upload_placeholder": "拖放或點擊上傳截圖 (最多 {max} 張、每張 4MB、2048px 內)。",
+        "uploading": "上傳中…",
+        "upload_error_count": "最多允許 {n} 個檔案。",
+        "upload_error_size": "圖片太大 (超過 4MB)。",
+        "upload_error_dim": "圖片太大 (寬或高超過 {max}px)。",
+        "upload_error_type": "僅支援 PNG、JPEG、WebP 圖片。",
+        "upload_error_generic": "上傳失敗。",
+        "hero_label": "哪張截圖當作主視覺?",
+        "hero_selected": "主視覺 — 釘在揭示與功能節拍上",
+        "hero_selected_short": "主視覺",
+        "hero_choose": "設為主視覺",
+        "hero_preview_alt": "產品截圖預覽",
+        "name_label": "產品名稱",
+        "name_placeholder": "例如:Tabnora",
+        "headline_label": "標題",
+        "headline_placeholder": "例如:把分頁變成工作流",
+        "subhead_label": "一句價值主張 (選填)",
+        "subhead_placeholder": "例如:為交付型團隊打造的瀏覽器分頁。",
+        "cta_label": "CTA 文字",
+        "cta_placeholder": "例如:免費試用 Tabnora",
+        "cta_default": "免費試用",
+        "from_website": "來自網站",
+        "brief_label": "示範簡報 (來自實際頁面 — 可自由修改)",
+        "brief_oneliner_label": "一句話",
+        "brief_oneliner_placeholder": "用一句話描述產品",
+        "brief_valueprops_label": "價值主張",
+        "brief_valueprops_placeholder": "輸入價值主張,按 Enter",
+        "brief_features_label": "要展示的功能",
+        "brief_feature_name_placeholder": "功能名稱",
+        "brief_feature_benefit_placeholder": "對使用者的益處",
+        "brief_add_feature": "新增功能",
+        "brief_remove_feature": "移除功能",
+        "brief_brand": "品牌線索",
+        "brief_brand_placeholder": "顏色、字體感、UI 氛圍",
+        "brief_tone": "語氣:",
+        "brief_audience": "受眾:",
+        "brief_avoid": "避免:"
       },
       "premise": {
         "title": "這是什麼故事?",
@@ -1087,7 +1188,16 @@
         "appearance_placeholder": "輸入特徵後按 Enter",
         "appearance_hint": "3~5 個簡短特徵最好。Enter 新增,Backspace 移除。",
         "personality_label": "個性",
-        "personality_placeholder": "一句話。是什麼定義了他們?"
+        "personality_placeholder": "一句話。是什麼定義了他們?",
+        "suggested_label": "在你的頁面找到的角色",
+        "suggested_hint": "選一個直接沿用它的實際圖像 — 我們會固定為角色設定。",
+        "sheet_pinned": "已從頁面固定",
+        "talent_photo_label": "模特兒照片 (選填)",
+        "talent_upload": "上傳照片",
+        "talent_replace": "更換照片",
+        "talent_uploading": "上傳中…",
+        "talent_hint": "上傳真實人物照片,會在所有鏡頭中固定為這個角色。",
+        "talent_upload_error": "上傳失敗。"
       },
       "arc": {
         "title": "結局是什麼?",

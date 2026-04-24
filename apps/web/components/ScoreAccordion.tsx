@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { trackEvent } from "@/lib/posthog";
+import { GradeEvidence } from "@/components/analyzer/GradeEvidence";
+import type { ScoreBreakdown } from "@/lib/scoring/types";
 
 interface ScoreAccordionProps {
   category: "hook" | "structure" | "clarity" | "delivery";
@@ -17,6 +19,12 @@ interface ScoreAccordionProps {
   onUpgradeClick?: (feature: string) => void;
   defaultExpanded?: boolean;
   renderAnalysis: (text: string) => React.ReactNode;
+  /** When true, render the GradeEvidence narration above the signals list. */
+  evidenceMode?: boolean;
+  /** Score breakdown per signal; required to render evidence narration. */
+  breakdown?: ScoreBreakdown[keyof ScoreBreakdown];
+  /** Video duration in seconds. Used to pick short-form vs long-form flip thresholds. */
+  videoDuration?: number;
 }
 
 const ICONS: Record<string, string> = {
@@ -234,6 +242,9 @@ export function ScoreAccordion({
   onUpgradeClick,
   defaultExpanded = false,
   renderAnalysis: renderAnalysisFn,
+  evidenceMode = false,
+  breakdown,
+  videoDuration,
 }: ScoreAccordionProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const t = useTranslations("analyzer");
@@ -284,6 +295,14 @@ export function ScoreAccordion({
 
       {expanded && (
         <div className="px-3 pb-3" id={`score-${category}-content`}>
+          {evidenceMode && !shouldBlur && (
+            <GradeEvidence
+              category={category}
+              signals={signals as any}
+              breakdown={breakdown as any}
+              videoDuration={videoDuration}
+            />
+          )}
           <div {...blurProps}>
             {signals ? (
               <SignalsComponent signals={signals} t={t} tCommon={tCommon} />

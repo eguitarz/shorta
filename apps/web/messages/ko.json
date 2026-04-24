@@ -710,6 +710,51 @@
         "invalidUrl": "유효한 URL을 입력하세요",
         "youtubeOnly": "YouTube URL만 지원됩니다"
       }
+    },
+    "evidence": {
+      "toggle": "이 판단의 근거",
+      "rule": "규칙",
+      "why": "이유",
+      "howChecked": "검사 방식",
+      "goodExample": "좋은 예시",
+      "transcriptAt": "{time} 스크립트",
+      "reasoning": "분석 근거",
+      "grade": {
+        "heading": "이 등급의 근거",
+        "pulledDown": "하락 요인",
+        "pulledUp": "상승 요인",
+        "signals": {
+          "hook": {
+            "TTClaim": "핵심 제시까지 시간",
+            "PB": "패턴 브레이크",
+            "Spec": "구체성 요소",
+            "QC": "질문/대조"
+          },
+          "structure": {
+            "BC": "비트 개수",
+            "PM": "진행 마커",
+            "PP": "결론 존재",
+            "LC": "루프 큐"
+          },
+          "clarity": {
+            "WPS": "초당 단어 수",
+            "SC": "문장 복잡도",
+            "TJ": "주제 전환",
+            "RD": "반복성"
+          },
+          "delivery": {
+            "LS": "음량 안정성",
+            "NS": "음질",
+            "PQ": "정지 및 군말",
+            "EC": "에너지 변화"
+          }
+        }
+      },
+      "falsifierAi": "우리 판단이 틀렸음을 증명할 조건",
+      "falsifier": {
+        "flipStrong": "{driver} ({current}) → {threshold}이면 강함으로 바뀜",
+        "flipWeak": "{driver} ({current}) → {threshold}이면 약함으로 떨어짐"
+      }
     }
   },
   "storyboard": {
@@ -1046,7 +1091,63 @@
       "crumb": {
         "premise": "전제",
         "characters": "캐릭터",
-        "arc": "아크"
+        "arc": "아크",
+        "product": "제품",
+        "style": "스타일",
+        "cta": "CTA"
+      },
+      "mode": {
+        "tablist": "위저드 모드",
+        "story": "스토리",
+        "product_demo": "제품 데모"
+      },
+      "product": {
+        "title": "무엇을 시연하나요?",
+        "subtitle": "URL을 붙여넣거나 제품 스크린샷을 업로드하세요. 실제 UI를 애니메이션에 고정합니다.",
+        "url_label": "제품 URL",
+        "url_fetch": "가져오기",
+        "url_fetching": "가져오는 중…",
+        "scrape_error_generic": "URL을 읽을 수 없습니다.",
+        "scrape_partial": "일부 필드를 자동 채울 수 없었습니다 — 수동으로 입력해 주세요.",
+        "or": "또는",
+        "upload_label": "스크린샷 업로드",
+        "upload_placeholder": "스크린샷을 드롭하거나 클릭해서 업로드 (최대 {max}장, 각 4MB, 2048px 이내).",
+        "uploading": "업로드 중…",
+        "upload_error_count": "최대 {n}개 파일까지 가능합니다.",
+        "upload_error_size": "이미지가 너무 큽니다 (4MB 초과).",
+        "upload_error_dim": "이미지가 너무 큽니다 (가로/세로 {max}px 이내).",
+        "upload_error_type": "PNG, JPEG, WebP 이미지만 지원됩니다.",
+        "upload_error_generic": "업로드에 실패했습니다.",
+        "hero_label": "어떤 스크린샷을 메인으로 사용할까요?",
+        "hero_selected": "메인 — 리빌·피처 장면에 고정",
+        "hero_selected_short": "메인",
+        "hero_choose": "메인으로 설정",
+        "hero_preview_alt": "제품 스크린샷 미리보기",
+        "name_label": "제품 이름",
+        "name_placeholder": "예: Tabnora",
+        "headline_label": "헤드라인",
+        "headline_placeholder": "예: 탭을 워크플로로",
+        "subhead_label": "한 줄 가치 제안 (선택)",
+        "subhead_placeholder": "예: 함께 일하는 팀을 위한 브라우저 탭.",
+        "cta_label": "CTA 문구",
+        "cta_placeholder": "예: Tabnora 무료로 사용해보기",
+        "cta_default": "무료로 사용해보기",
+        "from_website": "웹사이트에서",
+        "brief_label": "데모 브리프 (실제 페이지에서 추출 — 자유롭게 수정)",
+        "brief_oneliner_label": "한 줄 설명",
+        "brief_oneliner_placeholder": "제품을 한 문장으로 설명",
+        "brief_valueprops_label": "가치 제안",
+        "brief_valueprops_placeholder": "가치 제안 입력 후 Enter",
+        "brief_features_label": "강조할 기능",
+        "brief_feature_name_placeholder": "기능 이름",
+        "brief_feature_benefit_placeholder": "사용자에게 주는 이점",
+        "brief_add_feature": "기능 추가",
+        "brief_remove_feature": "기능 제거",
+        "brief_brand": "브랜드 시그널",
+        "brief_brand_placeholder": "색상, 타이포 느낌, UI 무드",
+        "brief_tone": "톤:",
+        "brief_audience": "오디언스:",
+        "brief_avoid": "피할 것:"
       },
       "premise": {
         "title": "어떤 이야기인가요?",
@@ -1072,7 +1173,16 @@
         "appearance_placeholder": "특징을 입력하고 Enter",
         "appearance_hint": "짧은 특징 3~5개가 가장 좋습니다. Enter로 추가, Backspace로 제거.",
         "personality_label": "성격",
-        "personality_placeholder": "한 문장으로. 이 캐릭터를 정의하는 것은?"
+        "personality_placeholder": "한 문장으로. 이 캐릭터를 정의하는 것은?",
+        "suggested_label": "랜딩 페이지에서 발견",
+        "suggested_hint": "하나를 선택해 실제 아트워크를 재사용하세요 — 캐릭터 시트로 고정됩니다.",
+        "sheet_pinned": "페이지에서 고정됨",
+        "talent_photo_label": "탤런트 사진 (선택)",
+        "talent_upload": "사진 업로드",
+        "talent_replace": "사진 교체",
+        "talent_uploading": "업로드 중…",
+        "talent_hint": "실제 인물 사진을 업로드하면 모든 비트에서 해당 인물로 고정됩니다.",
+        "talent_upload_error": "업로드에 실패했습니다."
       },
       "arc": {
         "title": "어떻게 마무리되나요?",

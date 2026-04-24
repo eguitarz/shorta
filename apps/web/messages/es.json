@@ -718,6 +718,51 @@
         "invalidUrl": "Por favor ingresa una URL válida",
         "youtubeOnly": "Solo se admiten URLs de YouTube"
       }
+    },
+    "evidence": {
+      "toggle": "Por qué lo marcamos",
+      "rule": "Regla",
+      "why": "Por qué importa",
+      "howChecked": "Cómo lo verificamos",
+      "goodExample": "Buen ejemplo",
+      "transcriptAt": "Transcripción en {time}",
+      "reasoning": "Razonamiento",
+      "grade": {
+        "heading": "Por qué esta nota",
+        "pulledDown": "Bajada por",
+        "pulledUp": "Subida por",
+        "signals": {
+          "hook": {
+            "TTClaim": "tiempo hasta la promesa",
+            "PB": "ruptura de patrón",
+            "Spec": "específicos",
+            "QC": "pregunta/contradicción"
+          },
+          "structure": {
+            "BC": "cantidad de beats",
+            "PM": "marcadores de progreso",
+            "PP": "payoff presente",
+            "LC": "cierre en bucle"
+          },
+          "clarity": {
+            "WPS": "palabras por segundo",
+            "SC": "complejidad de frases",
+            "TJ": "saltos de tema",
+            "RD": "redundancia"
+          },
+          "delivery": {
+            "LS": "estabilidad de volumen",
+            "NS": "calidad de audio",
+            "PQ": "pausas y muletillas",
+            "EC": "curva de energía"
+          }
+        }
+      },
+      "falsifierAi": "Qué demostraría que nos equivocamos",
+      "falsifier": {
+        "flipStrong": "{driver} ({current}) → {threshold} lo subiría a fuerte",
+        "flipWeak": "{driver} ({current}) → {threshold} lo bajaría a débil"
+      }
     }
   },
   "storyboard": {
@@ -1054,7 +1099,63 @@
       "crumb": {
         "premise": "Premisa",
         "characters": "Personajes",
-        "arc": "Arco"
+        "arc": "Arco",
+        "product": "Producto",
+        "style": "Estilo",
+        "cta": "CTA"
+      },
+      "mode": {
+        "tablist": "Modo del asistente",
+        "story": "Historia",
+        "product_demo": "Demo de producto"
+      },
+      "product": {
+        "title": "¿Qué vamos a mostrar?",
+        "subtitle": "Pega una URL o sube capturas del producto. Fijamos la UI real en la animación.",
+        "url_label": "URL del producto",
+        "url_fetch": "Obtener",
+        "url_fetching": "Obteniendo…",
+        "scrape_error_generic": "No se pudo leer esa URL.",
+        "scrape_partial": "Algunos campos no se pudieron autocompletar — complétalos manualmente.",
+        "or": "o",
+        "upload_label": "Subir capturas",
+        "upload_placeholder": "Arrastra o haz clic para subir capturas (hasta {max}, 4MB cada una, 2048px máx).",
+        "uploading": "Subiendo…",
+        "upload_error_count": "Se permiten máximo {n} archivos.",
+        "upload_error_size": "La imagen es demasiado grande (>4MB).",
+        "upload_error_dim": "La imagen es demasiado grande (máximo {max}px por lado).",
+        "upload_error_type": "Solo se admiten imágenes PNG, JPEG y WebP.",
+        "upload_error_generic": "Falló la subida.",
+        "hero_label": "¿Qué captura es la principal?",
+        "hero_selected": "Principal — fijada en los momentos de revelación y funciones",
+        "hero_selected_short": "Principal",
+        "hero_choose": "Usar como principal",
+        "hero_preview_alt": "Vista previa de captura del producto",
+        "name_label": "Nombre del producto",
+        "name_placeholder": "ej. Tabnora",
+        "headline_label": "Titular",
+        "headline_placeholder": "ej. Convierte pestañas en flujos de trabajo",
+        "subhead_label": "Propuesta de valor en una línea (opcional)",
+        "subhead_placeholder": "ej. Pestañas del navegador, para equipos que entregan.",
+        "cta_label": "Texto del CTA",
+        "cta_placeholder": "ej. Prueba Tabnora gratis",
+        "cta_default": "Pruébalo gratis",
+        "from_website": "del sitio",
+        "brief_label": "Resumen de la demo (desde tu página — editable)",
+        "brief_oneliner_label": "Una frase",
+        "brief_oneliner_placeholder": "Una frase que describe el producto",
+        "brief_valueprops_label": "Propuestas de valor",
+        "brief_valueprops_placeholder": "Escribe y pulsa Enter",
+        "brief_features_label": "Funciones a destacar",
+        "brief_feature_name_placeholder": "Nombre de la función",
+        "brief_feature_benefit_placeholder": "Qué hace por el usuario",
+        "brief_add_feature": "Añadir función",
+        "brief_remove_feature": "Quitar función",
+        "brief_brand": "Señales de marca",
+        "brief_brand_placeholder": "Colores, tipografía, ambiente UI",
+        "brief_tone": "Tono:",
+        "brief_audience": "Audiencia:",
+        "brief_avoid": "Evitar:"
       },
       "premise": {
         "title": "¿Cuál es la historia?",
@@ -1080,7 +1181,16 @@
         "appearance_placeholder": "Escribe rasgos, pulsa Enter",
         "appearance_hint": "3-5 rasgos cortos funcionan mejor. Enter para añadir, Backspace para quitar.",
         "personality_label": "Personalidad",
-        "personality_placeholder": "Una frase. ¿Qué los define?"
+        "personality_placeholder": "Una frase. ¿Qué los define?",
+        "suggested_label": "Encontrados en tu página",
+        "suggested_hint": "Elige uno para reutilizar su imagen real — lo fijaremos como ficha del personaje.",
+        "sheet_pinned": "Fijado desde la página",
+        "talent_photo_label": "Foto del talento (opcional)",
+        "talent_upload": "Subir foto",
+        "talent_replace": "Cambiar foto",
+        "talent_uploading": "Subiendo…",
+        "talent_hint": "Sube la foto de una persona real — la fijaremos como personaje en cada escena.",
+        "talent_upload_error": "Error al subir."
       },
       "arc": {
         "title": "¿Cómo aterriza?",

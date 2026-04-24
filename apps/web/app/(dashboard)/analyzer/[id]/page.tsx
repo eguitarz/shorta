@@ -54,6 +54,9 @@ import type { VideoRetentionCurve } from "@/lib/youtube/types";
 import { ThumbnailAnalysis } from "@/components/ThumbnailAnalysis";
 import { FixList, type TopChange } from "@/components/FixList";
 import { ScoreAccordion } from "@/components/ScoreAccordion";
+import { EvidencePanel } from "@/components/analyzer/EvidencePanel";
+import { deriveIssueEvidence } from "@/components/analyzer/derive-issue-evidence";
+import { isEvidenceModeEnabled } from "@/lib/feature-flags";
 import { useAnalysisJob } from "@/hooks/useAnalysisJob";
 import { trackEvent } from "@/lib/posthog";
 
@@ -74,6 +77,14 @@ interface Beat {
       message: string;
       suggestion: string;
       timestamp?: string; // Timestamp like "0:03" or "0:00-0:04" where the issue occurs
+      // Phase 1b — populated by Gemini for AI-discovered issues (no ruleId).
+      // Absent on pre-1b storyboards — UI must treat as optional.
+      evidence?: {
+        startTime?: number;
+        endTime?: number;
+        transcriptSnippet?: string;
+        reasoning?: string;
+      };
     }>;
   };
 }
@@ -271,6 +282,8 @@ export default function AnalyzerResultsPage() {
     userTier, analysesRemaining, isTrialMode,
   } = useAnalysisJob();
   const analysisData = rawAnalysisData as AnalysisData | null;
+
+  const evidenceMode = isEvidenceModeEnabled();
 
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -1375,6 +1388,7 @@ export default function AnalyzerResultsPage() {
                         score={analysisData.storyboard.performance.hookStrength}
                         analysis={analysisData.storyboard.performance.hook.analysis}
                         signals={analysisData.storyboard._signals?.hook}
+                        breakdown={analysisData.storyboard._scoreBreakdown?.hook}
                         fallbackMetrics={analysisData.storyboard.performance.hook}
                         hookCategory={analysisData.storyboard.overview.hookCategory}
                         hookPattern={analysisData.storyboard.overview.hookPattern}
@@ -1382,39 +1396,50 @@ export default function AnalyzerResultsPage() {
                         onUpgradeClick={(f) => { setUpgradeFeature(f); setShowUpgradeModal(true); }}
                         defaultExpanded={lowestCategory === 'hook'}
                         renderAnalysis={renderAnalysis}
+                        evidenceMode={evidenceMode}
+                        videoDuration={analysisData.storyboard._signals?.clarity?.duration}
                       />
                       <ScoreAccordion
                         category="structure"
                         score={analysisData.storyboard.performance.structurePacing}
                         analysis={analysisData.storyboard.performance.structure.analysis}
                         signals={analysisData.storyboard._signals?.structure}
+                        breakdown={analysisData.storyboard._scoreBreakdown?.structure}
                         fallbackMetrics={analysisData.storyboard.performance.structure}
                         shouldBlur={shouldBlur}
                         onUpgradeClick={(f) => { setUpgradeFeature(f); setShowUpgradeModal(true); }}
                         defaultExpanded={lowestCategory === 'structure'}
                         renderAnalysis={renderAnalysis}
+                        evidenceMode={evidenceMode}
+                        videoDuration={analysisData.storyboard._signals?.clarity?.duration}
                       />
                       <ScoreAccordion
                         category="clarity"
                         score={analysisData.storyboard.performance.content?.valueClarity ?? 0}
                         analysis={analysisData.storyboard.performance.content.analysis}
                         signals={analysisData.storyboard._signals?.clarity}
+                        breakdown={analysisData.storyboard._scoreBreakdown?.clarity}
                         fallbackMetrics={analysisData.storyboard.performance.content}
                         shouldBlur={shouldBlur}
                         onUpgradeClick={(f) => { setUpgradeFeature(f); setShowUpgradeModal(true); }}
                         defaultExpanded={lowestCategory === 'clarity'}
                         renderAnalysis={renderAnalysis}
+                        evidenceMode={evidenceMode}
+                        videoDuration={analysisData.storyboard._signals?.clarity?.duration}
                       />
                       <ScoreAccordion
                         category="delivery"
                         score={analysisData.storyboard.performance.deliveryPerformance}
                         analysis={analysisData.storyboard.performance.delivery.analysis}
                         signals={analysisData.storyboard._signals?.delivery}
+                        breakdown={analysisData.storyboard._scoreBreakdown?.delivery}
                         fallbackMetrics={analysisData.storyboard.performance.delivery}
                         shouldBlur={shouldBlur}
                         onUpgradeClick={(f) => { setUpgradeFeature(f); setShowUpgradeModal(true); }}
                         defaultExpanded={lowestCategory === 'delivery'}
                         renderAnalysis={renderAnalysis}
+                        evidenceMode={evidenceMode}
+                        videoDuration={analysisData.storyboard._signals?.clarity?.duration}
                       />
                     </div>
                   );
@@ -1944,6 +1969,10 @@ export default function AnalyzerResultsPage() {
                                           </button>
                                         </div>
                                       )}
+
+                                      {evidenceMode && (
+                                        <EvidencePanel evidence={deriveIssueEvidence(issue)} />
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -2188,6 +2217,10 @@ export default function AnalyzerResultsPage() {
                                             {isAlreadyApproved ? t('whatToFix.applied') : t('whatToFix.apply')}
                                           </button>
                                         </div>
+                                      )}
+
+                                      {evidenceMode && (
+                                        <EvidencePanel evidence={deriveIssueEvidence(issue)} />
                                       )}
                                     </div>
                                   </div>

@@ -734,6 +734,51 @@
         "invalidUrl": "Please enter a valid URL",
         "youtubeOnly": "Only YouTube URLs are supported"
       }
+    },
+    "evidence": {
+      "toggle": "Why we flagged this",
+      "rule": "Rule",
+      "why": "Why this matters",
+      "howChecked": "How we checked",
+      "goodExample": "Good example",
+      "transcriptAt": "Transcript at {time}",
+      "reasoning": "Reasoning",
+      "grade": {
+        "heading": "Why this grade",
+        "pulledDown": "Pulled down by",
+        "pulledUp": "Pulled up by",
+        "signals": {
+          "hook": {
+            "TTClaim": "time to claim",
+            "PB": "pattern break",
+            "Spec": "specifics",
+            "QC": "question/contradiction"
+          },
+          "structure": {
+            "BC": "beat count",
+            "PM": "progress markers",
+            "PP": "payoff present",
+            "LC": "loop cue"
+          },
+          "clarity": {
+            "WPS": "words per second",
+            "SC": "sentence complexity",
+            "TJ": "topic jumps",
+            "RD": "redundancy"
+          },
+          "delivery": {
+            "LS": "loudness stability",
+            "NS": "audio quality",
+            "PQ": "pauses & fillers",
+            "EC": "energy curve"
+          }
+        }
+      },
+      "falsifierAi": "What would prove us wrong",
+      "falsifier": {
+        "flipStrong": "{driver} ({current}) → {threshold} would flip this to strong",
+        "flipWeak": "{driver} ({current}) → {threshold} would drop this to weak"
+      }
     }
   },
   "storyboard": {
@@ -1091,7 +1136,63 @@
       "crumb": {
         "premise": "Premise",
         "characters": "Characters",
-        "arc": "Arc"
+        "arc": "Arc",
+        "product": "Product",
+        "style": "Style",
+        "cta": "CTA"
+      },
+      "mode": {
+        "tablist": "Wizard mode",
+        "story": "Story",
+        "product_demo": "Product Demo"
+      },
+      "product": {
+        "title": "What are we demoing?",
+        "subtitle": "Paste a URL or upload product screenshots. We'll pin the real UI in the animation.",
+        "url_label": "Product URL",
+        "url_fetch": "Fetch",
+        "url_fetching": "Fetching…",
+        "scrape_error_generic": "Couldn't read that URL.",
+        "scrape_partial": "Some fields couldn't be auto-filled — fill them in manually.",
+        "or": "or",
+        "upload_label": "Upload screenshots",
+        "upload_placeholder": "Drop screenshots or click to upload (up to {max}, 4MB each, 2048px max).",
+        "uploading": "Uploading…",
+        "upload_error_count": "At most {n} files allowed.",
+        "upload_error_size": "Image is too large (>4MB).",
+        "upload_error_dim": "Image is too big ({max}px max on either side).",
+        "upload_error_type": "Only PNG, JPEG, and WebP images are supported.",
+        "upload_error_generic": "Upload failed.",
+        "hero_label": "Which screenshot is the hero?",
+        "hero_selected": "Hero — pinned on reveal + feature beats",
+        "hero_selected_short": "Hero",
+        "hero_choose": "Set as hero",
+        "hero_preview_alt": "Product screenshot preview",
+        "name_label": "Product name",
+        "name_placeholder": "e.g. Tabnora",
+        "headline_label": "Headline",
+        "headline_placeholder": "e.g. Turn tabs into workflows",
+        "subhead_label": "One-line value prop (optional)",
+        "subhead_placeholder": "e.g. Browser tabs, but for teams that ship.",
+        "cta_label": "CTA text",
+        "cta_placeholder": "e.g. Try Tabnora free",
+        "cta_default": "Try it free",
+        "from_website": "from website",
+        "brief_label": "Demo brief (from your live page — edit anything)",
+        "brief_oneliner_label": "One-liner",
+        "brief_oneliner_placeholder": "One sentence describing the product",
+        "brief_valueprops_label": "Value props",
+        "brief_valueprops_placeholder": "Type a value prop, press Enter",
+        "brief_features_label": "Features to showcase",
+        "brief_feature_name_placeholder": "Feature name",
+        "brief_feature_benefit_placeholder": "What it does for the user",
+        "brief_add_feature": "Add feature",
+        "brief_remove_feature": "Remove feature",
+        "brief_brand": "Brand signals",
+        "brief_brand_placeholder": "Colors, typography feel, UI mood",
+        "brief_tone": "Tone:",
+        "brief_audience": "Audience:",
+        "brief_avoid": "Avoid:"
       },
       "premise": {
         "title": "What's the story?",
@@ -1117,7 +1218,16 @@
         "appearance_placeholder": "Type traits, press Enter",
         "appearance_hint": "3-5 short traits work best. Enter to add, backspace to remove.",
         "personality_label": "Personality",
-        "personality_placeholder": "One sentence. What defines them?"
+        "personality_placeholder": "One sentence. What defines them?",
+        "suggested_label": "Found on your landing page",
+        "suggested_hint": "Pick one to reuse its actual artwork — we'll pin it as the character sheet.",
+        "sheet_pinned": "Pinned from page",
+        "talent_photo_label": "Talent photo (optional)",
+        "talent_upload": "Upload photo",
+        "talent_replace": "Replace photo",
+        "talent_uploading": "Uploading…",
+        "talent_hint": "Upload a real-person photo — pins them as the character on every beat.",
+        "talent_upload_error": "Upload failed."
       },
       "arc": {
         "title": "How does it land?",
